@@ -2,8 +2,25 @@
 
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { Send, Bot, User, CheckCircle2 } from 'lucide-react';
+import { Send, Bot, User, CheckCircle2, Upload, Activity, LayoutTemplate, FileSpreadsheet, FileText, X } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+
+const STUDY_TEMPLATES = [
+  { id: 'U&A',               label: 'U&A Study',            desc: 'Usage & Attitudes — behavioral patterns, occasions, drivers', color: '#f59e0b' },
+  { id: 'Brand Health',      label: 'Brand Health',          desc: 'Awareness, perception gaps, NPS, share of mind',             color: '#8b5cf6' },
+  { id: 'Market Entry',      label: 'Market Entry',          desc: 'Whitespace, sizing, regulatory readiness, go-to-market',     color: '#14b8a6' },
+  { id: 'Competitive Pulse', label: 'Competitive Pulse',     desc: 'Competitor moves, pricing signals, talent migration',        color: '#0ea5e9' },
+  { id: 'Erosion Study',     label: 'Erosion Study',         desc: 'Churn triggers, unmet needs, loyalty degradation',          color: '#f43f5e' },
+];
+
+// Fallback first message if LLM is unavailable at template select
+const TEMPLATE_FIRST_MESSAGE: Record<string, string> = {
+  'U&A':               "Great — let's map out this Usage & Attitudes study. Which category or product are we studying, and what usage occasion do you believe is shifting?",
+  'Brand Health':      "Let's track your brand health. Which brand are we monitoring, and which specific health metric — awareness, NPS, or consideration — is giving you concern?",
+  'Market Entry':      "Let's assess market entry readiness. Which new market, geography, or category is on the radar, and what signal made you decide to explore it now?",
+  'Competitive Pulse': "Time to get a competitive pulse. Which specific competitor has caught your attention, and what signals have you detected — a new launch, price move, or talent shift?",
+  'Erosion Study':     "Let's diagnose the erosion. Which metric is declining — market share, volume, NPS, or repeat rate — and since approximately when did you first notice it?",
+};
 
 type Message = {
   role: 'user' | 'agent';
@@ -21,12 +38,17 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [finalIntent, setFinalIntent] = useState<string | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null); // null = not yet chosen
+  const [contextLoaded, setContextLoaded] = useState<string | null>(null); // context summary if uploaded
+  
+  const [parameters, setParameters] = useState<{label: string, score: number}[]>([]);
+  const [overallReadiness, setOverallReadiness] = useState(0);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages, isLoading]);
+  }, [messages, isLoading, parameters]);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -38,18 +60,112 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
     setIsLoading(true);
 
     try {
-      const res = await axios.post('http://localhost:8000/api/chat', { messages: updatedMessages });
+      const res = await axios.post('http://localhost:8000/api/chat', {
+        messages: updatedMessages,
+        fast_track: false,
+        template: selectedTemplate && selectedTemplate !== 'none' ? selectedTemplate : undefined,
+        current_scores: parameters.length > 0 ? parameters : undefined,
+      });
       
       if (res.data.is_finalized) {
         setFinalIntent(res.data.research_intent);
       }
-      
+      // Only update scores if the response has valid parameters — never reset to empty
+      if (res.data.parameters && res.data.parameters.length > 0) {
+        setParameters(res.data.parameters);
+        setOverallReadiness(res.data.overall_readiness || 0);
+      }
       setMessages((prev) => [...prev, { role: 'agent', content: res.data.response }]);
-    } catch (error) {
+    } catch (error: any) {
       console.error('Chat error', error);
-      setMessages((prev) => [...prev, { role: 'agent', content: 'Connection Error. Please check backend.' }]);
+      // Roll back the failed user message so history stays clean and scores are preserved
+      setMessages(updatedMessages.slice(0, -1));
+      // Show error inline without resetting any state
+      const errMsg = error?.response?.status === 500
+        ? 'The AI is momentarily rate-limited. Please wait a few seconds and try again.'
+        : 'Connection error. Please ensure the backend is running.';
+      setMessages((prev) => [...prev, { role: 'agent', content: errMsg }]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  // Called when a study template card is clicked — fetches a tailored first question from LLM
+  const handleTemplateSelect = async (templateId: string) => {
+    setSelectedTemplate(templateId);
+    setIsLoading(true);
+    const templateLabel = STUDY_TEMPLATES.find(t => t.id === templateId)?.label || templateId;
+    // Show immediate acknowledgement in chat
+    const ackMessage: Message = {
+      role: 'agent',
+      content: `📋 Study type set to **${templateLabel}**. Let me ask you a few focused questions to calibrate the research scope.`
+    };
+    const messagesWithAck = [...messages, ackMessage];
+    setMessages(messagesWithAck);
+
+    try {
+      const res = await axios.post('http://localhost:8000/api/chat', {
+        messages: messagesWithAck,
+        fast_track: false,
+        template: templateId,
+        current_scores: parameters.length > 0 ? parameters : undefined,
+      });
+      if (res.data.parameters && res.data.parameters.length > 0) {
+        setParameters(res.data.parameters);
+        setOverallReadiness(res.data.overall_readiness || 0);
+      }
+      setMessages((prev) => [...prev, { role: 'agent', content: res.data.response }]);
+    } catch {
+      // Fallback to static welcome message if LLM unavailable
+      const fallback = TEMPLATE_FIRST_MESSAGE[templateId] || 'Tell me more about what you\'d like to explore.';
+      setMessages((prev) => [...prev, { role: 'agent', content: fallback }]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleContextUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setIsLoading(true);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await axios.post('http://localhost:8000/api/upload-context', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
+      const summary = res.data.context_summary;
+      setContextLoaded(summary);
+      // Inject context as a system-level message visible in chat
+      setMessages(prev => [...prev, {
+        role: 'agent',
+        content: `📎 Context loaded from "${file.name}": ${res.data.file_type}. I'll use this as a baseline for our session.`
+      }]);
+    } catch (error) {
+      console.error('Context upload error', error);
+      setMessages(prev => [...prev, { role: 'agent', content: 'Failed to parse the uploaded file. Please try a .csv, .pdf, .txt or .md file.' }]);
+    } finally {
+      setIsLoading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setIsLoading(true);
+      try {
+        const res = await axios.post('http://localhost:8000/api/chat', { messages: messages, fast_track: true, template: selectedTemplate || undefined });
+        if (res.data.is_finalized) {
+          setFinalIntent(res.data.research_intent);
+        }
+        setParameters(res.data.parameters || []);
+        setOverallReadiness(res.data.overall_readiness || 0);
+        setMessages((prev) => [...prev, { role: 'agent', content: res.data.response }]);
+      } catch (error) {
+        console.error('Fast-track error', error);
+      } finally {
+        setIsLoading(false);
+      }
     }
   };
 
@@ -112,7 +228,7 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               placeholder="Clarify your research intent..."
-              className="w-full bg-black border border-[#333] hover:border-[#444] focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/50 rounded-xl px-5 py-4 pr-14 text-white placeholder-gray-600 outline-none transition-all"
+              className="w-full bg-black border border-[#333] hover:border-[#444] focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/50 rounded-xl px-5 py-4 pr-14 text-white placeholder-gray-600 outline-none transition-all disabled:opacity-40"
               disabled={!!finalIntent}
             />
             <button 
@@ -127,49 +243,164 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
       </div>
 
       {/* Right Pane - Visualisation & Output */}
-      <div className="w-1/2 h-full bg-black relative flex flex-col justify-center items-center p-12">
+      <div className="w-1/2 h-full bg-black relative flex flex-col justify-center items-center p-12 overflow-y-auto">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-20"></div>
         
-        <div className="z-10 w-full max-w-lg">
-          {!finalIntent ? (
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center justify-center text-center space-y-6 opacity-40">
-              <div className="w-24 h-24 rounded-full border border-dashed border-gray-600 flex items-center justify-center">
-                <div className="w-16 h-16 rounded-full border border-gray-700 flex items-center justify-center">
-                  <div className="w-2 h-2 rounded-full bg-gray-500"></div>
+        <div className="z-10 w-full max-w-md">
+          {selectedTemplate === null ? (
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-4 w-full">
+              <div className="text-center mb-6">
+                <LayoutTemplate size={28} className="text-teal-500 mx-auto mb-3" />
+                <h2 className="text-lg font-medium text-white">Select a Study Template</h2>
+                <p className="text-sm text-gray-500 mt-1">Or skip to begin free-form probing</p>
+              </div>
+              <div className="space-y-2">
+                {STUDY_TEMPLATES.map((t) => (
+                  <button
+                    key={t.id}
+                    onClick={() => handleTemplateSelect(t.id)}
+                    className="w-full text-left p-4 rounded-xl border border-[#222] hover:border-[#444] bg-[#111] hover:bg-[#171717] transition-all group"
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: t.color }} />
+                      <div>
+                        <div className="text-sm font-medium text-white group-hover:text-teal-300 transition-colors">{t.label}</div>
+                        <div className="text-xs text-gray-500 mt-0.5">{t.desc}</div>
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+              <button
+                onClick={() => setSelectedTemplate('none')}
+                className="w-full py-2.5 text-sm text-gray-500 hover:text-gray-300 border border-[#1a1a1a] hover:border-[#333] rounded-xl transition-colors"
+              >
+                Skip — Begin without template
+              </button>
+            </motion.div>
+          ) : (!finalIntent && overallReadiness < 100) ? (
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col w-full space-y-6">
+              
+              {parameters.length > 0 && (
+                <div className="flex flex-col items-center mb-6">
+                  <div className="relative w-32 h-32 flex items-center justify-center">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                      <circle cx="50" cy="50" r="42" stroke="#333" strokeWidth="8" fill="transparent" />
+                      <circle 
+                        cx="50" cy="50" r="42" 
+                        stroke={overallReadiness >= 60 ? "#10b981" : overallReadiness >= 40 ? "#f59e0b" : "#6b7280"} 
+                        strokeWidth="8" fill="transparent" 
+                        strokeDasharray={2 * Math.PI * 42}
+                        strokeDashoffset={2 * Math.PI * 42 - (overallReadiness / 100) * (2 * Math.PI * 42)}
+                        className="transition-all duration-1000 ease-out"
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    <div className="absolute flex flex-col items-center justify-center text-center">
+                      <span className="text-3xl font-bold text-white">{overallReadiness}%</span>
+                      <span className="text-[10px] text-gray-400 font-mono uppercase tracking-widest mt-1">Ready</span>
+                    </div>
+                  </div>
                 </div>
+              )}
+
+              {parameters.length > 0 ? (
+                <div className="space-y-4 w-full bg-[#111] border border-[#222] p-5 rounded-2xl">
+                  {parameters.map((param, idx) => (
+                    <div key={idx} className="flex flex-col justify-center">
+                      <div className="flex justify-between items-center mb-1.5 font-mono text-xs">
+                         <span className="text-gray-300 uppercase tracking-wide">{param.label}</span>
+                         <span className={`font-bold ${param.score >= 60 ? 'text-emerald-400' : param.score >= 40 ? 'text-amber-400' : 'text-gray-500'}`}>{param.score}%</span>
+                      </div>
+                      <div className="w-full h-2 bg-[#222] rounded-full overflow-hidden">
+                         <motion.div 
+                           initial={{ width: 0 }} 
+                           animate={{ width: `${param.score}%` }} 
+                           transition={{ duration: 0.8, ease: "easeOut" }}
+                           className={`h-full rounded-full bg-gradient-to-r ${param.score >= 60 ? 'from-emerald-500 to-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : param.score >= 40 ? 'from-amber-500 to-yellow-400 shadow-[0_0_10px_rgba(245,158,11,0.2)]' : 'from-gray-600 to-gray-500'}`}
+                         />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center text-center space-y-6 opacity-40">
+                  <div className="w-24 h-24 rounded-full border border-dashed border-gray-600 flex items-center justify-center">
+                    <div className="w-16 h-16 rounded-full border border-gray-700 flex items-center justify-center">
+                      <div className="w-2 h-2 rounded-full bg-gray-500"></div>
+                    </div>
+                  </div>
+                  <div>
+                    <h3 className="text-xl font-light text-gray-400">Awaiting Alignment</h3>
+                    <p className="text-sm text-gray-600 mt-2">Chat with the agent to solidify your research intent. The radar will track which dimensions still need detail.</p>
+                  </div>
+                </div>
+              )}
+
+              <div className="mt-8 pt-8 border-t border-[#222] w-full flex flex-col items-center">
+                <p className="text-xs text-gray-500 mb-4 uppercase tracking-widest font-mono">Or fast-track with an existing document</p>
+                <label className="flex items-center justify-center gap-2 px-6 py-3 bg-[#111] hover:bg-[#222] border border-[#333] hover:border-teal-500/50 text-gray-300 hover:text-teal-400 rounded-xl cursor-pointer transition-all">
+                  <Upload size={18} />
+                  <span className="text-sm font-medium">Upload Context (.csv, .pdf, .txt, .md)</span>
+                  <input type="file" accept=".csv,.pdf,.md,.txt" className="hidden" onChange={handleContextUpload} />
+                </label>
               </div>
-              <div>
-                <h3 className="text-xl font-light text-gray-400">Awaiting Alignment</h3>
-                <p className="text-sm text-gray-600 mt-2">Chat with the agent to solidify your research intent. The system requires a bulletproof &quot;Why&quot; before proceeding to Ecosystem Mapping.</p>
-              </div>
+
             </motion.div>
           ) : (
             <motion.div 
               initial={{ opacity: 0, y: 20 }} 
               animate={{ opacity: 1, y: 0 }}
-              className="bg-teal-950/20 border border-teal-500/30 rounded-2xl p-8 backdrop-blur-xl shadow-[0_0_50px_rgba(20,184,166,0.1)]"
+              className="space-y-6"
             >
-              <div className="flex items-center gap-3 text-teal-400 mb-6">
-                <CheckCircle2 size={24} />
-                <h2 className="text-xl font-medium tracking-wide text-white">Intent Finalized</h2>
+              <div className="flex flex-col items-center mb-6">
+                <div className="relative w-32 h-32 flex items-center justify-center">
+                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                    <circle cx="50" cy="50" r="42" stroke="#333" strokeWidth="8" fill="transparent" />
+                    <circle 
+                      cx="50" cy="50" r="42" 
+                      stroke="#10b981"
+                      strokeWidth="8" fill="transparent" 
+                      strokeDasharray={2 * Math.PI * 42}
+                      strokeDashoffset={0}
+                      className="transition-all duration-1000 ease-out"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                  <div className="absolute flex flex-col items-center justify-center text-center">
+                    <span className="text-3xl font-bold text-white">100%</span>
+                  </div>
+                </div>
               </div>
-              
-              <div className="space-y-4">
-                <div>
-                  <h4 className="text-xs text-teal-500/60 uppercase tracking-widest font-mono mb-2">North Star Statement</h4>
-                  <p className="text-lg text-teal-50 leading-relaxed font-light">
-                    &quot;{finalIntent}&quot;
-                  </p>
+
+              <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-6 backdrop-blur-sm shadow-[0_0_50px_rgba(20,184,166,0.1)]">
+                <div className="flex items-center gap-3 text-teal-400 mb-6">
+                  <CheckCircle2 size={24} />
+                  <h2 className="text-xl font-medium tracking-wide text-white">Intent Finalized</h2>
                 </div>
                 
-                <div className="pt-6 border-t border-teal-500/20 mt-6 flex justify-between items-center">
-                  <div className="text-sm text-gray-400">Ready for Stage 2</div>
-                  <button 
-                    onClick={() => onIntentFinalized(finalIntent)}
-                    className="px-6 py-2.5 bg-teal-500 hover:bg-teal-400 text-black font-medium rounded-lg transition-colors shadow-[0_0_15px_rgba(20,184,166,0.4)]"
-                  >
-                    Initiate Horizon Scan
-                  </button>
+                <div className="space-y-4">
+                  <div>
+                    <h4 className="text-xs text-teal-500/60 uppercase tracking-widest font-mono mb-2">North Star Statement</h4>
+                    <p className="text-lg text-teal-50 leading-relaxed font-light">
+                      &quot;{finalIntent}&quot;
+                    </p>
+                  </div>
+                  
+                  <div className="flex items-center gap-2 mt-4 text-xs font-mono text-gray-400">
+                    <Activity size={14} className="text-gray-500" />
+                    Generated Intent_Form.md file successfully.
+                  </div>
+
+                  <div className="pt-6 border-t border-teal-500/20 mt-6 flex justify-between items-center">
+                    <div className="text-sm text-gray-400">Ready for Stage 2</div>
+                    <button 
+                      onClick={() => onIntentFinalized(finalIntent || "Intent Default")}
+                      className="px-6 py-2.5 bg-teal-500 hover:bg-teal-400 text-black font-medium rounded-lg transition-colors shadow-[0_0_15px_rgba(20,184,166,0.4)]"
+                    >
+                      Initiate Horizon Scan
+                    </button>
+                  </div>
                 </div>
               </div>
             </motion.div>

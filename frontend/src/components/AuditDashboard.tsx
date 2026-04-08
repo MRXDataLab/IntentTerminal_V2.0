@@ -7,21 +7,23 @@ import { Database, ShieldAlert, BarChart3, Radio, ArrowLeft } from 'lucide-react
 
 interface AuditDashboardProps {
   intent: string;
+  graphNodes: string[];
   onBeginIngestion: () => void;
   onBack: () => void;
 }
 
-export default function AuditDashboard({ intent, onBeginIngestion, onBack }: AuditDashboardProps) {
+export default function AuditDashboard({ intent, graphNodes, onBeginIngestion, onBack }: AuditDashboardProps) {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchSources = async () => {
       try {
-        // We mock passing graph nodes from the previous step.
-        // In reality, this would be the actual output of step 3.
-        const mockNodes = ["Ola S1", "Ather 450", "TVS iQube", "Hero Vida", "Honda Activa"];
-        const res = await axios.post('http://localhost:8000/api/discover', { graph_nodes: mockNodes });
+        // Use the real ecosystem graph nodes passed from EcosystemMap
+        const nodesToDiscover = graphNodes.length > 0
+          ? graphNodes
+          : ["General Research Topic"]; // Fallback if graph nodes somehow empty
+        const res = await axios.post('http://localhost:8000/api/discover', { graph_nodes: nodesToDiscover });
         
         setTimeout(() => {
           setData(res.data);
@@ -33,7 +35,7 @@ export default function AuditDashboard({ intent, onBeginIngestion, onBack }: Aud
       }
     };
     fetchSources();
-  }, []);
+  }, [graphNodes]);
 
   if (loading) {
     return (

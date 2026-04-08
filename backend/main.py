@@ -6,9 +6,14 @@ app = FastAPI(title="MRX Module-1 Orchestrator API")
 from api import intake
 from api import ecosystem
 from api import sources
+from api import context_upload
+from api import ingest
+
 app.include_router(intake.router, prefix="/api")
 app.include_router(ecosystem.router, prefix="/api")
 app.include_router(sources.router, prefix="/api")
+app.include_router(context_upload.router, prefix="/api")
+app.include_router(ingest.router, prefix="/api")
 
 # Configure CORS for Next.js frontend
 app.add_middleware(

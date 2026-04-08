@@ -18,3 +18,7 @@ backend/.DS_Store
 .vscode/
 *.swp
 *.swo
+
+__pycache__/
+tmp/
+.env
