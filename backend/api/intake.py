@@ -21,6 +21,7 @@ class ChatRequest(BaseModel):
     fast_track: bool = False
     template: Optional[str] = None  # e.g. "U&A", "Brand Health", "Market Entry", etc.
     current_scores: Optional[List[ParameterScore]] = None
+    context_document: Optional[str] = None
     
 class ChatResponse(BaseModel):
     response: str
@@ -91,10 +92,14 @@ Probe specifically about: churn triggers, root cause hypotheses, loyalty degrada
 DO NOT ask generic awareness or usage questions.""",
 }
 
-def build_system_prompt(template: str | None = None, current_scores: List[ParameterScore] | None = None) -> str:
+def build_system_prompt(template: str | None = None, current_scores: List[ParameterScore] | None = None, context_document: str | None = None) -> str:
     template_block = ""
     if template and template in TEMPLATE_PREFIXES:
         template_block = f"\n\n{'='*60}\n{TEMPLATE_PREFIXES[template]}\n{'='*60}\n\nIMPORTANT: Since a study template is active, ALL your questions must be strictly calibrated to this study type. Do not drift into generic research questions."
+
+    context_block = ""
+    if context_document:
+        context_block = f"\n\n### UPLOADED RESEARCH CONTEXT\nThe user has supplied the following background document/brief:\n```\n{context_document}\n```\nCRITICAL: You MUST parse this document. If the document already answers specific pillars (like market context, target audience, or competitors), SCORE THOSE PILLARS HIGH immediately. Acknowledge what we know from the document, and ONLY ask questions about the remaining gaps."
 
     scores_block = ""
     if current_scores:
@@ -102,8 +107,8 @@ def build_system_prompt(template: str | None = None, current_scores: List[Parame
         for param in current_scores:
             scores_block += f"- {param.label}: {param.score}/100\n"
 
-    return f"""You are the MRX Agent (Teal), a senior research architect and strategic consultant.
-Your goal is to deeply understand the client's research intent — not just WHAT they want to study, but WHY it matters right now.{template_block}{scores_block}
+    return f"""You are the Outtlyr Agent (Teal), a senior research architect and strategic consultant.
+Your goal is to deeply understand the client's research intent — not just WHAT they want to study, but WHY it matters right now.{template_block}{context_block}{scores_block}
 
 You are scoring the conversation against 5 hybrid diagnostic pillars:
 1. **Market Context & Trigger** — Industry/domain clarity AND the event or crisis forcing this research RIGHT NOW.
@@ -114,8 +119,11 @@ You are scoring the conversation against 5 hybrid diagnostic pillars:
 
 Score each pillar 0-100. Ask ONE concise, strategic question at a time targeting the lowest-scoring pillar.
 Do NOT ask multiple questions at once. Be specific — like a McKinsey partner probing for the real problem.
-CRITICAL RULE: You must score CUMULATIVELY based on the ENTIRE chat history. Once a pillar reaches a high score (80-100), DO NOT drop its score back to 0 in subsequent turns. Always preserve and build upon the scores from previous messages.
-When ALL 5 pillars ≥ 80, set 'is_finalized' to true and craft a comprehensive 'research_intent' North Star Statement.
+CRITICAL RULE 1: You must score CUMULATIVELY based on the ENTIRE chat history. Once a pillar reaches a high score (60-100), DO NOT drop its score back to 0 in subsequent turns. Always preserve and build upon the scores from previous messages.
+CRITICAL RULE 2 (GUARDRAILS): NEVER ask the user about research methodology. Our platform determines the methodology automatically via the Inference Engine later. DO NOT ask if they want to do surveys, focus groups, structural scraping, or social listening. Scope is strictly about business boundaries, NOT methods.
+CRITICAL RULE 3 (OVERRIDE): If the user explicitly states they want to proceed "as is" or without fine-tuning, IMMEDIATELY set 'is_finalized' to true and craft the comprehensive 'research_intent' North Star Statement, regardless of what the pillar scores are.
+When ALL 5 pillars ≥ 60, set 'is_finalized' to true and craft a comprehensive 'research_intent' North Star Statement.
+CRITICAL RULE 4 (BASELINE INTENT): If a 'context_document' is provided, always attempt to extract a baseline 'research_intent' even if 'is_finalized' is false. This allows the user to skip fine-tuning and proceed with the extracted intent.
 
 ALWAYS respond in this exact JSON format:
 {{
@@ -128,12 +136,12 @@ ALWAYS respond in this exact JSON format:
     {{"label": "Competitive Landscape & Constraints", "score": 0}}
   ],
   "is_finalized": false,
-  "research_intent": null
+  "research_intent": "Draft/Baseline intent if context is provided, otherwise null"
 }}
 """
 
 
-def process_intake_chat(messages: List[Message], fast_track: bool, template: Optional[str] = None, current_scores: Optional[List[ParameterScore]] = None) -> "ChatResponse":
+def process_intake_chat(messages: List[Message], fast_track: bool, template: Optional[str] = None, current_scores: Optional[List[ParameterScore]] = None, context_document: Optional[str] = None) -> "ChatResponse":
     if fast_track:
         intent_text = "# Research Intent Form\n\nFinalized fast-track intent document.\n\n"
         for p in DEFAULT_PARAMETERS:
@@ -152,7 +160,7 @@ def process_intake_chat(messages: List[Message], fast_track: bool, template: Opt
     # Format history for OpenRouter
     chat_history = [{"role": m.role if m.role == "user" else "assistant", "content": m.content} for m in messages]
     
-    system_prompt = build_system_prompt(template, current_scores)
+    system_prompt = build_system_prompt(template, current_scores, context_document)
     llm_result = call_openrouter(system_prompt=system_prompt, user_prompt="", chat_history=chat_history, expect_json=True)
     
     params_data = llm_result.get("parameters", [])
@@ -192,7 +200,8 @@ def intake_chat(request: ChatRequest):
             messages=request.messages, 
             fast_track=request.fast_track, 
             template=request.template, 
-            current_scores=request.current_scores
+            current_scores=request.current_scores,
+            context_document=request.context_document
         )
     except ValueError as e:
         if "OPENROUTER_API_KEY" in str(e):

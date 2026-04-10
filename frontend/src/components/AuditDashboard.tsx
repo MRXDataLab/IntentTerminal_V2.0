@@ -60,8 +60,8 @@ export default function AuditDashboard({ intent, graphNodes, onBeginIngestion, o
             </button>
             <div className="flex flex-col">
               <div className="flex items-center mb-4 shrink-0">
-                 <img src="/logo.png" alt="mrxdatalabs" className="h-8 w-auto object-contain bg-white p-1.5 rounded-sm shrink-0" onError={(e) => { e.currentTarget.style.display='none'; (e.currentTarget.nextElementSibling as HTMLElement).classList.remove('hidden') }} />
-                 <span className="hidden font-bold text-2xl tracking-tight text-white ml-2">mr<span className="text-[#cba358]">x</span>datalabs</span>
+                 <img src="/outtlyr-logo.png" alt="Outtlyr" className="h-20 w-auto object-contain shrink-0 bg-transparent" onError={(e) => { e.currentTarget.style.display='none'; (e.currentTarget.nextElementSibling as HTMLElement).classList.remove('hidden') }} />
+                 <span className="hidden font-bold text-2xl tracking-tight text-white">Outtlyr</span>
               </div>
               <h1 className="text-3xl font-medium tracking-tight">Dipstick Audit & Scale Estimate</h1>
               <p className="text-sm text-gray-500 mt-2">Steps 4, 5 & 6 — Analyzing Signal Quality Before Heavy Ingestion</p>

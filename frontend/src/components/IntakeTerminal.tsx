@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { Send, Bot, User, CheckCircle2, Upload, Activity, LayoutTemplate, FileSpreadsheet, FileText, X } from 'lucide-react';
+import { Send, Bot, User, CheckCircle2, Upload, Activity, LayoutTemplate, FileText, BookOpen, Zap } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const STUDY_TEMPLATES = [
@@ -25,15 +25,16 @@ const TEMPLATE_FIRST_MESSAGE: Record<string, string> = {
 type Message = {
   role: 'user' | 'agent';
   content: string;
+  actions?: { label: string, value: string }[];
 };
 
 interface IntakeTerminalProps {
-  onIntentFinalized: (intent: string) => void;
+  onIntentFinalized: (intent: string, brief?: string) => void;
 }
 
 export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProps) {
   const [messages, setMessages] = useState<Message[]>([
-    { role: 'agent', content: 'Welcome to MRX. Let us refine your research intent. What overarching topic or business anxiety would you like to explore?' }
+    { role: 'agent', content: 'Welcome to Outtlyr. Let us refine your research intent. What overarching topic or business anxiety would you like to explore?' }
   ]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -43,6 +44,8 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
   
   const [parameters, setParameters] = useState<{label: string, score: number}[]>([]);
   const [overallReadiness, setOverallReadiness] = useState(0);
+  const [briefText, setBriefText] = useState<string | null>(null);
+  const [isBriefLoading, setIsBriefLoading] = useState(false);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -65,6 +68,7 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
         fast_track: false,
         template: selectedTemplate && selectedTemplate !== 'none' ? selectedTemplate : undefined,
         current_scores: parameters.length > 0 ? parameters : undefined,
+        context_document: contextLoaded || undefined,
       });
       
       if (res.data.is_finalized) {
@@ -109,6 +113,7 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
         fast_track: false,
         template: templateId,
         current_scores: parameters.length > 0 ? parameters : undefined,
+        context_document: contextLoaded || undefined,
       });
       if (res.data.parameters && res.data.parameters.length > 0) {
         setParameters(res.data.parameters);
@@ -128,7 +133,9 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
     const file = e.target.files?.[0];
     if (!file) return;
     setIsLoading(true);
+
     try {
+      // ── STEP 1: Parse the uploaded document ──────────────────────────────────
       const formData = new FormData();
       formData.append('file', file);
       const res = await axios.post('http://localhost:8000/api/upload-context', formData, {
@@ -136,14 +143,88 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
       });
       const summary = res.data.context_summary;
       setContextLoaded(summary);
-      // Inject context as a system-level message visible in chat
-      setMessages(prev => [...prev, {
+
+      // Show "scanning" message in chat while we wait for LLM to score
+      const scanningMessages: Message[] = [
+        ...messages,
+        {
+          role: 'agent',
+          content: `📎 Document received: **"${file.name}"**\n🔍 Scanning and scoring against all 5 diagnostic pillars...`
+        }
+      ];
+      setMessages(scanningMessages);
+
+      // ── STEP 2: Score the document via LLM ──────────────────────────────────
+      const chatRes = await axios.post('http://localhost:8000/api/chat', {
+        messages: scanningMessages,
+        fast_track: false,
+        template: selectedTemplate && selectedTemplate !== 'none' ? selectedTemplate : undefined,
+        current_scores: parameters.length > 0 ? parameters : undefined,
+        context_document: summary
+      });
+
+      const newParams: {label: string, score: number}[] = chatRes.data.parameters && chatRes.data.parameters.length > 0
+        ? chatRes.data.parameters
+        : parameters;
+      const newReadiness = chatRes.data.overall_readiness || 0;
+
+      // ── STEP 3: Reveal RADAR values in right pane ────────────────────────────
+      // Setting state first lets the radar bars animate before the next message appears
+      if (chatRes.data.parameters && chatRes.data.parameters.length > 0) {
+        setParameters(newParams);
+      }
+      setOverallReadiness(newReadiness);
+
+      // If LLM already finalized (all pillars ≥ 60), done
+      if (chatRes.data.is_finalized && chatRes.data.research_intent) {
+        setFinalIntent(chatRes.data.research_intent);
+        setMessages([...scanningMessages, {
+          role: 'agent',
+          content: `✅ **Scan complete.** All pillars are sufficiently covered.\n\n${chatRes.data.response}`
+        }]);
+        setIsLoading(false);
+        e.target.value = '';
+        return;
+      }
+
+      // ── STEP 4: Build decision prompt — radar already shows scores on right pane ──
+      const weakPillars  = newParams.filter(p => p.score < 60).map(p => p.label);
+      const needsFineTuning = weakPillars.length > 0;
+
+      // Wait for radar bars to animate in right pane before showing buttons
+      await new Promise(resolve => setTimeout(resolve, 900));
+
+      const recommendationText = needsFineTuning
+        ? `📊 Scan complete. The right panel shows your diagnostic scores.
+
+⚠️ **Fine-tuning recommended** — the following pillars are below 60%:\n${weakPillars.map(p => `• ${p}`).join('\n')}\n\nHow would you like to proceed?`
+        : `📊 Scan complete. The right panel shows your diagnostic scores.
+
+✅ **Strong baseline** — all pillars are above the 60% threshold.\n\nYou can proceed directly to the Horizon Scan, or fine-tune for even higher precision.`;
+
+      const decisionMsg: Message = {
         role: 'agent',
-        content: `📎 Context loaded from "${file.name}": ${res.data.file_type}. I'll use this as a baseline for our session.`
-      }]);
+        content: recommendationText,
+        actions: [
+          {
+            label: '▶ Proceed As-is',
+            value: `proceed_as_is|||${chatRes.data.research_intent || ''}`
+          },
+          {
+            label: needsFineTuning ? '✏️ Fine-tune Gaps' : '✏️ Fine-tune Further',
+            value: 'fine_tune'
+          }
+        ]
+      };
+
+      setMessages([...scanningMessages, decisionMsg]);
+
     } catch (error) {
       console.error('Context upload error', error);
-      setMessages(prev => [...prev, { role: 'agent', content: 'Failed to parse the uploaded file. Please try a .csv, .pdf, .txt or .md file.' }]);
+      setMessages(prev => [...prev, {
+        role: 'agent',
+        content: 'Failed to parse the uploaded file. Please try a .csv, .pdf, .txt or .md file.'
+      }]);
     } finally {
       setIsLoading(false);
       e.target.value = '';
@@ -154,7 +235,13 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
     if (e.target.files && e.target.files[0]) {
       setIsLoading(true);
       try {
-        const res = await axios.post('http://localhost:8000/api/chat', { messages: messages, fast_track: true, template: selectedTemplate || undefined });
+        const res = await axios.post('http://localhost:8000/api/chat', { 
+          messages: messages, 
+          fast_track: true, 
+          template: selectedTemplate && selectedTemplate !== 'none' ? selectedTemplate : undefined,
+          current_scores: parameters.length > 0 ? parameters : undefined,
+          context_document: contextLoaded || undefined
+        });
         if (res.data.is_finalized) {
           setFinalIntent(res.data.research_intent);
         }
@@ -169,6 +256,134 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
     }
   };
 
+  const handleDownloadIntent = () => {
+    if (!finalIntent) return;
+    
+    let content = `# Research Intent Document\n\n`;
+    content += `**North Star Statement:**\n${finalIntent}\n\n`;
+    content += `## Diagnostic Pillars\n`;
+    parameters.forEach(p => {
+      content += `- **${p.label}**: ${p.score}/100\n`;
+    });
+    
+    if (contextLoaded) {
+      content += `\n## Baseline Context\n${contextLoaded}\n`;
+    }
+
+    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Outtlyr_Intent_Document.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleGenerateBrief = async () => {
+    if (!finalIntent) return;
+    setIsBriefLoading(true);
+    try {
+      const res = await axios.post('http://localhost:8000/api/generate-brief', {
+        research_intent: finalIntent,
+        parameters: parameters,
+        context_document: contextLoaded || undefined,
+        template: selectedTemplate && selectedTemplate !== 'none' ? selectedTemplate : undefined,
+      });
+      setBriefText(res.data.brief);
+    } catch (error) {
+      console.error('Brief generation error', error);
+      setBriefText('Failed to generate the brief. Please try again.');
+    } finally {
+      setIsBriefLoading(false);
+    }
+  };
+
+  const handleDownloadBrief = () => {
+    if (!briefText) return;
+    const content = `# Outtlyr Strategic Research Brief\n\n**Research Intent:** ${finalIntent}\n\n---\n\n${briefText}`;
+    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Outtlyr_Strategic_Brief.md`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleAction = async (value: string) => {
+    // Dismiss action buttons from the last message
+    setMessages(prev => prev.map((m, i) =>
+      i === prev.length - 1 ? { ...m, actions: undefined } : m
+    ));
+
+    if (value.startsWith('proceed_as_is')) {
+      // Extract intent packed into the action value (if any)
+      const packedIntent = value.split('|||')[1]?.trim();
+
+      if (packedIntent) {
+        // We already have the intent from the LLM — finalize immediately, no extra call needed
+        setFinalIntent(packedIntent);
+        setMessages(prev => [...prev,
+          { role: 'user', content: 'Proceed as-is' },
+          { role: 'agent', content: '✅ Intent locked in. Initiating Horizon Scan with the extracted baseline.' }
+        ]);
+      } else {
+        // No intent yet — trigger one final API call with the override signal
+        const userMsg: Message = { role: 'user', content: 'Proceed as-is' };
+        setMessages(prev => [...prev, userMsg]);
+        setIsLoading(true);
+        try {
+          const res = await axios.post('http://localhost:8000/api/chat', {
+            messages: [...messages, userMsg],
+            fast_track: false,
+            template: selectedTemplate && selectedTemplate !== 'none' ? selectedTemplate : undefined,
+            current_scores: parameters,
+            context_document: contextLoaded || undefined
+          });
+          if (res.data.is_finalized) {
+            setFinalIntent(res.data.research_intent);
+          }
+          setMessages(prev => [...prev, { role: 'agent', content: res.data.response }]);
+        } catch (error) {
+          console.error('Action error', error);
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    } else if (value === 'fine_tune') {
+      // Inject a user message and let the next chat turn continue normally
+      const userMsg: Message = { role: 'user', content: "Let's fine-tune the gaps." };
+      const updatedMessages = [...messages, userMsg];
+      setMessages(updatedMessages);
+      setIsLoading(true);
+      try {
+        const res = await axios.post('http://localhost:8000/api/chat', {
+          messages: updatedMessages,
+          fast_track: false,
+          template: selectedTemplate && selectedTemplate !== 'none' ? selectedTemplate : undefined,
+          current_scores: parameters,
+          context_document: contextLoaded || undefined
+        });
+        if (res.data.parameters && res.data.parameters.length > 0) {
+          setParameters(res.data.parameters);
+          setOverallReadiness(res.data.overall_readiness || 0);
+        }
+        if (res.data.is_finalized) {
+          setFinalIntent(res.data.research_intent);
+        }
+        setMessages(prev => [...prev, { role: 'agent', content: res.data.response }]);
+      } catch (error) {
+        console.error('Fine-tune error', error);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
   return (
     <div className="flex h-screen w-full bg-[#0a0a0a] text-white overflow-hidden pb-10">
       
@@ -177,8 +392,8 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
         <div className="p-6 border-b border-[#333] flex items-center justify-between z-10 bg-[#0a0a0a]/80 backdrop-blur-md">
           <div className="flex items-center gap-3">
             <div className="flex items-center shrink-0">
-               <img src="/logo.png" alt="mrxdatalabs" className="h-6 w-auto object-contain mr-1 bg-white p-1 rounded-sm shrink-0" onError={(e) => { e.currentTarget.style.display='none'; (e.currentTarget.nextElementSibling as HTMLElement).classList.remove('hidden') }} />
-               <span className="hidden font-bold text-xl tracking-tight mr-1 text-white">mr<span className="text-[#cba358]">x</span>datalabs</span>
+               <img src="/outtlyr-logo.png" alt="Outtlyr" className="h-16 w-auto object-contain mr-3 shrink-0 bg-transparent" onError={(e) => { e.currentTarget.style.display='none'; (e.currentTarget.nextElementSibling as HTMLElement).classList.remove('hidden') }} />
+               <span className="hidden font-bold text-xl tracking-tight mr-1 text-white">Outtlyr</span>
             </div>
             <div className="w-px h-6 bg-[#333] mx-2"></div>
             <div className="w-2 h-2 rounded-full bg-teal-500 shadow-[0_0_10px_rgba(20,184,166,0.8)] animate-pulse"></div>
@@ -201,6 +416,20 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
                 </div>
                 <div className={`px-5 py-3 rounded-2xl max-w-[80%] text-[15px] leading-relaxed ${msg.role === 'user' ? 'bg-white/10 text-white rounded-tr-sm' : 'bg-teal-950/20 text-teal-50 border border-teal-900/30 rounded-tl-sm'}`}>
                   {msg.content}
+                  
+                  {msg.actions && (
+                    <div className="flex gap-2 mt-4">
+                      {msg.actions.map((action, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => handleAction(action.value)}
+                          className="px-3 py-1.5 bg-teal-500/20 hover:bg-teal-500/30 border border-teal-500/50 rounded-lg text-xs font-medium text-teal-400 transition-colors"
+                        >
+                          {action.label}
+                        </button>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </motion.div>
             ))}
@@ -278,7 +507,7 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
                 Skip — Begin without template
               </button>
             </motion.div>
-          ) : (!finalIntent && overallReadiness < 100) ? (
+          ) : (!finalIntent) ? (
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col w-full space-y-6">
               
               {parameters.length > 0 && (
@@ -348,61 +577,103 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
 
             </motion.div>
           ) : (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }} 
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-6"
+              className="space-y-5 w-full"
             >
-              <div className="flex flex-col items-center mb-6">
-                <div className="relative w-32 h-32 flex items-center justify-center">
-                  <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
-                    <circle cx="50" cy="50" r="42" stroke="#333" strokeWidth="8" fill="transparent" />
-                    <circle 
-                      cx="50" cy="50" r="42" 
-                      stroke="#10b981"
-                      strokeWidth="8" fill="transparent" 
-                      strokeDasharray={2 * Math.PI * 42}
-                      strokeDashoffset={0}
-                      className="transition-all duration-1000 ease-out"
-                      strokeLinecap="round"
-                    />
-                  </svg>
-                  <div className="absolute flex flex-col items-center justify-center text-center">
-                    <span className="text-3xl font-bold text-white">100%</span>
-                  </div>
+              {/* Intent Locked Card */}
+              <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-5 backdrop-blur-sm shadow-[0_0_50px_rgba(20,184,166,0.1)]">
+                <div className="flex items-center gap-3 text-teal-400 mb-4">
+                  <CheckCircle2 size={20} />
+                  <h2 className="text-base font-medium tracking-wide text-white">Intent Locked</h2>
+                </div>
+                <h4 className="text-xs text-teal-500/60 uppercase tracking-widest font-mono mb-2">North Star Statement</h4>
+                <p className="text-sm text-teal-50 leading-relaxed font-light italic">
+                  &quot;{finalIntent || "Research intent calibrated and ready."}&quot;
+                </p>
+                <div className="flex items-center gap-2 mt-3 text-xs font-mono text-gray-500">
+                  <Activity size={12} />
+                  Intent_Form.md saved
                 </div>
               </div>
 
-              <div className="bg-gray-900/50 border border-gray-800 rounded-2xl p-6 backdrop-blur-sm shadow-[0_0_50px_rgba(20,184,166,0.1)]">
-                <div className="flex items-center gap-3 text-teal-400 mb-6">
-                  <CheckCircle2 size={24} />
-                  <h2 className="text-xl font-medium tracking-wide text-white">Intent Finalized</h2>
-                </div>
-                
-                <div className="space-y-4">
-                  <div>
-                    <h4 className="text-xs text-teal-500/60 uppercase tracking-widest font-mono mb-2">North Star Statement</h4>
-                    <p className="text-lg text-teal-50 leading-relaxed font-light">
-                      &quot;{finalIntent}&quot;
-                    </p>
+              {/* Strategic Brief Section */}
+              {!briefText && !isBriefLoading && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.3 }}
+                  className="bg-[#0d1f1a] border border-teal-900/40 rounded-2xl p-5"
+                >
+                  <div className="flex items-center gap-2 mb-3">
+                    <BookOpen size={18} className="text-teal-500" />
+                    <h3 className="text-sm font-medium text-white">Strategic Research Brief</h3>
                   </div>
-                  
-                  <div className="flex items-center gap-2 mt-4 text-xs font-mono text-gray-400">
-                    <Activity size={14} className="text-gray-500" />
-                    Generated Intent_Form.md file successfully.
+                  <p className="text-xs text-gray-400 leading-relaxed mb-4">
+                    Synthesize your intake into a high-fidelity Signal Hunting Mandate — including Ghost Brand discovery, Regulatory Physics mapping, and a 5-Tier Evidence Blueprint.
+                  </p>
+                  <button
+                    onClick={handleGenerateBrief}
+                    className="w-full py-3 bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/40 hover:border-teal-400/70 text-teal-400 text-sm font-medium rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(20,184,166,0.1)]"
+                  >
+                    <Zap size={16} />
+                    Generate Strategic Brief
+                  </button>
+                </motion.div>
+              )}
+
+              {/* Brief Loading State */}
+              {isBriefLoading && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="bg-[#0d1f1a] border border-teal-900/40 rounded-2xl p-6 flex flex-col items-center gap-3"
+                >
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-teal-500/60 animate-bounce" style={{ animationDelay: '0ms' }} />
+                    <div className="w-2 h-2 rounded-full bg-teal-500/60 animate-bounce" style={{ animationDelay: '150ms' }} />
+                    <div className="w-2 h-2 rounded-full bg-teal-500/60 animate-bounce" style={{ animationDelay: '300ms' }} />
+                  </div>
+                  <p className="text-xs text-teal-500/70 font-mono uppercase tracking-widest">Synthesizing brief...</p>
+                </motion.div>
+              )}
+
+              {/* Brief Preview + Actions */}
+              {briefText && !isBriefLoading && (
+                <motion.div
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="space-y-4"
+                >
+                  <div className="bg-[#0d1f1a] border border-teal-800/50 rounded-2xl p-5 max-h-64 overflow-y-auto shadow-[inset_0_0_20px_rgba(20,184,166,0.05)]">
+                    <div className="flex items-center gap-2 mb-3">
+                      <FileText size={16} className="text-teal-400 shrink-0" />
+                      <span className="text-xs font-mono text-teal-500 uppercase tracking-widest">Strategic Research Brief</span>
+                    </div>
+                    <pre className="text-xs text-gray-300 leading-relaxed whitespace-pre-wrap font-mono">
+                      {briefText}
+                    </pre>
                   </div>
 
-                  <div className="pt-6 border-t border-teal-500/20 mt-6 flex justify-between items-center">
-                    <div className="text-sm text-gray-400">Ready for Stage 2</div>
-                    <button 
-                      onClick={() => onIntentFinalized(finalIntent || "Intent Default")}
-                      className="px-6 py-2.5 bg-teal-500 hover:bg-teal-400 text-black font-medium rounded-lg transition-colors shadow-[0_0_15px_rgba(20,184,166,0.4)]"
+                  <div className="flex gap-3">
+                    <button
+                      onClick={handleDownloadBrief}
+                      className="flex-1 py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-gray-600 text-teal-400 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
                     >
+                      <FileText size={14} />
+                      Download Brief
+                    </button>
+                    <button
+                      onClick={() => onIntentFinalized(finalIntent || 'Intent Default', briefText || undefined)}
+                      className="flex-1 py-2.5 bg-teal-500 hover:bg-teal-400 text-black font-semibold rounded-xl transition-colors shadow-[0_0_20px_rgba(20,184,166,0.4)] flex items-center justify-center gap-2"
+                    >
+                      <Zap size={14} />
                       Initiate Horizon Scan
                     </button>
                   </div>
-                </div>
-              </div>
+                </motion.div>
+              )}
             </motion.div>
           )}
         </div>

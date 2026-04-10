@@ -11,6 +11,7 @@ const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), { ssr: false 
 
 interface EcosystemMapProps {
   intent: string;
+  brief?: string;
   onMapComplete: (graphNodes: string[]) => void;
   onBack: () => void;
 }
@@ -33,7 +34,7 @@ const FORCE_LEGEND = [
   { name: "Competitive Energy",      color: "#0ea5e9", desc: "Competitors & insurgents" },
 ];
 
-export default function EcosystemMap({ intent, onMapComplete, onBack }: EcosystemMapProps) {
+export default function EcosystemMap({ intent, brief, onMapComplete, onBack }: EcosystemMapProps) {
   const [graphData, setGraphData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [analyzingNodes, setAnalyzingNodes] = useState(0);
@@ -42,7 +43,10 @@ export default function EcosystemMap({ intent, onMapComplete, onBack }: Ecosyste
   useEffect(() => {
     const fetchGraph = async () => {
       try {
-        const res = await axios.post('http://localhost:8000/api/generate-ecosystem', { intent });
+        const res = await axios.post('http://localhost:8000/api/generate-ecosystem', {
+          intent,
+          brief: brief || undefined
+        });
         setGraphData(res.data.graph);
         
         // Extract all non-root node labels to pass to the Audit Dashboard
@@ -88,8 +92,8 @@ export default function EcosystemMap({ intent, onMapComplete, onBack }: Ecosyste
           </button>
           <div className="flex flex-col gap-3 w-full">
             <div className="flex items-center">
-               <img src="/logo.png" alt="mrxdatalabs" className="h-6 w-auto object-contain bg-white p-1 rounded-sm shrink-0" onError={(e) => { e.currentTarget.style.display='none'; (e.currentTarget.nextElementSibling as HTMLElement).classList.remove('hidden') }} />
-               <span className="hidden font-bold text-xl tracking-tight text-white ml-2">mr<span className="text-[#cba358]">x</span>datalabs</span>
+               <img src="/outtlyr-logo.png" alt="Outtlyr" className="h-16 w-auto object-contain shrink-0 bg-transparent" onError={(e) => { e.currentTarget.style.display='none'; (e.currentTarget.nextElementSibling as HTMLElement).classList.remove('hidden') }} />
+               <span className="hidden font-bold text-xl tracking-tight text-white">Outtlyr</span>
             </div>
             <div className="flex items-center gap-2 text-gray-300">
               <Network className="text-blue-500" size={18} />
