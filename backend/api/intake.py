@@ -42,34 +42,28 @@ DEFAULT_PARAMETERS = [
 # Study template briefings — deeply domain-specific probe instructions per template type
 TEMPLATE_PREFIXES = {
     "U&A": """STUDY TYPE: Usage & Attitudes (U&A) — Hard-lock all questions to this domain only.
-YOUR DIAGNOSTIC FOCUS:
-- Market Context & Trigger: Which category/product? What usage occasion is shifting (morning routine, commute, leisure)?
-- Strategic Decision & Goal: What behavioral change or attitude shift needs to be proven? (e.g., expand trial, increase frequency)
-- Target Lens & Hypothesis: Which consumer cohort is being studied? What does the team believe about their usage ritual?
-- Scope & Assets: Which geographies and SKUs? Is there existing usage frequency/attitude data (diary studies, panel)?
-- Competitive Landscape & Constraints: Which category substitutes are competing for the occasion? Are there any taboo or sensitive segments?
-Probe specifically about: behavioral occasions, category entry triggers, usage rituals, attitudinal barriers, switching moments.
-DO NOT ask generic questions about industry or business goals.""",
+DIAGNOSTIC MODE: SHORT-CIRCUIT. Bypass generic context. 
+Quick-Start Questions: 
+1. "Which category/product are we focusing on and what usage occasion is shifting?"
+2. "What behavioral change needs to be proven?"
+3. "Which consumer cohort is being studied?"
+Score strictly against these. Do NOT ask generic industry questions.""",
 
     "Brand Health": """STUDY TYPE: Brand Health Tracker — Hard-lock all questions to this domain only.
-YOUR DIAGNOSTIC FOCUS:
-- Market Context & Trigger: Which brand(s) and which specific health metrics are declining (TOM awareness, spontaneous recall, NPS, consideration, brand attribute)?
-- Strategic Decision & Goal: What brand-level business decision does this unlock? (e.g., media investment, repositioning, new campaign)
-- Target Lens & Hypothesis: Which consumer segment is being monitored? What does the brand team believe is causing health erosion?
-- Scope & Assets: Which markets and competitor set? Is there historical tracking data, brand equity scores, or media investment data?
-- Competitive Landscape & Constraints: Which competitor is gaining share of mind? Has there been a new entrant, campaign, or pricing change recently?
-Probe specifically about: brand funnel metrics, competitive perceptual gaps, category perception shifts, message decay.
-DO NOT ask generic questions about product usage or market sizing.""",
+DIAGNOSTIC MODE: SHORT-CIRCUIT. Bypass generic context.
+Quick-Start Questions:
+1. "Who is the primary rival stealing your mindshare right now?"
+2. "What was the specific 'Moment of Doubt' or sales data point that triggered this?"
+3. "Which region or product SKU is under the most pressure?"
+Score strictly against these. Do NOT ask generic product usage questions.""",
 
     "Market Entry": """STUDY TYPE: Market Entry / Whitespace Discovery — Hard-lock all questions to this domain only.
-YOUR DIAGNOSTIC FOCUS:
-- Market Context & Trigger: Which new market, geography, or category is being evaluated for entry? What catalytic signal triggered this (regulatory opening, unmet need signal, competitor gap)?
-- Strategic Decision & Goal: What specific go/no-go decision or market sizing commitment does this research need to enable?
-- Target Lens & Hypothesis: Who is the hypothesized target consumer in the new space? What is the team's belief about their readiness and unmet needs?
-- Scope & Assets: Which markets and what scale? Are there analog markets to reference (same brand in different country, category precedent)?
-- Competitive Landscape & Constraints: Who already plays in this space? What barriers exist (regulation, distribution, price point, habit)?
-Probe specifically about: consumer readiness, whitespace sizing, go-to-market barriers, regulatory environment, category analogs.
-DO NOT ask generic interview questions about current brand users.""",
+DIAGNOSTIC MODE: SHORT-CIRCUIT. Bypass generic context.
+Quick-Start Questions:
+1. "Which new market or category is being evaluated, and what catalytic signal triggered this?"
+2. "What specific go/no-go decision does this research need to enable?"
+3. "Who is the hypothesized target consumer and what are their unmet needs?"
+Score strictly against these. Do NOT ask typical interview questions.""",
 
     "Competitive Pulse": """STUDY TYPE: Competitive Intelligence / Competitive Pulse — Hard-lock all questions to this domain only.
 YOUR DIAGNOSTIC FOCUS:
@@ -82,14 +76,12 @@ Probe specifically about: competitor strategic intent, consumer-perceived compet
 DO NOT ask generic brand health questions.""",
 
     "Erosion Study": """STUDY TYPE: Brand / Category Erosion — Hard-lock all questions to this domain only.
-YOUR DIAGNOSTIC FOCUS:
-- Market Context & Trigger: What specific metric is eroding (market share, volume, trial rate, repeat rate, NPS)? Since when and in which segments specifically?
-- Strategic Decision & Goal: What decision depends on diagnosing the root cause? (portfolio change, re-launch, defensive pricing, channel recovery)
-- Target Lens & Hypothesis: Who is churning? What does the team believe is behind the erosion — disruption, competitive poaching, portfolio gap, channel failure, or product fatigue?
-- Scope & Assets: What tracking data captures the erosion (retail scanner data, brand tracker, churn data, service NPS)? Has a fix already been attempted?
-- Competitive Landscape & Constraints: Who is benefiting from the erosion? Is this a category-level problem or brand-specific?
-Probe specifically about: churn triggers, root cause hypotheses, loyalty degradation signals, intervention levers, affected cohorts.
-DO NOT ask generic awareness or usage questions.""",
+DIAGNOSTIC MODE: SHORT-CIRCUIT. Bypass generic context.
+Quick-Start Questions:
+1. "What specific metric is eroding (market share, volume, trial rate) and since when?"
+2. "What decision depends on diagnosing this root cause (defensive pricing, re-launch)?"
+3. "Who is churning and who is benefiting from the erosion?"
+Score strictly against these. Do NOT ask generic awareness or usage questions.""",
 }
 
 def build_system_prompt(template: str | None = None, current_scores: List[ParameterScore] | None = None, context_document: str | None = None) -> str:
@@ -99,7 +91,9 @@ def build_system_prompt(template: str | None = None, current_scores: List[Parame
 
     context_block = ""
     if context_document:
-        context_block = f"\n\n### UPLOADED RESEARCH CONTEXT\nThe user has supplied the following background document/brief:\n```\n{context_document}\n```\nCRITICAL: You MUST parse this document. If the document already answers specific pillars (like market context, target audience, or competitors), SCORE THOSE PILLARS HIGH immediately. Acknowledge what we know from the document, and ONLY ask questions about the remaining gaps."
+        # TRUNCATE to 4000 chars to heavily optimize token usage on every chat turn
+        truncated_context = context_document[:4000] + ("...\n[TRUNCATED FOR LENGTH]" if len(context_document) > 4000 else "")
+        context_block = f"\n\n### UPLOADED RESEARCH CONTEXT\nThe user has supplied the following background document/brief:\n```\n{truncated_context}\n```\nCRITICAL: You MUST parse this document. If the document already answers specific pillars (like market context, target audience, or competitors), SCORE THOSE PILLARS HIGH immediately. Acknowledge what we know from the document, and ONLY ask questions about the remaining gaps."
 
     scores_block = ""
     if current_scores:
@@ -117,8 +111,9 @@ You are scoring the conversation against 5 hybrid diagnostic pillars:
 4. **Scope & Assets** — Geographic/market boundaries AND what internal data already exists as baseline.
 5. **Competitive Landscape & Constraints** — Key players AND budget/time/tool constraints limiting the research.
 
-Score each pillar 0-100. Ask ONE concise, strategic question at a time targeting the lowest-scoring pillar.
-Do NOT ask multiple questions at once. Be specific — like a McKinsey partner probing for the real problem.
+Score each pillar 0-100. Ask ONE short, conversational, and easy-to-understand question at a time targeting the lowest-scoring pillar.
+Keep your question under 2 sentences. Do not use complex jargon. Be specific — like a consultant probing for the real problem.
+Do NOT ask multiple questions at once.
 CRITICAL RULE 1: You must score CUMULATIVELY based on the ENTIRE chat history. Once a pillar reaches a high score (60-100), DO NOT drop its score back to 0 in subsequent turns. Always preserve and build upon the scores from previous messages.
 CRITICAL RULE 2 (GUARDRAILS): NEVER ask the user about research methodology. Our platform determines the methodology automatically via the Inference Engine later. DO NOT ask if they want to do surveys, focus groups, structural scraping, or social listening. Scope is strictly about business boundaries, NOT methods.
 CRITICAL RULE 3 (OVERRIDE): If the user explicitly states they want to proceed "as is" or without fine-tuning, IMMEDIATELY set 'is_finalized' to true and craft the comprehensive 'research_intent' North Star Statement, regardless of what the pillar scores are.
@@ -157,11 +152,17 @@ def process_intake_chat(messages: List[Message], fast_track: bool, template: Opt
             overall_readiness=100
         )
 
-    # Format history for OpenRouter
-    chat_history = [{"role": m.role if m.role == "user" else "assistant", "content": m.content} for m in messages]
+    # Format history for OpenRouter (limit to last 6 messages to save tokens)
+    chat_history = [{"role": m.role if m.role == "user" else "assistant", "content": m.content} for m in messages[-6:]]
     
     system_prompt = build_system_prompt(template, current_scores, context_document)
-    llm_result = call_openrouter(system_prompt=system_prompt, user_prompt="", chat_history=chat_history, expect_json=True)
+    llm_result = call_openrouter(
+        system_prompt=system_prompt, 
+        user_prompt="", 
+        chat_history=chat_history, 
+        expect_json=True,
+        model="google/gemini-2.0-flash-lite-preview:free"
+    )
     
     params_data = llm_result.get("parameters", [])
     response_text = llm_result.get("response", "Thank you, could you elaborate?")

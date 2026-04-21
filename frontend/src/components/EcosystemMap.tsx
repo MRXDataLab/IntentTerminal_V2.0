@@ -16,29 +16,35 @@ interface EcosystemMapProps {
   onBack: () => void;
 }
 
-// 5 Strategic Force color palette
+// Strategic Overaly color palette (the 5 forces)
 const FORCE_COLORS: Record<string, string> = {
-  "Demand Gravity":          "#f59e0b", // Amber
-  "Choice Architecture":     "#8b5cf6", // Violet
-  "Value Elasticity":        "#14b8a6", // Teal
-  "Reinforcement Stability": "#f43f5e", // Rose
-  "Competitive Energy":      "#0ea5e9", // Sky
-  "root":                    "#ffffff", // White for root
+  "Demand Gravity":          "#f59e0b",
+  "Choice Architecture":     "#8b5cf6",
+  "Value Elasticity":        "#14b8a6",
+  "Reinforcement Stability": "#f43f5e",
+  "Competitive Energy":      "#0ea5e9",
 };
 
-const FORCE_LEGEND = [
-  { name: "Demand Gravity",          color: "#f59e0b", desc: "Consumer pulls & triggers" },
-  { name: "Choice Architecture",     color: "#8b5cf6", desc: "Decision environment shaprs" },
-  { name: "Value Elasticity",        color: "#14b8a6", desc: "Price sensitivity & value" },
-  { name: "Reinforcement Stability", color: "#f43f5e", desc: "Loyalty & switching costs" },
-  { name: "Competitive Energy",      color: "#0ea5e9", desc: "Competitors & insurgents" },
+// Dynamic Category color palette
+const CATEGORY_PALETTE = [
+  "#f59e0b", // Amber
+  "#8b5cf6", // Violet
+  "#14b8a6", // Teal
+  "#f43f5e", // Rose
+  "#0ea5e9", // Sky
+  "#a855f7", // Purple
+  "#ec4899", // Pink
+  "#84cc16", // Lime
 ];
+
 
 export default function EcosystemMap({ intent, brief, onMapComplete, onBack }: EcosystemMapProps) {
   const [graphData, setGraphData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [analyzingNodes, setAnalyzingNodes] = useState(0);
   const [ecosystemNodeNames, setEcosystemNodeNames] = useState<string[]>([]);
+  const [categoriesLegend, setCategoriesLegend] = useState<{name: string, color: string, desc: string}[]>([]);
+  const [showStrategicOverlay, setShowStrategicOverlay] = useState(false);
 
   useEffect(() => {
     const fetchGraph = async () => {
@@ -54,6 +60,15 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack }: E
           .filter((n: any) => n.type !== 'root')
           .map((n: any) => n.label || n.id);
         setEcosystemNodeNames(allNodeNames);
+
+        // Build dynamic categories legend (now tracking 'subject' nodes)
+        const catNodes = (res.data.graph.nodes || []).filter((n: any) => n.type === 'subject' || n.type === 'category');
+        const legendData = catNodes.map((n: any, index: number) => ({
+          name: n.label,
+          color: CATEGORY_PALETTE[index % CATEGORY_PALETTE.length],
+          desc: n.description || "Key point from intent"
+        }));
+        setCategoriesLegend(legendData);
         
         // Simulating the "Scanning" process
         let count = 0;
@@ -75,11 +90,17 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack }: E
     fetchGraph();
   }, [intent]);
 
-  // Color logic for nodes based on Strategic Force
+  // Radial subject color logic vs Strategic Force overlay
   const getNodeColor = (node: any) => {
     if (node.type === 'root') return '#ffffff';
-    const force = node.force || node.type;
-    return FORCE_COLORS[force] || '#9ca3af';
+    
+    if (showStrategicOverlay && node.force) {
+      return FORCE_COLORS[node.force] || '#9ca3af';
+    }
+
+    const subjectName = node.subject || (node.type === 'subject' ? node.label : node.force);
+    const matchedCat = categoriesLegend.find(c => c.name === subjectName);
+    return matchedCat ? matchedCat.color : '#9ca3af';
   };
 
   return (
@@ -134,19 +155,43 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack }: E
 
           {!loading && (
             <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6">
-              {/* Force Legend */}
+              
+              {/* Strategic Context Toggle */}
+              <div className="mb-6 bg-[#111] border border-[#222] p-3 rounded-lg flex items-center justify-between">
+                <span className="text-xs text-gray-300 font-medium">Strategic Overlay</span>
+                <button 
+                  onClick={() => setShowStrategicOverlay(!showStrategicOverlay)}
+                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 focus:ring-offset-black ${showStrategicOverlay ? 'bg-blue-600' : 'bg-gray-700'}`}
+                >
+                  <span className={`pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${showStrategicOverlay ? 'translate-x-2' : '-translate-x-2'}`} />
+                </button>
+              </div>
+
+              {/* Dynamic Legend */}
               <div className="mb-6">
-                <h4 className="text-[10px] text-gray-500 uppercase tracking-widest font-mono mb-3">Strategic Forces</h4>
+                <h4 className="text-[10px] text-gray-500 uppercase tracking-widest font-mono mb-3">
+                  {showStrategicOverlay ? "Strategic Forces" : "Key Subjects"}
+                </h4>
                 <div className="space-y-2">
-                  {FORCE_LEGEND.map((f) => (
-                    <div key={f.name} className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: f.color }} />
-                      <div>
-                        <span className="text-xs text-gray-300 font-medium">{f.name}</span>
-                        <span className="text-[10px] text-gray-500 ml-1">— {f.desc}</span>
+                  {showStrategicOverlay ? (
+                    Object.entries(FORCE_COLORS).map(([name, color]) => (
+                      <div key={name} className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                        <div>
+                          <span className="text-xs text-gray-300 font-medium">{name}</span>
+                        </div>
                       </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    categoriesLegend.map((cat) => (
+                      <div key={cat.name} className="flex items-center gap-2">
+                        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
+                        <div>
+                          <span className="text-xs text-gray-300 font-medium">{cat.name}</span>
+                        </div>
+                      </div>
+                    ))
+                  )}
                 </div>
               </div>
               <button onClick={() => onMapComplete(ecosystemNodeNames)} className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(59,130,246,0.3)]">

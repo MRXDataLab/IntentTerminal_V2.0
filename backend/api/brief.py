@@ -124,7 +124,8 @@ Please synthesize the above intake into a full Strategic Research Brief followin
         brief_text = call_openrouter(
             system_prompt=STRATEGIC_BRIEF_SYSTEM_PROMPT,
             user_prompt=user_prompt,
-            expect_json=False
+            expect_json=False,
+            model="google/gemini-pro-1.5-exp:free"
         )
 
         # Save brief to disk alongside the Intent Form

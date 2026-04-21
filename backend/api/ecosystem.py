@@ -13,73 +13,60 @@ class IntentPayload(BaseModel):
     intent: str
     brief: str | None = None
 
-# 5 Strategic Forces — the fixed, locked category structure for all ecosystem maps
-STRATEGIC_FORCES = [
-    "Demand Gravity",
-    "Choice Architecture",
-    "Value Elasticity",
-    "Reinforcement Stability",
-    "Competitive Energy"
-]
+# We no longer use a fixed list of forces; categories are dynamically derived from the intent/brief.
 
-FORCE_DESCRIPTIONS = {
-    "Demand Gravity": "What pulls consumers toward this category — triggers, aspirations, lifestyle signals, and macro demand drivers.",
-    "Choice Architecture": "What shapes the decision-making environment — shelf dynamics, default options, UX friction, influencer ecosystems, and platform defaults.",
-    "Value Elasticity": "Price sensitivity signals, perceived value shifts, premium/value trade-offs, and willingness-to-pay thresholds.",
-    "Reinforcement Stability": "Brand loyalty inertia, habit formation, switching cost barriers, community ties, and subscription lock-ins.",
-    "Competitive Energy": "Direct competitors, indirect substitutes, insurgent brands, international entrants, and strategic M&A moves.",
-}
 
 SYSTEM_PROMPT_ECOSYSTEM_GENERIC = f"""You are a domain taxonomy and strategic intelligence expert.
-Given a research intent, generate a comprehensive ecosystem landscape map structured around the 5 Strategic Forces of market physics.
-You MUST use EXACTLY these 5 category names (forces): {json.dumps(STRATEGIC_FORCES)}
+Given a research intent, generate a comprehensive ecosystem landscape map.
+Instead of using fixed generic categories, derive 4-6 key thematic points (pillars) directly from the research intent to act as the primary categories.
 
-For each force, generate 3-4 specific, real-world entities that are most relevant to the research intent.
-Entities should be a mix of brands, platforms, concepts, regulations, personas, or data signals — whichever is most relevant for that force.
+For each category, generate 3-4 specific, real-world entities that are most relevant to that thematic point.
+Entities should be a mix of brands, platforms, concepts, regulations, personas, or data signals.
 
 Your output MUST be a strict JSON object:
 {{
   "core_topic": "2-3 word core subject",
   "categories": [
     {{
-      "force": "Demand Gravity",
-      "description": "...",
+      "category_name": "Key Point 1 from Intent",
+      "description": "Brief description of this point",
       "nodes": ["Entity A", "Entity B", "Entity C"]
     }},
-    ...all 5 forces required...
+    ...4-6 total categories...
   ]
 }}
 """
 
 SYSTEM_PROMPT_ECOSYSTEM_WITH_BRIEF = f"""You are a Strategic Ecosystem Graph Architect for Outllyr.
-You will receive a fully synthesized Strategic Research Brief. Your job is to convert it directly into a hierarchical Category Graph.
+You will receive a fully synthesized Strategic Research Brief. Your job is to convert it directly into a Subject-Relationship Web.
 
 CRITICAL RULE: You MUST extract nodes from the actual named entities, brands, platforms, signals, and sources found IN the brief.
-DO NOT use generic category knowledge. Every node must trace back to the brief content.
+DO NOT use generic category knowledge.
 
-Graph structure (use EXACTLY these 5 force names): {json.dumps(STRATEGIC_FORCES)}
-
-Mapping logic:
-- "core_topic": Extract from the North Star Statement — the 2-3 word subject (e.g., "Eggoz Brand Erosion")
-- Tier 2 Pillars → map them to the matching Strategic Forces
-- Tier 3 Domains → use as the "description" for each force category
-- Tier 4 Units (both Structural and Subjective) → use as entity nodes under the relevant force
-- Tier 5 Signals & Sources → use as leaf entity nodes, formatted as "Signal (Source)"
-- Internet Discovery Mandate (Ghost Brands, News Cluster, Proxies) → add as entity nodes under the most relevant force
-
-Generate 5-7 specific entity nodes per force, drawn directly from the brief.
-DO NOT pad with generic concepts. If the brief mentions "Zepto OOS Rate" under Structural Units, that becomes a node.
+Mapping logic (Semantic Market Web):
+- "core_topic": Extract from the North Star Statement — the central problem.
+- "subjects" (Tier 1 Nodes): Major themes from the Brief (e.g. "Battery Life", "Brand Trust", "Price Sensitivity").
+- "components" (Tier 2 Nodes): Sub-topics mapped to a specific subject (e.g. "FAME II Subsidy").
+- "signals" (Tier 3 Nodes): The actual internet sources/keywords mapped to a component.
+- "force_metadata": For EVERY node, assign it one of the 5 Strategic Forces (Demand Gravity, Choice Architecture, Value Elasticity, Reinforcement Stability, Competitive Energy) as a background tag.
 
 Output MUST be strict JSON:
 {{
-  "core_topic": "3-4 word subject from North Star",
-  "categories": [
+  "core_topic": "The Problem Statement",
+  "subjects": [
     {{
-      "force": "Demand Gravity",
-      "description": "Tier 3 domain description from brief",
-      "nodes": ["Exact entity from brief", "Another from brief", ...]
-    }},
-    ...all 5 forces required...
+      "name": "Subject 1",
+      "force_metadata": "Demand Gravity",
+      "components": [
+        {{
+          "name": "Component A",
+          "force_metadata": "Choice Architecture",
+          "signals": [
+            {{"name": "Signal X", "force_metadata": "Competitive Energy"}}
+          ]
+        }}
+      ]
+    }}
   ]
 }}
 """
@@ -100,25 +87,44 @@ def generate_dynamic_ecosystem_graph(intent: str, brief: str | None = None) -> D
             system_prompt = SYSTEM_PROMPT_ECOSYSTEM_GENERIC
             user_prompt = f"Map the ecosystem for this research intent: {intent}"
 
-        llm_result = call_openrouter(system_prompt=system_prompt, user_prompt=user_prompt, expect_json=True)
+        llm_result = call_openrouter(
+            system_prompt=system_prompt, 
+            user_prompt=user_prompt, 
+            expect_json=True,
+            model="mistralai/mistral-7b-instruct:free"
+        )
         
         G = nx.DiGraph()
         
         core_topic = llm_result.get("core_topic", "Core Subject")
         G.add_node(core_topic, type="root", label=core_topic, force="root")
         
-        categories = llm_result.get("categories", [])
-        
-        for category in categories:
-            force_name = category.get("force", "Unknown Force")
-            force_desc = category.get("description", FORCE_DESCRIPTIONS.get(force_name, ""))
-            G.add_node(force_name, type="category", label=force_name, force=force_name, description=force_desc)
-            G.add_edge(core_topic, force_name)
+        subjects = llm_result.get("subjects", [])
+        if not subjects and "categories" in llm_result: # fallback
+            subjects = llm_result.get("categories", [])
             
-            nodes = category.get("nodes", [])
-            for node_name in nodes:
-                G.add_node(node_name, type="entity", label=node_name, force=force_name)
-                G.add_edge(force_name, node_name)
+        for subject in subjects:
+            subj_name = subject.get("name", subject.get("category_name", "Unknown Subject"))
+            subj_force = subject.get("force_metadata", "Demand Gravity")
+            
+            G.add_node(subj_name, type="subject", label=subj_name, force=subj_force, subject=subj_name)
+            G.add_edge(core_topic, subj_name)
+            
+            components = subject.get("components", [])
+            if not components and "nodes" in subject: # fallback handling
+                components = [{"name": n, "force_metadata": subj_force, "signals": []} for n in subject.get("nodes", [])]
+                
+            for comp in components:
+                comp_name = comp.get("name", "Unknown Component")
+                comp_force = comp.get("force_metadata", "Demand Gravity")
+                G.add_node(comp_name, type="component", label=comp_name, force=comp_force, subject=subj_name)
+                G.add_edge(subj_name, comp_name)
+                
+                for sig in comp.get("signals", []):
+                    sig_name = sig.get("name", "Unknown Signal")
+                    sig_force = sig.get("force_metadata", "Demand Gravity")
+                    G.add_node(sig_name, type="signal", label=sig_name, force=sig_force, subject=subj_name)
+                    G.add_edge(comp_name, sig_name)
                 
         data = nx.node_link_data(G)
         data["links"] = data.get("edges", [])
@@ -143,7 +149,6 @@ def generate_ecosystem(payload: IntentPayload):
     graph_data = generate_dynamic_ecosystem_graph(payload.intent, payload.brief)
     return {
         "status": "success",
-        "graph": graph_data,
-        "forces": STRATEGIC_FORCES,
-        "force_descriptions": FORCE_DESCRIPTIONS
+        "graph": graph_data
     }
+

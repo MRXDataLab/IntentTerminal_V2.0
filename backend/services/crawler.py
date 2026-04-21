@@ -3,6 +3,7 @@ import random
 import json
 import uuid
 from services.llm_client import call_openrouter
+from services.scout import scout_internet
 
 SYSTEM_PROMPT_CRAWLER = """You are an expert data sourcing and research oracle. 
 Given a list of concepts/nodes from an ecosystem graph, generate an exhaustive list of possibilities of searching for data sources for each node.
@@ -33,6 +34,51 @@ class SourceOracle:
         if not graph_nodes:
             return []
             
+        sources = []
+        
+        # 1. Real-time Serper Scout
+        # Use top 3 nodes to build a good search query
+        query_str = " ".join(graph_nodes[:3])
+        if query_str:
+            serper_results = scout_internet(query_str)
+            
+            if "market_discovery" in serper_results:
+                for item in serper_results["market_discovery"]:
+                    sources.append({
+                        "id": f"src_{uuid.uuid4().hex[:8]}",
+                        "node": "Market Landscape",
+                        "platform": "Google Search (organic)",
+                        "url": item.get("link", ""),
+                        "search_strategy": item.get("title", ""),
+                        "signal_score": 0.95,
+                        "status": "APPROVED"
+                    })
+                    
+            if "news_cluster" in serper_results:
+                for item in serper_results["news_cluster"]:
+                    sources.append({
+                        "id": f"src_{uuid.uuid4().hex[:8]}",
+                        "node": "News Trigger",
+                        "platform": item.get("source", "Google News"),
+                        "url": item.get("link", ""),
+                        "search_strategy": item.get("title", ""),
+                        "signal_score": 0.85,
+                        "status": "APPROVED"
+                    })
+                    
+            if "shopping_pulse" in serper_results:
+                for item in serper_results["shopping_pulse"]:
+                     sources.append({
+                        "id": f"src_{uuid.uuid4().hex[:8]}",
+                        "node": "Competitor / Ghost Brand",
+                        "platform": item.get("source", "Google Shopping"),
+                        "url": item.get("link", ""),
+                        "search_strategy": f"{item.get('title', '')} - {item.get('price', '')}",
+                        "signal_score": 0.9,
+                        "status": "APPROVED"
+                    })
+        
+        # 2. Augment with LLM for specific niche sources based on all nodes
         user_prompt = f"Please generate data sources for the following nodes:\n{json.dumps(graph_nodes)}"
         
         try:
@@ -42,9 +88,11 @@ class SourceOracle:
                 expect_json=True
             )
             
-            sources = llm_result.get("sources", [])
-            for src in sources:
+            llm_sources = llm_result.get("sources", [])
+            for src in llm_sources:
                 src["id"] = f"src_{uuid.uuid4().hex[:8]}"
+            
+            sources.extend(llm_sources)
             return sources
         except Exception as e:
             # Fallback if API fails or parsing fails
