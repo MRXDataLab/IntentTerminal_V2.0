@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { Send, Bot, User, CheckCircle2, Upload, Activity, LayoutTemplate, FileText, BookOpen, Zap } from 'lucide-react';
+import { Send, Bot, User, CheckCircle2, Upload, Activity, LayoutTemplate, FileText, BookOpen, Zap, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 const STUDY_TEMPLATES = [
@@ -11,15 +11,17 @@ const STUDY_TEMPLATES = [
   { id: 'Market Entry',      label: 'Market Entry',          desc: 'Whitespace, sizing, regulatory readiness, go-to-market',     color: '#14b8a6' },
   { id: 'Competitive Pulse', label: 'Competitive Pulse',     desc: 'Competitor moves, pricing signals, talent migration',        color: '#0ea5e9' },
   { id: 'Erosion Study',     label: 'Erosion Study',         desc: 'Churn triggers, unmet needs, loyalty degradation',          color: '#f43f5e' },
+  { id: 'Pricing & Value',   label: 'Pricing & Value',       desc: 'Price sensitivity, value justification, feature-to-cost debates', color: '#22d3ee' },
 ];
 
 // Fallback first message if LLM is unavailable at template select
 const TEMPLATE_FIRST_MESSAGE: Record<string, string> = {
   'U&A':               "Great — let's map out this Usage & Attitudes study. Which category or product are we studying, and what usage occasion do you believe is shifting?",
-  'Brand Health':      "Let's track your brand health. Which brand are we monitoring, and which specific health metric — awareness, NPS, or consideration — is giving you concern?",
+  'Brand Health':      "Let's track your brand health. Who is the primary rival stealing your mindshare right now?",
   'Market Entry':      "Let's assess market entry readiness. Which new market, geography, or category is on the radar, and what signal made you decide to explore it now?",
   'Competitive Pulse': "Time to get a competitive pulse. Which specific competitor has caught your attention, and what signals have you detected — a new launch, price move, or talent shift?",
-  'Erosion Study':     "Let's diagnose the erosion. Which metric is declining — market share, volume, NPS, or repeat rate — and since approximately when did you first notice it?",
+  'Erosion Study':     "Let's diagnose the erosion. What specific metric is eroding — market share, volume, trial rate — and since when?",
+  'Pricing & Value':   "Let's assess your pricing narrative. Is the brand relying on discounts to maintain volume, or does it have genuine narrative equity?",
 };
 
 type Message = {
@@ -27,6 +29,18 @@ type Message = {
   content: string;
   actions?: { label: string, value: string }[];
 };
+
+const READINESS_LABELS: { max: number, label: string, color: string }[] = [
+  { max: 20,  label: 'VAGUE',       color: '#ef4444' },
+  { max: 40,  label: 'EMERGING',    color: '#f97316' },
+  { max: 60,  label: 'DEVELOPING',  color: '#f59e0b' },
+  { max: 70,  label: 'CALIBRATING', color: '#3b82f6' },
+  { max: 100, label: 'SATURATED',   color: '#10b981' },
+];
+
+function getReadinessLabel(score: number) {
+  return READINESS_LABELS.find(r => score <= r.max) || READINESS_LABELS[READINESS_LABELS.length - 1];
+}
 
 interface IntakeTerminalProps {
   onIntentFinalized: (intent: string, brief?: string) => void;
@@ -44,8 +58,10 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
   
   const [parameters, setParameters] = useState<{label: string, score: number}[]>([]);
   const [overallReadiness, setOverallReadiness] = useState(0);
+  const [pillarExtractions, setPillarExtractions] = useState<Record<string, any> | null>(null);
   const [briefText, setBriefText] = useState<string | null>(null);
   const [isBriefLoading, setIsBriefLoading] = useState(false);
+  const [manifestData, setManifestData] = useState<Record<string, any> | null>(null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -68,23 +84,24 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
         fast_track: false,
         template: selectedTemplate && selectedTemplate !== 'none' ? selectedTemplate : undefined,
         current_scores: parameters.length > 0 ? parameters : undefined,
+        current_extractions: pillarExtractions || undefined,
         context_document: contextLoaded || undefined,
       });
       
       if (res.data.is_finalized) {
         setFinalIntent(res.data.research_intent);
       }
-      // Only update scores if the response has valid parameters — never reset to empty
       if (res.data.parameters && res.data.parameters.length > 0) {
         setParameters(res.data.parameters);
         setOverallReadiness(res.data.overall_readiness || 0);
       }
+      if (res.data.pillar_extractions) {
+        setPillarExtractions(res.data.pillar_extractions);
+      }
       setMessages((prev) => [...prev, { role: 'agent', content: res.data.response }]);
     } catch (error: any) {
       console.error('Chat error', error);
-      // Roll back the failed user message so history stays clean and scores are preserved
       setMessages(updatedMessages.slice(0, -1));
-      // Show error inline without resetting any state
       const errMsg = error?.response?.status === 500
         ? 'The AI is momentarily rate-limited. Please wait a few seconds and try again.'
         : 'Connection error. Please ensure the backend is running.';
@@ -94,12 +111,11 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
     }
   };
 
-  // Called when a study template card is clicked — fetches a tailored first question from LLM
+  // Called when a study template card is clicked
   const handleTemplateSelect = async (templateId: string) => {
     setSelectedTemplate(templateId);
     setIsLoading(true);
     const templateLabel = STUDY_TEMPLATES.find(t => t.id === templateId)?.label || templateId;
-    // Show immediate acknowledgement in chat
     const ackMessage: Message = {
       role: 'agent',
       content: `📋 Study type set to **${templateLabel}**. Let me ask you a few focused questions to calibrate the research scope.`
@@ -113,15 +129,18 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
         fast_track: false,
         template: templateId,
         current_scores: parameters.length > 0 ? parameters : undefined,
+        current_extractions: pillarExtractions || undefined,
         context_document: contextLoaded || undefined,
       });
       if (res.data.parameters && res.data.parameters.length > 0) {
         setParameters(res.data.parameters);
         setOverallReadiness(res.data.overall_readiness || 0);
       }
+      if (res.data.pillar_extractions) {
+        setPillarExtractions(res.data.pillar_extractions);
+      }
       setMessages((prev) => [...prev, { role: 'agent', content: res.data.response }]);
     } catch {
-      // Fallback to static welcome message if LLM unavailable
       const fallback = TEMPLATE_FIRST_MESSAGE[templateId] || 'Tell me more about what you\'d like to explore.';
       setMessages((prev) => [...prev, { role: 'agent', content: fallback }]);
     } finally {
@@ -133,9 +152,10 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
     const file = e.target.files?.[0];
     if (!file) return;
     setIsLoading(true);
+    // Set selectedTemplate to 'none' to exit the template selection screen
+    if (selectedTemplate === null) setSelectedTemplate('none');
 
     try {
-      // ── STEP 1: Parse the uploaded document ──────────────────────────────────
       const formData = new FormData();
       formData.append('file', file);
       const res = await axios.post('http://localhost:8000/api/upload-context', formData, {
@@ -144,7 +164,6 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
       const summary = res.data.context_summary;
       setContextLoaded(summary);
 
-      // Show "scanning" message in chat while we wait for LLM to score
       const scanningMessages: Message[] = [
         ...messages,
         {
@@ -154,12 +173,12 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
       ];
       setMessages(scanningMessages);
 
-      // ── STEP 2: Score the document via LLM ──────────────────────────────────
       const chatRes = await axios.post('http://localhost:8000/api/chat', {
         messages: scanningMessages,
         fast_track: false,
         template: selectedTemplate && selectedTemplate !== 'none' ? selectedTemplate : undefined,
         current_scores: parameters.length > 0 ? parameters : undefined,
+        current_extractions: pillarExtractions || undefined,
         context_document: summary
       });
 
@@ -168,14 +187,14 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
         : parameters;
       const newReadiness = chatRes.data.overall_readiness || 0;
 
-      // ── STEP 3: Reveal RADAR values in right pane ────────────────────────────
-      // Setting state first lets the radar bars animate before the next message appears
       if (chatRes.data.parameters && chatRes.data.parameters.length > 0) {
         setParameters(newParams);
       }
       setOverallReadiness(newReadiness);
+      if (chatRes.data.pillar_extractions) {
+        setPillarExtractions(chatRes.data.pillar_extractions);
+      }
 
-      // If LLM already finalized (all pillars ≥ 60), done
       if (chatRes.data.is_finalized && chatRes.data.research_intent) {
         setFinalIntent(chatRes.data.research_intent);
         setMessages([...scanningMessages, {
@@ -187,20 +206,14 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
         return;
       }
 
-      // ── STEP 4: Build decision prompt — radar already shows scores on right pane ──
-      const weakPillars  = newParams.filter(p => p.score < 60).map(p => p.label);
-      const needsFineTuning = weakPillars.length > 0;
-
-      // Wait for radar bars to animate in right pane before showing buttons
       await new Promise(resolve => setTimeout(resolve, 900));
 
+      const weakPillars  = newParams.filter(p => p.score < 70).map(p => p.label);
+      const needsFineTuning = weakPillars.length > 0;
+
       const recommendationText = needsFineTuning
-        ? `📊 Scan complete. The right panel shows your diagnostic scores.
-
-⚠️ **Fine-tuning recommended** — the following pillars are below 60%:\n${weakPillars.map(p => `• ${p}`).join('\n')}\n\nHow would you like to proceed?`
-        : `📊 Scan complete. The right panel shows your diagnostic scores.
-
-✅ **Strong baseline** — all pillars are above the 60% threshold.\n\nYou can proceed directly to the Horizon Scan, or fine-tune for even higher precision.`;
+        ? `📊 Scan complete. The right panel shows your diagnostic scores.\n\n⚠️ **Fine-tuning recommended** — the following pillars are below 70%:\n${weakPillars.map(p => `• ${p}`).join('\n')}\n\nHow would you like to proceed?`
+        : `📊 Scan complete. The right panel shows your diagnostic scores.\n\n✅ **Strong baseline** — all pillars are above the 70% threshold.\n\nYou can proceed directly to the Horizon Scan, or fine-tune for even higher precision.`;
 
       const decisionMsg: Message = {
         role: 'agent',
@@ -240,6 +253,7 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
           fast_track: true, 
           template: selectedTemplate && selectedTemplate !== 'none' ? selectedTemplate : undefined,
           current_scores: parameters.length > 0 ? parameters : undefined,
+          current_extractions: pillarExtractions || undefined,
           context_document: contextLoaded || undefined
         });
         if (res.data.is_finalized) {
@@ -270,6 +284,10 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
       content += `\n## Baseline Context\n${contextLoaded}\n`;
     }
 
+    if (pillarExtractions) {
+      content += `\n## Extracted Data\n\`\`\`json\n${JSON.stringify(pillarExtractions, null, 2)}\n\`\`\`\n`;
+    }
+
     const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -285,13 +303,28 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
     if (!finalIntent) return;
     setIsBriefLoading(true);
     try {
-      const res = await axios.post('http://localhost:8000/api/generate-brief', {
+      // Step 1: Generate the Strategic Brief (Artifact 1)
+      const briefRes = await axios.post('http://localhost:8000/api/generate-brief', {
         research_intent: finalIntent,
         parameters: parameters,
+        pillar_extractions: pillarExtractions || undefined,
         context_document: contextLoaded || undefined,
         template: selectedTemplate && selectedTemplate !== 'none' ? selectedTemplate : undefined,
       });
-      setBriefText(res.data.brief);
+      setBriefText(briefRes.data.brief);
+
+      // Step 2: Auto-generate the Link Farming Manifest (Artifact 3)
+      try {
+        const manifestRes = await axios.post('http://localhost:8000/api/generate-manifest', {
+          research_intent: finalIntent,
+          brief_text: briefRes.data.brief,
+          pillar_extractions: pillarExtractions || undefined,
+          template: selectedTemplate && selectedTemplate !== 'none' ? selectedTemplate : undefined,
+        });
+        setManifestData(manifestRes.data.manifest);
+      } catch (manifestErr) {
+        console.error('Manifest generation error (non-blocking)', manifestErr);
+      }
     } catch (error) {
       console.error('Brief generation error', error);
       setBriefText('Failed to generate the brief. Please try again.');
@@ -314,25 +347,35 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
     URL.revokeObjectURL(url);
   };
 
+  const handleDownloadManifest = () => {
+    if (!manifestData) return;
+    const content = JSON.stringify(manifestData, null, 2);
+    const blob = new Blob([content], { type: 'application/json;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Outtlyr_Link_Farming_Manifest.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  };
+
   const handleAction = async (value: string) => {
-    // Dismiss action buttons from the last message
     setMessages(prev => prev.map((m, i) =>
       i === prev.length - 1 ? { ...m, actions: undefined } : m
     ));
 
     if (value.startsWith('proceed_as_is')) {
-      // Extract intent packed into the action value (if any)
       const packedIntent = value.split('|||')[1]?.trim();
 
       if (packedIntent) {
-        // We already have the intent from the LLM — finalize immediately, no extra call needed
         setFinalIntent(packedIntent);
         setMessages(prev => [...prev,
           { role: 'user', content: 'Proceed as-is' },
           { role: 'agent', content: '✅ Intent locked in. Initiating Horizon Scan with the extracted baseline.' }
         ]);
       } else {
-        // No intent yet — trigger one final API call with the override signal
         const userMsg: Message = { role: 'user', content: 'Proceed as-is' };
         setMessages(prev => [...prev, userMsg]);
         setIsLoading(true);
@@ -342,10 +385,14 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
             fast_track: false,
             template: selectedTemplate && selectedTemplate !== 'none' ? selectedTemplate : undefined,
             current_scores: parameters,
+            current_extractions: pillarExtractions || undefined,
             context_document: contextLoaded || undefined
           });
           if (res.data.is_finalized) {
             setFinalIntent(res.data.research_intent);
+          }
+          if (res.data.pillar_extractions) {
+            setPillarExtractions(res.data.pillar_extractions);
           }
           setMessages(prev => [...prev, { role: 'agent', content: res.data.response }]);
         } catch (error) {
@@ -355,7 +402,6 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
         }
       }
     } else if (value === 'fine_tune') {
-      // Inject a user message and let the next chat turn continue normally
       const userMsg: Message = { role: 'user', content: "Let's fine-tune the gaps." };
       const updatedMessages = [...messages, userMsg];
       setMessages(updatedMessages);
@@ -366,6 +412,7 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
           fast_track: false,
           template: selectedTemplate && selectedTemplate !== 'none' ? selectedTemplate : undefined,
           current_scores: parameters,
+          current_extractions: pillarExtractions || undefined,
           context_document: contextLoaded || undefined
         });
         if (res.data.parameters && res.data.parameters.length > 0) {
@@ -375,6 +422,9 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
         if (res.data.is_finalized) {
           setFinalIntent(res.data.research_intent);
         }
+        if (res.data.pillar_extractions) {
+          setPillarExtractions(res.data.pillar_extractions);
+        }
         setMessages(prev => [...prev, { role: 'agent', content: res.data.response }]);
       } catch (error) {
         console.error('Fine-tune error', error);
@@ -383,6 +433,8 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
       }
     }
   };
+
+  const readinessInfo = getReadinessLabel(overallReadiness);
 
   return (
     <div className="flex h-screen w-full bg-[#0a0a0a] text-white overflow-hidden pb-10">
@@ -481,7 +533,7 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
               <div className="text-center mb-6">
                 <LayoutTemplate size={28} className="text-teal-500 mx-auto mb-3" />
                 <h2 className="text-lg font-medium text-white">Select a Study Template</h2>
-                <p className="text-sm text-gray-500 mt-1">Or skip to begin free-form probing</p>
+                <p className="text-sm text-gray-500 mt-1">Or upload an existing brief, or skip to free-form probing</p>
               </div>
               <div className="space-y-2">
                 {STUDY_TEMPLATES.map((t) => (
@@ -500,6 +552,14 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
                   </button>
                 ))}
               </div>
+              
+              {/* Path C: Upload an existing brief — PRIMARY entry option */}
+              <label className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border border-dashed border-teal-500/30 hover:border-teal-500/60 bg-teal-950/10 hover:bg-teal-950/20 text-teal-400 cursor-pointer transition-all">
+                <Upload size={18} />
+                <span className="text-sm font-medium">Upload an Existing Brief</span>
+                <input type="file" accept=".csv,.pdf,.md,.txt" className="hidden" onChange={handleContextUpload} />
+              </label>
+
               <button
                 onClick={() => setSelectedTemplate('none')}
                 className="w-full py-2.5 text-sm text-gray-500 hover:text-gray-300 border border-[#1a1a1a] hover:border-[#333] rounded-xl transition-colors"
@@ -517,7 +577,7 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
                       <circle cx="50" cy="50" r="42" stroke="#333" strokeWidth="8" fill="transparent" />
                       <circle 
                         cx="50" cy="50" r="42" 
-                        stroke={overallReadiness >= 60 ? "#10b981" : overallReadiness >= 40 ? "#f59e0b" : "#6b7280"} 
+                        stroke={readinessInfo.color} 
                         strokeWidth="8" fill="transparent" 
                         strokeDasharray={2 * Math.PI * 42}
                         strokeDashoffset={2 * Math.PI * 42 - (overallReadiness / 100) * (2 * Math.PI * 42)}
@@ -527,7 +587,7 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
                     </svg>
                     <div className="absolute flex flex-col items-center justify-center text-center">
                       <span className="text-3xl font-bold text-white">{overallReadiness}%</span>
-                      <span className="text-[10px] text-gray-400 font-mono uppercase tracking-widest mt-1">Ready</span>
+                      <span className="text-[10px] font-mono uppercase tracking-widest mt-1" style={{ color: readinessInfo.color }}>{readinessInfo.label}</span>
                     </div>
                   </div>
                 </div>
@@ -535,22 +595,28 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
 
               {parameters.length > 0 ? (
                 <div className="space-y-4 w-full bg-[#111] border border-[#222] p-5 rounded-2xl">
-                  {parameters.map((param, idx) => (
-                    <div key={idx} className="flex flex-col justify-center">
-                      <div className="flex justify-between items-center mb-1.5 font-mono text-xs">
-                         <span className="text-gray-300 uppercase tracking-wide">{param.label}</span>
-                         <span className={`font-bold ${param.score >= 60 ? 'text-emerald-400' : param.score >= 40 ? 'text-amber-400' : 'text-gray-500'}`}>{param.score}%</span>
+                  {parameters.map((param, idx) => {
+                    const isSaturated = param.score >= 70;
+                    return (
+                      <div key={idx} className="flex flex-col justify-center">
+                        <div className="flex justify-between items-center mb-1.5 font-mono text-xs">
+                           <span className={`uppercase tracking-wide flex items-center gap-1.5 ${isSaturated ? 'text-gray-500' : 'text-gray-300'}`}>
+                             {param.label}
+                             {isSaturated && <Check size={12} className="text-emerald-400" />}
+                           </span>
+                           <span className={`font-bold ${isSaturated ? 'text-emerald-400' : param.score >= 40 ? 'text-amber-400' : 'text-gray-500'}`}>{param.score}%</span>
+                        </div>
+                        <div className="w-full h-2 bg-[#222] rounded-full overflow-hidden">
+                           <motion.div 
+                             initial={{ width: 0 }} 
+                             animate={{ width: `${param.score}%` }} 
+                             transition={{ duration: 0.8, ease: "easeOut" }}
+                             className={`h-full rounded-full bg-gradient-to-r ${isSaturated ? 'from-emerald-500 to-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : param.score >= 40 ? 'from-amber-500 to-yellow-400 shadow-[0_0_10px_rgba(245,158,11,0.2)]' : 'from-gray-600 to-gray-500'}`}
+                           />
+                        </div>
                       </div>
-                      <div className="w-full h-2 bg-[#222] rounded-full overflow-hidden">
-                         <motion.div 
-                           initial={{ width: 0 }} 
-                           animate={{ width: `${param.score}%` }} 
-                           transition={{ duration: 0.8, ease: "easeOut" }}
-                           className={`h-full rounded-full bg-gradient-to-r ${param.score >= 60 ? 'from-emerald-500 to-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.3)]' : param.score >= 40 ? 'from-amber-500 to-yellow-400 shadow-[0_0_10px_rgba(245,158,11,0.2)]' : 'from-gray-600 to-gray-500'}`}
-                         />
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="flex flex-col items-center justify-center text-center space-y-6 opacity-40">
@@ -611,7 +677,7 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
                     <h3 className="text-sm font-medium text-white">Strategic Research Brief</h3>
                   </div>
                   <p className="text-xs text-gray-400 leading-relaxed mb-4">
-                    Synthesize your intake into a high-fidelity Signal Hunting Mandate — including Ghost Brand discovery, Regulatory Physics mapping, and a 5-Tier Evidence Blueprint.
+                    Synthesize your intake into a high-fidelity Signal Hunting Mandate — including Ghost Brand discovery, Regulatory Physics mapping, and a 5-Tier Evidence Blueprint. Will also generate the Link Farming Manifest (.json) for the ingestion engine.
                   </p>
                   <button
                     onClick={handleGenerateBrief}
@@ -635,11 +701,11 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
                     <div className="w-2 h-2 rounded-full bg-teal-500/60 animate-bounce" style={{ animationDelay: '150ms' }} />
                     <div className="w-2 h-2 rounded-full bg-teal-500/60 animate-bounce" style={{ animationDelay: '300ms' }} />
                   </div>
-                  <p className="text-xs text-teal-500/70 font-mono uppercase tracking-widest">Synthesizing brief...</p>
+                  <p className="text-xs text-teal-500/70 font-mono uppercase tracking-widest">Synthesizing brief + manifest...</p>
                 </motion.div>
               )}
 
-              {/* Brief Preview + Actions */}
+              {/* Brief Preview + Manifest + Actions */}
               {briefText && !isBriefLoading && (
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -656,20 +722,44 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
                     </pre>
                   </div>
 
+                  {/* Manifest summary */}
+                  {manifestData && (
+                    <div className="bg-[#0f1419] border border-blue-900/30 rounded-2xl p-4">
+                      <div className="flex items-center gap-2 mb-2">
+                        <Activity size={14} className="text-blue-400 shrink-0" />
+                        <span className="text-xs font-mono text-blue-400 uppercase tracking-widest">Link Farming Manifest</span>
+                      </div>
+                      <div className="flex gap-4 text-xs text-gray-400">
+                        <span>{manifestData.boolean_nets?.length || 0} boolean nets</span>
+                        <span>{manifestData.signal_taxonomy?.length || 0} signal tags</span>
+                        <span>{manifestData.entity_anchors?.tracked_competitors?.length || 0} rivals tracked</span>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="flex gap-3">
                     <button
                       onClick={handleDownloadBrief}
                       className="flex-1 py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-gray-600 text-teal-400 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
                     >
                       <FileText size={14} />
-                      Download Brief
+                      Brief (.md)
                     </button>
+                    {manifestData && (
+                      <button
+                        onClick={handleDownloadManifest}
+                        className="flex-1 py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-gray-600 text-blue-400 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
+                      >
+                        <Activity size={14} />
+                        Manifest (.json)
+                      </button>
+                    )}
                     <button
                       onClick={() => onIntentFinalized(finalIntent || 'Intent Default', briefText || undefined)}
                       className="flex-1 py-2.5 bg-teal-500 hover:bg-teal-400 text-black font-semibold rounded-xl transition-colors shadow-[0_0_20px_rgba(20,184,166,0.4)] flex items-center justify-center gap-2"
                     >
                       <Zap size={14} />
-                      Initiate Horizon Scan
+                      Horizon Scan
                     </button>
                   </div>
                 </motion.div>

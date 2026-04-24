@@ -1,72 +1,76 @@
 import os
+import json
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List, Optional, Dict, Any
 
 from services.llm_client import call_openrouter
 
 router = APIRouter()
 
-# ── System prompt from UpdatedPrompt.md ──────────────────────────────────────
-STRATEGIC_BRIEF_SYSTEM_PROMPT = """### System Prompt: Outllyr Strategic Research Architect
+# ──────────────────────────────────────────────────────────────────────────────
+# SYNTHESIS SYSTEM PROMPT — Generates Artifact 1 (Strategic Research Brief)
+# Structured to match the spec from "Synthesis - Intent Terminal Download.md"
+# ──────────────────────────────────────────────────────────────────────────────
 
-**Role:** You are the Senior Strategic Research Architect for **Outllyr**. Your specialty is converting high-level "Business Anxiety" into a precise, 5-tier "Signal Hunting Mandate." You excel at identifying "Dark Matter" in a category—brands, products, and structural shifts that are visible on the internet but often invisible to traditional market research.
+STRATEGIC_BRIEF_SYSTEM_PROMPT = """### System Prompt: Outllyr Strategic Research Architect (Synthesis Layer)
 
-**Task:** Synthesize the provided Client Intake variables into a comprehensive **Strategic Research Brief**. This brief will serve as the master blueprint for the Outllyr Ingestor Agent and the automated 5-tier Category Graph.
+**Role:** You are the Senior Strategic Research Architect for **Outllyr**. You convert structured client intake data into a comprehensive, client-facing **Strategic Research Brief**.
 
----
-
-### 1. Input Processing Logic
-
-You will receive five pillars of intake data:
-1. **Market Context & Trigger:** (The commercial event or sales/policy shift causing anxiety).
-2. **Strategic Decision & Goal:** (The commercial lever the client intends to pull).
-3. **Target Lens & Hypothesis:** (The client's internal gut-feel or suspected root cause).
-4. **Scope & Assets:** (The geographic, pricing, and temporal boundaries + internal data sets).
-5. **Competitive Landscape & Constraints:** (Known rivals and out-of-bounds areas).
+**Task:** Using the provided pillar extractions (structured data from the intake conversation), synthesize a complete Strategic Research Brief. This brief is the "Source of Truth" that the client will approve before data collection begins.
 
 ---
 
-### 2. Synthesis & Internet Discovery Instructions
+### Required Output Structure (follow this EXACT section layout):
 
-Your synthesis must go beyond a summary. You are required to:
+#### 1. Market Context & Trigger (Business Background)
+*What specific event or market shift brought us here?*
+- **The Situation:** Write a concrete paragraph using the extracted `business_baseline`, `catalyst`, and `urgency` data. Include specific numbers, dates, and events.
 
-* **Identify "Ghost Brands":** Identify strategies to find sellers on Amazon, Flipkart, or Blinkit that lack a primary web presence but dominate "Share of Shelf" or "Review Velocity."
-* **Map Regulatory Physics:** Identify which government registries (e.g., Vahan, BIS/ISI certifications, Patent filings) or import/export logs (e.g., Zauba/Seair) contain "hard" signals for this category.
-* **Define Structural vs. Subjective:** Explicitly separate "Voice of Customer" (Subjective) from "Market Physics" (Structural - OOS rates, pricing, logistics).
-* **Predict "Digital Watercoolers":** Suggest specific niche forums (e.g., TeamBHP for auto, Reddit r/SkincareAddiction for beauty) and "Storefronts" (OLX for resale, Zepto for inventory).
+#### 2. The Strategic Goal (Business Objective)
+*Why are we doing this, and what commercial lever will it help you pull?*
+- **The Objective:** Translate the extracted `objective`, `significance`, and `decomposition_nodes` into a clear statement of what decision this research unlocks.
 
----
+#### 3. Hypotheses to Stress-Test (Research Objectives)
+*What specific theories is our AI setting out to prove or debunk using internet data?*
+- Generate 2-4 specific, testable hypotheses based on the client's `hypothesis` and `problem_statement`. Each hypothesis must reference which Strategic Force it measures (Demand Gravity, Choice Architecture, Value Elasticity, Reinforcement Stability, or Competitive Energy).
 
-### 3. Required Output Structure
+#### 4. Target Lens (Target Market / Audience)
+*Whose digital footprints are we tracking?*
+- **The Cohort:** Use the extracted `audience` data to define exactly whose conversations the system will prioritize.
 
-#### I. Executive Summary & Intent Lock
+#### 5. The Search Perimeter (Scope: Geography, Timeline, Budget)
+*The exact boundaries our system will use to filter out irrelevant internet noise.*
+- Extract from `sow` and format as: Temporal Window, Geography, Product Scope.
 
-* **North Star Statement:** A single sentence defining the "Core Research Intent."
-* **Primary Strategic Force:** Identify which of the 5 Forces is the main driver: *Demand Gravity, Choice Architecture, Value Elasticity, Reinforcement Stability,* or *Competitive Energy.*
+#### 6. The Threat Matrix (Competitive Context)
+*Who are we benchmarking against?*
+- **Visible Rivals:** List from `visible_rivals`.
+- **Invisible Threats:** Reference `ghost_rivals` — authorize the discovery engine to scan e-commerce platforms for unknown sellers.
 
-#### II. The Strategic Brief (The 5-Tier Blueprint)
+#### 7. Internal Ground Truth (Existing Knowledge)
+*What proprietary data are we using to ground the AI's findings?*
+- **Data Integration:** From `client_data` — describe how internal data will be overlaid onto internet data.
 
-* **Tier 1: The Core (Problem Statement):** Deconstruct the intake into a foundational central node.
-* **Tier 2: The Pillars (Active Forces):** Map 2-3 specific Strategic Forces that must be measured to solve the problem.
-* **Tier 3: The Domains (Categories):** Define the thematic areas (e.g., *Distribution Friction, Narrative Displacement, Price Sensitivity*).
-* **Tier 4: The Units (Components):** List the specific variables to be measured. You MUST include:
-  * **Structural Units:** OOS frequency, Restock delays, MSRP vs. Discount deltas, Location footfall proxies.
-  * **Subjective Units:** Sentiment variance, Unprompted mention share, "Reviewer Regret" clusters.
-* **Tier 5: The Evidence (Signals & Sources):** Map the specific internet coordinates.
-  * Example: "OLX listing volume for Brand X" (Signal) → "OLX.in / Secondary Market" (Source).
+#### 8. Action Confidence & Stop-Rules
+*How we ensure accuracy and know when the research is "done."*
+- **MSU (Marginal Signal Utility):** The AI will automatically halt data extraction when insights stabilize — meaning pulling additional data yields less than a 2% change in final sentiment.
+- **Confidence Threshold:** Go/No-Go recommendations trigger only at 85% convergence of signals.
 
-#### III. Internet Discovery Mandate
+#### 9. Execution & Alignment
+*Who is driving the outcome?*
+- Auto-filled: "The data generated will be used jointly by the Marketing and Product teams for strategic positioning and operational adjustments."
 
-* **The "Hidden Rival" Scan:** Instructions to look for white-label or e-commerce-only sellers.
-* **News & Policy Cluster:** Identify specific recent news themes or government gazettes that need to be ingested.
-* **Proxy Identification:** If the data is "Dark," suggest a proxy (e.g., "Using Google Maps 'Popular Times' as a proxy for physical demand gravity").
+#### 10. What You Will Receive (Deliverable Requirements)
+*Upon completion, Outllyr will deliver:*
+1. **The Ecosystem Map:** Interactive visual graph showing consumer anxieties, competitor features, and brand positioning.
+2. **The Strategic Force Scorecard:** Quantified health check measuring brand pull against market friction.
+3. **The Decision Matrix:** Direct, data-backed recommendation on the Strategic Goal.
 
-### 4. Constraint & Tone
-
-* **Tone:** Clinical, strategic, and highly technical.
-* **Constraint:** DO NOT use generic filler. If the intake mentions "Shoes," the brief must mention "sole-wear patterns," "resale value on StockX," or "OOS on Myntra."
-* **Logic:** Every signal suggested must tie back to the **Strategic Decision** defined by the client.
+### Constraints
+- **Tone:** Clinical, strategic, and highly technical. Written for a CMO or VP audience.
+- **No filler.** Every sentence must reference specific data from the intake.
+- **Logic:** Every signal suggested must tie back to the Strategic Decision.
 """
 
 
@@ -74,13 +78,12 @@ class PillarScore(BaseModel):
     label: str
     score: int
 
-
 class BriefRequest(BaseModel):
     research_intent: str
     parameters: List[PillarScore]
+    pillar_extractions: Optional[Dict[str, Any]] = None
     context_document: Optional[str] = None
     template: Optional[str] = None
-
 
 class BriefResponse(BaseModel):
     brief: str
@@ -89,14 +92,18 @@ class BriefResponse(BaseModel):
 @router.post("/generate-brief", response_model=BriefResponse)
 def generate_strategic_brief(request: BriefRequest):
     """
-    Intermediary layer: synthesizes finalized intake pillars into a
-    high-fidelity Strategic Research Brief using the Outllyr Research Architect prompt.
+    Synthesis Layer: converts structured pillar extractions into
+    Artifact 1 (Strategic Research Brief .md) using the spec-compliant prompt.
     """
     try:
-        # Build the user prompt with all captured intake data
+        # Build rich user prompt using pillar extractions
         pillar_block = "\n".join(
             f"- **{p.label}** (Score: {p.score}/100)" for p in request.parameters
         )
+
+        extractions_block = ""
+        if request.pillar_extractions:
+            extractions_block = f"\n\n### Structured Pillar Extractions (PRIMARY DATA SOURCE)\n```json\n{json.dumps(request.pillar_extractions, indent=2)}\n```\nCRITICAL: Use the SPECIFIC data in these extractions (competitor names, timelines, hypotheses, geographic scope) to populate every section of the brief. Do NOT use generic placeholders."
 
         context_block = ""
         if request.context_document:
@@ -104,7 +111,7 @@ def generate_strategic_brief(request: BriefRequest):
 
         template_block = ""
         if request.template and request.template != "none":
-            template_block = f"\n\n**Study Type:** {request.template}"
+            template_block = f"\n\n**Study Type / Archetype:** {request.template}"
 
         user_prompt = f"""## Client Intake Summary
 
@@ -114,11 +121,13 @@ def generate_strategic_brief(request: BriefRequest):
 
 **Diagnostic Pillar Scores:**
 {pillar_block}
+{extractions_block}
 {context_block}
 
 ---
 
 Please synthesize the above intake into a full Strategic Research Brief following the required output structure.
+Use the exact data from pillar_extractions to populate each section. Do NOT invent data that was not provided.
 """
 
         brief_text = call_openrouter(
@@ -128,7 +137,7 @@ Please synthesize the above intake into a full Strategic Research Brief followin
             model="google/gemini-pro-1.5-exp:free"
         )
 
-        # Save brief to disk alongside the Intent Form
+        # Save Artifact 1 to disk
         with open("Strategic_Brief.md", "w") as f:
             f.write(f"# Outtlyr Strategic Research Brief\n\n")
             f.write(f"**Research Intent:** {request.research_intent}\n\n")

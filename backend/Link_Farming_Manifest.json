@@ -1,0 +1,175 @@
+{
+  "study_id": "1067a4dd-4a37-4b4d-b474-98d4f7c453b5",
+  "study_type": "general",
+  "global_parameters": {
+    "time_window": "2024-07-01 to 2024-12-31",
+    "geo_fencing": [
+      "IN"
+    ],
+    "product_scope": [
+      "Milk",
+      "Curd",
+      "Paneer"
+    ]
+  },
+  "entity_anchors": {
+    "primary_brand": "Sid's Farm",
+    "tracked_competitors": [
+      "Nandini Milk",
+      "Heritage",
+      "Aavin",
+      "Milma"
+    ],
+    "ghost_brand_discovery": {
+      "enabled": true,
+      "platforms": [
+        "amazon.in",
+        "flipkart.com",
+        "blinkit.com"
+      ]
+    }
+  },
+  "boolean_nets": [
+    {
+      "query": "(\"high income\" OR \"HNI\" OR \"affluent\") AND (India) AND (\"premium milk\" OR \"artisanal curd\" OR \"gourmet paneer\") AND (preference OR \"willing to pay\" OR \"value for money\")",
+      "target_signals": [
+        "value_elasticity",
+        "choice_architecture",
+        "premium_perception"
+      ],
+      "priority": "high"
+    },
+    {
+      "query": "(\"A2 milk\" OR \"beta-casein\" OR \"organic dairy\") AND (India) AND (\"don't understand\" OR \"confused about\" OR \"benefits of\" OR \"awareness\") AND (premium OR healthy)",
+      "target_signals": [
+        "demand_gravity",
+        "choice_architecture",
+        "awareness_gaps"
+      ],
+      "priority": "high"
+    },
+    {
+      "query": "(India AND \"Tier 1\" AND (\"high income\" OR \"health conscious\")) AND (\"milk price\" OR \"curd price\" OR \"paneer price\") AND (\"too expensive\" OR \"worth the price\" OR \"value for money\" OR \"price sensitivity\")",
+      "target_signals": [
+        "value_elasticity",
+        "price_sensitivity_trends"
+      ],
+      "priority": "high"
+    },
+    {
+      "query": "(India) AND (\"milk buying journey\" OR \"curd purchase decision\" OR \"paneer selection criteria\" OR \"dairy shopping experience\")",
+      "target_signals": [
+        "customer_journey_mapping",
+        "choice_architecture",
+        "decision_triggers"
+      ],
+      "priority": "high"
+    },
+    {
+      "query": "(\"Sid's Farm\" OR \"Nandini Milk\" OR \"Heritage dairy\" OR \"Aavin milk\" OR \"Milma milk\") AND (India) AND (\"switching from\" OR \"better than\" OR \"regret buying\")",
+      "target_signals": [
+        "switching_narratives",
+        "regret_clusters",
+        "competitor_comparison"
+      ],
+      "priority": "high"
+    },
+    {
+      "query": "(India) AND (\"vegan milk\" OR \"plant-based curd\" OR \"dairy alternative paneer\") AND (\"best alternative\" OR \"why vegan\" OR \"review vegan dairy\")",
+      "target_signals": [
+        "ghost_brand_velocity",
+        "alternative_adoption",
+        "market_disruption"
+      ],
+      "priority": "high"
+    }
+  ],
+  "platform_targets": {
+    "youtube": {
+      "category_ids": [
+        28
+      ],
+      "min_views": 1000,
+      "search_queries": [
+        "premium A2 milk India",
+        "curd paneer benefits",
+        "healthy dairy India",
+        "Sid's Farm review",
+        "Nandini vs Sid's Farm",
+        "vegan dairy alternatives India"
+      ]
+    },
+    "reddit": {
+      "subreddits": [
+        "r/india",
+        "r/IndianFood",
+        "r/desi",
+        "r/healthindia",
+        "r/EatHealthyIndia",
+        "r/PersonalFinanceIndia"
+      ],
+      "search_queries": [
+        "premium milk review India",
+        "A2 milk benefits",
+        "paneer recipes healthy",
+        "milk price sensitivity India",
+        "best curd brand India",
+        "vegan dairy alternative discussion"
+      ]
+    },
+    "ecommerce": {
+      "platforms": [
+        "amazon.in",
+        "flipkart.com",
+        "blinkit.com"
+      ],
+      "keywords": [
+        "A2 milk",
+        "premium paneer",
+        "artisanal curd",
+        "healthy dairy",
+        "organic milk India",
+        "Sid's Farm",
+        "vegan milk alternative"
+      ],
+      "asins": []
+    },
+    "search_news": {
+      "queries": [
+        "premium dairy market India",
+        "A2 milk awareness campaigns",
+        "Tier 1 India consumer trends",
+        "Sid's Farm market entry",
+        "dairy industry outlook India"
+      ],
+      "domains": [
+        "timesofindia.indiatimes.com",
+        "ndtv.com",
+        "thehindubusinessline.com",
+        "livemint.com",
+        "economictimes.indiatimes.com"
+      ]
+    }
+  },
+  "signal_taxonomy": [
+    "value_elasticity",
+    "choice_architecture",
+    "demand_gravity",
+    "regret_clusters",
+    "switching_narratives",
+    "ghost_brand_velocity",
+    "premium_perception",
+    "awareness_gaps",
+    "price_sensitivity_trends",
+    "customer_journey_mapping",
+    "decision_triggers",
+    "competitor_comparison",
+    "alternative_adoption",
+    "market_disruption"
+  ],
+  "stop_rules": {
+    "msu_threshold": 0.02,
+    "confidence_threshold": 0.85,
+    "max_links": 10000
+  }
+}
