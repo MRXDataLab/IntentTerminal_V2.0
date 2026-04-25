@@ -1,87 +1,105 @@
 {
-  "study_id": "1067a4dd-4a37-4b4d-b474-98d4f7c453b5",
+  "study_id": "8eed4c2e-eb09-44fe-abe0-a3b1d056f6c2",
   "study_type": "general",
   "global_parameters": {
-    "time_window": "2024-07-01 to 2024-12-31",
+    "time_window": "2022-06-01 to 2024-06-01",
     "geo_fencing": [
-      "IN"
+      "IN",
+      "BI",
+      "UP",
+      "HP"
     ],
     "product_scope": [
-      "Milk",
-      "Curd",
-      "Paneer"
+      "Kellogg's Cornflakes",
+      "Kellogg's Multigrain Cornflakes",
+      "Cornflakes",
+      "Multigrain Cornflakes"
     ]
   },
   "entity_anchors": {
-    "primary_brand": "Sid's Farm",
+    "primary_brand": "Kellogg's Corn Portfolio",
     "tracked_competitors": [
-      "Nandini Milk",
-      "Heritage",
-      "Aavin",
-      "Milma"
+      "Mohan Cornflakes"
     ],
     "ghost_brand_discovery": {
       "enabled": true,
       "platforms": [
         "amazon.in",
         "flipkart.com",
-        "blinkit.com"
+        "blinkit.com",
+        "jiomart.com"
       ]
     }
   },
   "boolean_nets": [
     {
-      "query": "(\"high income\" OR \"HNI\" OR \"affluent\") AND (India) AND (\"premium milk\" OR \"artisanal curd\" OR \"gourmet paneer\") AND (preference OR \"willing to pay\" OR \"value for money\")",
+      "query": "(kellogg's OR \"corn flakes\" OR \"multigrain cornflakes\") AND (india) AND (dislike OR \"don't like\" OR \"bad taste\" OR \"soggy\" OR \"texture problem\" OR \"get bored\" OR \"switch from\" OR \"not repeat\" OR \"stop buying\")",
       "target_signals": [
-        "value_elasticity",
-        "choice_architecture",
-        "premium_perception"
+        "product_preference_erosion",
+        "repeat_purchase_barriers",
+        "taste_dislike",
+        "texture_issues",
+        "regret_clusters"
       ],
       "priority": "high"
     },
     {
-      "query": "(\"A2 milk\" OR \"beta-casein\" OR \"organic dairy\") AND (India) AND (\"don't understand\" OR \"confused about\" OR \"benefits of\" OR \"awareness\") AND (premium OR healthy)",
-      "target_signals": [
-        "demand_gravity",
-        "choice_architecture",
-        "awareness_gaps"
-      ],
-      "priority": "high"
-    },
-    {
-      "query": "(India AND \"Tier 1\" AND (\"high income\" OR \"health conscious\")) AND (\"milk price\" OR \"curd price\" OR \"paneer price\") AND (\"too expensive\" OR \"worth the price\" OR \"value for money\" OR \"price sensitivity\")",
-      "target_signals": [
-        "value_elasticity",
-        "price_sensitivity_trends"
-      ],
-      "priority": "high"
-    },
-    {
-      "query": "(India) AND (\"milk buying journey\" OR \"curd purchase decision\" OR \"paneer selection criteria\" OR \"dairy shopping experience\")",
-      "target_signals": [
-        "customer_journey_mapping",
-        "choice_architecture",
-        "decision_triggers"
-      ],
-      "priority": "high"
-    },
-    {
-      "query": "(\"Sid's Farm\" OR \"Nandini Milk\" OR \"Heritage dairy\" OR \"Aavin milk\" OR \"Milma milk\") AND (India) AND (\"switching from\" OR \"better than\" OR \"regret buying\")",
+      "query": "(muesli OR granola OR \"alternative breakfast cereal\") AND (kellogg's OR cornflakes) AND (switch OR prefer OR \"better than\" OR \"healthier than\" OR \"more variety\" OR \"new routine\") AND (india)",
       "target_signals": [
         "switching_narratives",
-        "regret_clusters",
-        "competitor_comparison"
+        "alternative_format_appeal",
+        "competitor_diversion",
+        "choice_architecture_shift"
       ],
       "priority": "high"
     },
     {
-      "query": "(India) AND (\"vegan milk\" OR \"plant-based curd\" OR \"dairy alternative paneer\") AND (\"best alternative\" OR \"why vegan\" OR \"review vegan dairy\")",
+      "query": "(\"mohan cornflakes\" OR \"local cornflakes brand\" OR \"budget cornflakes\") AND (kellogg's OR cornflakes) AND (price OR \"cheaper alternative\" OR value OR \"affordable breakfast\") AND (india)",
       "target_signals": [
-        "ghost_brand_velocity",
-        "alternative_adoption",
-        "market_disruption"
+        "competitor_price_impact",
+        "value_elasticity_shift",
+        "local_challenger_threat"
       ],
       "priority": "high"
+    },
+    {
+      "query": "(\"kellogg's multigrain cornflakes\" OR \"multigrain cornflakes india\") AND (disappoint OR \"not good\" OR \"didn't like\" OR taste OR price OR value OR \"expectations vs reality\" OR \"marketing fail\")",
+      "target_signals": [
+        "innovation_failure_drivers",
+        "value_elasticity_disconnect",
+        "demand_gravity_issues",
+        "taste_mismatch",
+        "taste_functional_disconnects"
+      ],
+      "priority": "medium"
+    },
+    {
+      "query": "(kellogg's OR \"corn flakes\") AND (india) AND (healthy OR nutrition OR \"energy\" OR \"fiber\" OR benefits OR \"good for me\") AND (expect OR \"not delivering\" OR \"misleading\" OR \"don't feel benefit\" OR \"false claims\")",
+      "target_signals": [
+        "functional_proposition_misalignment",
+        "consumer_expectation_gap",
+        "health_benefit_skepticism",
+        "taste_functional_disconnects"
+      ],
+      "priority": "medium"
+    },
+    {
+      "query": "(\"kellogg's cornflakes\" OR \"multigrain cornflakes\") AND (india) AND (why OR reason OR \"stopped buying\" OR \"lapsed user\" OR \"used to eat\" OR \"don't buy anymore\")",
+      "target_signals": [
+        "lapsed_consumer_triggers",
+        "brand_loyalty_erosion",
+        "consumption_discontinuation"
+      ],
+      "priority": "medium"
+    },
+    {
+      "query": "(muesli OR granola OR \"healthy cereal\") AND (india) AND (\"new brand\" OR \"emerging brand\" OR \"local brand\" OR \"recommendation\" OR \"best brand\" OR \"try\")",
+      "target_signals": [
+        "ghost_brand_velocity",
+        "emergent_competitor_signals",
+        "new_product_discovery"
+      ],
+      "priority": "low"
     }
   ],
   "platform_targets": {
@@ -91,81 +109,87 @@
       ],
       "min_views": 1000,
       "search_queries": [
-        "premium A2 milk India",
-        "curd paneer benefits",
-        "healthy dairy India",
-        "Sid's Farm review",
-        "Nandini vs Sid's Farm",
-        "vegan dairy alternatives India"
+        "kellogg's cornflakes review india",
+        "mohan cornflakes vs kellogg's",
+        "muesli vs cornflakes india",
+        "multigrain cornflakes taste test",
+        "healthy breakfast options india"
       ]
     },
     "reddit": {
       "subreddits": [
-        "r/india",
-        "r/IndianFood",
-        "r/desi",
-        "r/healthindia",
-        "r/EatHealthyIndia",
-        "r/PersonalFinanceIndia"
+        "india",
+        "indianfood",
+        "desifood",
+        "r/AskIndia",
+        "r/CasualIndia",
+        "r/delhi",
+        "r/mumbai",
+        "r/bangalore"
       ],
       "search_queries": [
-        "premium milk review India",
-        "A2 milk benefits",
-        "paneer recipes healthy",
-        "milk price sensitivity India",
-        "best curd brand India",
-        "vegan dairy alternative discussion"
+        "kellogg's cornflakes opinion",
+        "mohan cornflakes reddit",
+        "muesli recommendation india",
+        "multigrain cornflakes review",
+        "why did you stop eating cornflakes"
       ]
     },
     "ecommerce": {
       "platforms": [
         "amazon.in",
         "flipkart.com",
-        "blinkit.com"
+        "blinkit.com",
+        "jiomart.com"
       ],
       "keywords": [
-        "A2 milk",
-        "premium paneer",
-        "artisanal curd",
-        "healthy dairy",
-        "organic milk India",
-        "Sid's Farm",
-        "vegan milk alternative"
+        "kellogg's cornflakes",
+        "multigrain cornflakes",
+        "mohan cornflakes",
+        "muesli",
+        "granola",
+        "breakfast cereal india"
       ],
       "asins": []
     },
     "search_news": {
       "queries": [
-        "premium dairy market India",
-        "A2 milk awareness campaigns",
-        "Tier 1 India consumer trends",
-        "Sid's Farm market entry",
-        "dairy industry outlook India"
+        "kellogg's india decline",
+        "cornflakes market share india",
+        "mohan cornflakes popularity",
+        "muesli sales india growth",
+        "multigrain cornflakes review india"
       ],
-      "domains": [
-        "timesofindia.indiatimes.com",
-        "ndtv.com",
-        "thehindubusinessline.com",
-        "livemint.com",
-        "economictimes.indiatimes.com"
-      ]
+      "domains": []
     }
   },
   "signal_taxonomy": [
-    "value_elasticity",
-    "choice_architecture",
-    "demand_gravity",
     "regret_clusters",
+    "product_preference_erosion",
+    "repeat_purchase_barriers",
+    "taste_dislike",
+    "texture_issues",
     "switching_narratives",
+    "alternative_format_appeal",
+    "competitor_diversion",
+    "choice_architecture_shift",
+    "competitor_price_impact",
+    "value_elasticity_shift",
+    "local_challenger_threat",
+    "innovation_failure_drivers",
+    "value_elasticity_disconnect",
+    "demand_gravity_issues",
+    "taste_mismatch",
+    "taste_functional_disconnects",
+    "functional_proposition_misalignment",
+    "consumer_expectation_gap",
+    "health_benefit_skepticism",
+    "lapsed_consumer_triggers",
+    "brand_loyalty_erosion",
+    "consumption_discontinuation",
     "ghost_brand_velocity",
-    "premium_perception",
-    "awareness_gaps",
-    "price_sensitivity_trends",
-    "customer_journey_mapping",
-    "decision_triggers",
-    "competitor_comparison",
-    "alternative_adoption",
-    "market_disruption"
+    "emergent_competitor_signals",
+    "new_product_discovery"
   ],
   "stop_rules": {
     "msu_threshold": 0.02,

@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import axios from 'axios';
 import { motion } from 'framer-motion';
-import { Network, Activity, Search, ArrowLeft } from 'lucide-react';
+import { Network, Activity, CheckCircle2, ArrowLeft } from 'lucide-react';
 import dynamic from 'next/dynamic';
 
 // Dynamically import force graph to avoid SSR issues
@@ -45,6 +45,23 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack }: E
   const [ecosystemNodeNames, setEcosystemNodeNames] = useState<string[]>([]);
   const [categoriesLegend, setCategoriesLegend] = useState<{name: string, color: string, desc: string}[]>([]);
   const [showStrategicOverlay, setShowStrategicOverlay] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [graphDimensions, setGraphDimensions] = useState({ width: 800, height: 600 });
+
+  // Track container size for force graph
+  useEffect(() => {
+    const updateSize = () => {
+      if (containerRef.current) {
+        setGraphDimensions({
+          width: containerRef.current.clientWidth,
+          height: containerRef.current.clientHeight,
+        });
+      }
+    };
+    updateSize();
+    window.addEventListener('resize', updateSize);
+    return () => window.removeEventListener('resize', updateSize);
+  }, [loading, graphData]);
 
   useEffect(() => {
     const fetchGraph = async () => {
@@ -106,38 +123,38 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack }: E
   return (
     <div className="flex w-full h-screen bg-black text-white overflow-hidden relative">
       {/* Left Sidebar Info */}
-      <div className="w-96 min-w-[24rem] h-full border-r border-[#333] bg-[#0a0a0a] z-10 flex flex-col pt-6 pb-6 shadow-2xl overflow-y-auto shrink-0">
-        <div className="px-6 mb-8 flex items-start gap-4">
+      <div className="w-80 min-w-[20rem] h-full border-r border-[#333] bg-[#0a0a0a] z-10 flex flex-col pt-5 pb-5 shadow-2xl overflow-y-auto shrink-0">
+        <div className="px-5 mb-5 flex items-start gap-3">
           <button onClick={onBack} className="mt-1 shrink-0 p-1.5 hover:bg-[#222] rounded-md text-gray-400 hover:text-white transition-colors border border-transparent hover:border-[#333]">
-            <ArrowLeft size={18} />
+            <ArrowLeft size={16} />
           </button>
-          <div className="flex flex-col gap-3 w-full">
+          <div className="flex flex-col gap-2 w-full">
             <div className="flex items-center">
-               <img src="/outtlyr-logo.png" alt="Outtlyr" className="h-16 w-auto object-contain shrink-0 bg-transparent" onError={(e) => { e.currentTarget.style.display='none'; (e.currentTarget.nextElementSibling as HTMLElement).classList.remove('hidden') }} />
+               <img src="/outtlyr-logo.png" alt="Outtlyr" className="h-12 w-auto object-contain shrink-0 bg-transparent" onError={(e) => { e.currentTarget.style.display='none'; (e.currentTarget.nextElementSibling as HTMLElement).classList.remove('hidden') }} />
                <span className="hidden font-bold text-xl tracking-tight text-white">Outtlyr</span>
             </div>
             <div className="flex items-center gap-2 text-gray-300">
-              <Network className="text-blue-500" size={18} />
-              <h1 className="text-lg font-medium tracking-wide">Category Graph</h1>
+              <Network className="text-blue-500" size={16} />
+              <h1 className="text-base font-medium tracking-wide">Category Graph</h1>
             </div>
           </div>
         </div>
 
-        <div className="px-6 flex-1">
-          <div className="mb-8">
-            <h4 className="text-[11px] text-gray-500 uppercase tracking-widest font-mono mb-3">Research Intent</h4>
-            <div className="bg-[#111] p-4 rounded-xl border border-[#222]">
-               <p className="text-[13px] text-gray-300 italic leading-relaxed break-words">&quot;{intent}&quot;</p>
+        <div className="px-5 flex-1">
+          <div className="mb-5">
+            <h4 className="text-[10px] text-gray-500 uppercase tracking-widest font-mono mb-2">Research Intent</h4>
+            <div className="bg-[#111] p-3 rounded-lg border border-[#222]">
+               <p className="text-[11px] text-gray-300 italic leading-relaxed break-words line-clamp-3">&quot;{intent}&quot;</p>
             </div>
           </div>
 
-          <div className="space-y-4">
-            <div className="bg-gray-900/50 p-4 rounded-xl border border-gray-800">
+          <div className="space-y-3">
+            <div className="bg-gray-900/50 p-3 rounded-lg border border-gray-800">
               <div className="flex justify-between items-center mb-1">
-                <span className="text-gray-400 text-sm">Nodes Mapped</span>
-                <span className="text-teal-400 font-mono text-sm">{graphData ? graphData.nodes.length : 0}</span>
+                <span className="text-gray-400 text-xs">Nodes Mapped</span>
+                <span className="text-teal-400 font-mono text-xs">{graphData ? graphData.nodes.length : 0}</span>
               </div>
-              <div className="w-full bg-gray-800 rounded-full h-1 mt-2">
+              <div className="w-full bg-gray-800 rounded-full h-1 mt-1.5">
                 <div 
                   className="bg-teal-500 h-1 rounded-full transition-all duration-300" 
                   style={{ width: graphData ? `${(analyzingNodes / graphData.nodes.length) * 100}%` : '0%' }}
@@ -145,20 +162,20 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack }: E
               </div>
             </div>
             
-            <div className="bg-gray-900/50 p-4 rounded-xl border border-gray-800">
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-gray-400 text-sm">Semantic Edges</span>
-                <span className="text-blue-400 font-mono text-sm">{graphData ? graphData.links.length : 0}</span>
+            <div className="bg-gray-900/50 p-3 rounded-lg border border-gray-800">
+              <div className="flex justify-between items-center">
+                <span className="text-gray-400 text-xs">Semantic Edges</span>
+                <span className="text-blue-400 font-mono text-xs">{graphData ? graphData.links.length : 0}</span>
               </div>
             </div>
           </div>
 
           {!loading && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-6">
+            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-5">
               
               {/* Strategic Context Toggle */}
-              <div className="mb-6 bg-[#111] border border-[#222] p-3 rounded-lg flex items-center justify-between">
-                <span className="text-xs text-gray-300 font-medium">Strategic Overlay</span>
+              <div className="mb-4 bg-[#111] border border-[#222] p-2.5 rounded-lg flex items-center justify-between">
+                <span className="text-[11px] text-gray-300 font-medium">Strategic Overlay</span>
                 <button 
                   onClick={() => setShowStrategicOverlay(!showStrategicOverlay)}
                   className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 focus:ring-offset-black ${showStrategicOverlay ? 'bg-blue-600' : 'bg-gray-700'}`}
@@ -168,35 +185,31 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack }: E
               </div>
 
               {/* Dynamic Legend */}
-              <div className="mb-6">
-                <h4 className="text-[10px] text-gray-500 uppercase tracking-widest font-mono mb-3">
+              <div className="mb-5">
+                <h4 className="text-[9px] text-gray-500 uppercase tracking-widest font-mono mb-2">
                   {showStrategicOverlay ? "Strategic Forces" : "Key Subjects"}
                 </h4>
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   {showStrategicOverlay ? (
                     Object.entries(FORCE_COLORS).map(([name, color]) => (
-                      <div key={name} className="flex items-center gap-2">
-                        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                        <div>
-                          <span className="text-xs text-gray-300 font-medium">{name}</span>
-                        </div>
+                      <div key={name} className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
+                        <span className="text-[11px] text-gray-300 font-medium">{name}</span>
                       </div>
                     ))
                   ) : (
                     categoriesLegend.map((cat) => (
-                      <div key={cat.name} className="flex items-center gap-2">
-                        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
-                        <div>
-                          <span className="text-xs text-gray-300 font-medium">{cat.name}</span>
-                        </div>
+                      <div key={cat.name} className="flex items-center gap-1.5">
+                        <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
+                        <span className="text-[11px] text-gray-300 font-medium">{cat.name}</span>
                       </div>
                     ))
                   )}
                 </div>
               </div>
-              <button onClick={() => onMapComplete(ecosystemNodeNames)} className="w-full py-3 bg-blue-600 hover:bg-blue-500 text-white font-medium rounded-lg transition-colors flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
-                <Search size={18} />
-                Generate Source Seeds
+              <button onClick={() => onMapComplete(ecosystemNodeNames)} className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+                <CheckCircle2 size={16} />
+                Confirm Methodology
               </button>
             </motion.div>
           )}
@@ -204,7 +217,7 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack }: E
       </div>
 
       {/* Right Map Canvas */}
-      <div className="flex-1 h-full relative">
+      <div ref={containerRef} className="flex-1 h-full relative">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-20 z-0"></div>
         
         {loading ? (
@@ -213,8 +226,10 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack }: E
             <span className="font-mono tracking-widest">PERFORMING HORIZON SCAN...</span>
           </div>
         ) : graphData ? (
-          <div className="w-full h-full cursor-move z-10 relative">
+          <div className="absolute inset-0 cursor-move z-10">
             <ForceGraph2D
+              width={graphDimensions.width}
+              height={graphDimensions.height}
               graphData={graphData}
               nodeColor={getNodeColor}
               nodeRelSize={6}

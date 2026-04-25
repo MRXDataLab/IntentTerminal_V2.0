@@ -2,8 +2,9 @@
 
 import { useState, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { Send, Bot, User, CheckCircle2, Upload, Activity, LayoutTemplate, FileText, BookOpen, Zap, Check } from 'lucide-react';
+import { Send, Bot, User, CheckCircle2, Upload, Activity, LayoutTemplate, Zap, Check } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import type { InteractionPayload } from '@/app/page';
 
 const STUDY_TEMPLATES = [
   { id: 'U&A',               label: 'U&A Study',            desc: 'Usage & Attitudes — behavioral patterns, occasions, drivers', color: '#f59e0b' },
@@ -43,31 +44,46 @@ function getReadinessLabel(score: number) {
 }
 
 interface IntakeTerminalProps {
-  onIntentFinalized: (intent: string, brief?: string) => void;
+  onInteractionComplete: (payload: InteractionPayload) => void;
+  existingPayload?: InteractionPayload | null;
 }
 
-export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProps) {
-  const [messages, setMessages] = useState<Message[]>([
+export default function IntakeTerminal({ onInteractionComplete, existingPayload }: IntakeTerminalProps) {
+  const defaultMessages: Message[] = [
     { role: 'agent', content: 'Welcome to Outtlyr. Let us refine your research intent. What overarching topic or business anxiety would you like to explore?' }
-  ]);
+  ];
+
+  const [messages, setMessages] = useState<Message[]>(
+    existingPayload?.chatHistory?.length ? existingPayload.chatHistory as Message[] : defaultMessages
+  );
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [finalIntent, setFinalIntent] = useState<string | null>(null);
-  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null); // null = not yet chosen
-  const [contextLoaded, setContextLoaded] = useState<string | null>(null); // context summary if uploaded
+  const [finalIntent, setFinalIntent] = useState<string | null>(existingPayload?.isRefinement ? null : (existingPayload?.intent || null));
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(existingPayload?.template || null);
+  const [contextLoaded, setContextLoaded] = useState<string | null>(existingPayload?.contextDocument || null);
   
-  const [parameters, setParameters] = useState<{label: string, score: number}[]>([]);
-  const [overallReadiness, setOverallReadiness] = useState(0);
-  const [pillarExtractions, setPillarExtractions] = useState<Record<string, any> | null>(null);
-  const [briefText, setBriefText] = useState<string | null>(null);
-  const [isBriefLoading, setIsBriefLoading] = useState(false);
-  const [manifestData, setManifestData] = useState<Record<string, any> | null>(null);
+  const [parameters, setParameters] = useState<{label: string, score: number}[]>(existingPayload?.parameters || []);
+  const [overallReadiness, setOverallReadiness] = useState(
+    existingPayload?.parameters?.length ? Math.round(existingPayload.parameters.reduce((a, p) => a + p.score, 0) / existingPayload.parameters.length) : 0
+  );
+  const [pillarExtractions, setPillarExtractions] = useState<Record<string, any> | null>(existingPayload?.pillarExtractions || null);
   
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading, parameters]);
+
+  // Refinement mode: inject the rejection context as a system message
+  useEffect(() => {
+    if (existingPayload?.isRefinement && existingPayload?.rejectionContext) {
+      setMessages(prev => [
+        ...prev,
+        { role: 'agent', content: `🔄 **Refinement requested.** The client's feedback on the synthesis output:\n\n"${existingPayload.rejectionContext}"\n\nPlease provide additional context so we can refine the research parameters.` }
+      ]);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
@@ -299,67 +315,8 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
     URL.revokeObjectURL(url);
   };
 
-  const handleGenerateBrief = async () => {
-    if (!finalIntent) return;
-    setIsBriefLoading(true);
-    try {
-      // Step 1: Generate the Strategic Brief (Artifact 1)
-      const briefRes = await axios.post('http://localhost:8000/api/generate-brief', {
-        research_intent: finalIntent,
-        parameters: parameters,
-        pillar_extractions: pillarExtractions || undefined,
-        context_document: contextLoaded || undefined,
-        template: selectedTemplate && selectedTemplate !== 'none' ? selectedTemplate : undefined,
-      });
-      setBriefText(briefRes.data.brief);
 
-      // Step 2: Auto-generate the Link Farming Manifest (Artifact 3)
-      try {
-        const manifestRes = await axios.post('http://localhost:8000/api/generate-manifest', {
-          research_intent: finalIntent,
-          brief_text: briefRes.data.brief,
-          pillar_extractions: pillarExtractions || undefined,
-          template: selectedTemplate && selectedTemplate !== 'none' ? selectedTemplate : undefined,
-        });
-        setManifestData(manifestRes.data.manifest);
-      } catch (manifestErr) {
-        console.error('Manifest generation error (non-blocking)', manifestErr);
-      }
-    } catch (error) {
-      console.error('Brief generation error', error);
-      setBriefText('Failed to generate the brief. Please try again.');
-    } finally {
-      setIsBriefLoading(false);
-    }
-  };
 
-  const handleDownloadBrief = () => {
-    if (!briefText) return;
-    const content = `# Outtlyr Strategic Research Brief\n\n**Research Intent:** ${finalIntent}\n\n---\n\n${briefText}`;
-    const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Outtlyr_Strategic_Brief.md`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
-
-  const handleDownloadManifest = () => {
-    if (!manifestData) return;
-    const content = JSON.stringify(manifestData, null, 2);
-    const blob = new Blob([content], { type: 'application/json;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Outtlyr_Link_Farming_Manifest.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-  };
 
   const handleAction = async (value: string) => {
     setMessages(prev => prev.map((m, i) =>
@@ -437,7 +394,7 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
   const readinessInfo = getReadinessLabel(overallReadiness);
 
   return (
-    <div className="flex h-screen w-full bg-[#0a0a0a] text-white overflow-hidden pb-10">
+    <div className="flex h-screen w-full bg-[#0a0a0a] text-white overflow-hidden">
       
       {/* Left Pane - Chat Interface */}
       <div className="w-1/2 h-full flex flex-col border-r border-[#333] relative">
@@ -524,23 +481,23 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
       </div>
 
       {/* Right Pane - Visualisation & Output */}
-      <div className="w-1/2 h-full bg-black relative flex flex-col justify-center items-center p-12 overflow-y-auto">
+      <div className="w-1/2 h-full bg-black relative flex flex-col items-center overflow-hidden">
         <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-20"></div>
         
-        <div className="z-10 w-full max-w-md">
+        <div className="z-10 w-full max-w-md flex-1 overflow-y-auto py-6 px-4">
           {selectedTemplate === null ? (
-            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-4 w-full">
-              <div className="text-center mb-6">
-                <LayoutTemplate size={28} className="text-teal-500 mx-auto mb-3" />
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="space-y-2.5 w-full">
+              <div className="text-center mb-3">
+                <LayoutTemplate size={24} className="text-teal-500 mx-auto mb-2" />
                 <h2 className="text-lg font-medium text-white">Select a Study Template</h2>
-                <p className="text-sm text-gray-500 mt-1">Or upload an existing brief, or skip to free-form probing</p>
+                <p className="text-xs text-gray-500 mt-1">Or upload an existing brief, or skip to free-form probing</p>
               </div>
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {STUDY_TEMPLATES.map((t) => (
                   <button
                     key={t.id}
                     onClick={() => handleTemplateSelect(t.id)}
-                    className="w-full text-left p-4 rounded-xl border border-[#222] hover:border-[#444] bg-[#111] hover:bg-[#171717] transition-all group"
+                    className="w-full text-left p-3 rounded-xl border border-[#222] hover:border-[#444] bg-[#111] hover:bg-[#171717] transition-all group"
                   >
                     <div className="flex items-center gap-3">
                       <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: t.color }} />
@@ -554,7 +511,7 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
               </div>
               
               {/* Path C: Upload an existing brief — PRIMARY entry option */}
-              <label className="w-full flex items-center justify-center gap-2 p-4 rounded-xl border border-dashed border-teal-500/30 hover:border-teal-500/60 bg-teal-950/10 hover:bg-teal-950/20 text-teal-400 cursor-pointer transition-all">
+              <label className="w-full flex items-center justify-center gap-2 p-3 rounded-xl border border-dashed border-teal-500/30 hover:border-teal-500/60 bg-teal-950/10 hover:bg-teal-950/20 text-teal-400 cursor-pointer transition-all">
                 <Upload size={18} />
                 <span className="text-sm font-medium">Upload an Existing Brief</span>
                 <input type="file" accept=".csv,.pdf,.md,.txt" className="hidden" onChange={handleContextUpload} />
@@ -664,106 +621,36 @@ export default function IntakeTerminal({ onIntentFinalized }: IntakeTerminalProp
                 </div>
               </div>
 
-              {/* Strategic Brief Section */}
-              {!briefText && !isBriefLoading && (
-                <motion.div
-                  initial={{ opacity: 0, y: 8 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="bg-[#0d1f1a] border border-teal-900/40 rounded-2xl p-5"
+              {/* Proceed to Synthesis */}
+              <motion.div
+                initial={{ opacity: 0, y: 8 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.3 }}
+                className="space-y-3"
+              >
+                <button
+                  onClick={handleDownloadIntent}
+                  className="w-full py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-gray-600 text-gray-300 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
                 >
-                  <div className="flex items-center gap-2 mb-3">
-                    <BookOpen size={18} className="text-teal-500" />
-                    <h3 className="text-sm font-medium text-white">Strategic Research Brief</h3>
-                  </div>
-                  <p className="text-xs text-gray-400 leading-relaxed mb-4">
-                    Synthesize your intake into a high-fidelity Signal Hunting Mandate — including Ghost Brand discovery, Regulatory Physics mapping, and a 5-Tier Evidence Blueprint. Will also generate the Link Farming Manifest (.json) for the ingestion engine.
-                  </p>
-                  <button
-                    onClick={handleGenerateBrief}
-                    className="w-full py-3 bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/40 hover:border-teal-400/70 text-teal-400 text-sm font-medium rounded-xl transition-all flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(20,184,166,0.1)]"
-                  >
-                    <Zap size={16} />
-                    Generate Strategic Brief
-                  </button>
-                </motion.div>
-              )}
-
-              {/* Brief Loading State */}
-              {isBriefLoading && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  className="bg-[#0d1f1a] border border-teal-900/40 rounded-2xl p-6 flex flex-col items-center gap-3"
+                  <Activity size={14} />
+                  Download Intent Document (.md)
+                </button>
+                <button
+                  onClick={() => onInteractionComplete({
+                    intent: finalIntent || '',
+                    parameters,
+                    pillarExtractions,
+                    contextDocument: contextLoaded,
+                    template: selectedTemplate,
+                    chatHistory: messages.map(m => ({ role: m.role, content: m.content })),
+                    isRefinement: false,
+                  })}
+                  className="w-full py-3 bg-teal-500 hover:bg-teal-400 text-black font-semibold rounded-xl transition-colors shadow-[0_0_20px_rgba(20,184,166,0.4)] flex items-center justify-center gap-2"
                 >
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-teal-500/60 animate-bounce" style={{ animationDelay: '0ms' }} />
-                    <div className="w-2 h-2 rounded-full bg-teal-500/60 animate-bounce" style={{ animationDelay: '150ms' }} />
-                    <div className="w-2 h-2 rounded-full bg-teal-500/60 animate-bounce" style={{ animationDelay: '300ms' }} />
-                  </div>
-                  <p className="text-xs text-teal-500/70 font-mono uppercase tracking-widest">Synthesizing brief + manifest...</p>
-                </motion.div>
-              )}
-
-              {/* Brief Preview + Manifest + Actions */}
-              {briefText && !isBriefLoading && (
-                <motion.div
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  className="space-y-4"
-                >
-                  <div className="bg-[#0d1f1a] border border-teal-800/50 rounded-2xl p-5 max-h-64 overflow-y-auto shadow-[inset_0_0_20px_rgba(20,184,166,0.05)]">
-                    <div className="flex items-center gap-2 mb-3">
-                      <FileText size={16} className="text-teal-400 shrink-0" />
-                      <span className="text-xs font-mono text-teal-500 uppercase tracking-widest">Strategic Research Brief</span>
-                    </div>
-                    <pre className="text-xs text-gray-300 leading-relaxed whitespace-pre-wrap font-mono">
-                      {briefText}
-                    </pre>
-                  </div>
-
-                  {/* Manifest summary */}
-                  {manifestData && (
-                    <div className="bg-[#0f1419] border border-blue-900/30 rounded-2xl p-4">
-                      <div className="flex items-center gap-2 mb-2">
-                        <Activity size={14} className="text-blue-400 shrink-0" />
-                        <span className="text-xs font-mono text-blue-400 uppercase tracking-widest">Link Farming Manifest</span>
-                      </div>
-                      <div className="flex gap-4 text-xs text-gray-400">
-                        <span>{manifestData.boolean_nets?.length || 0} boolean nets</span>
-                        <span>{manifestData.signal_taxonomy?.length || 0} signal tags</span>
-                        <span>{manifestData.entity_anchors?.tracked_competitors?.length || 0} rivals tracked</span>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="flex gap-3">
-                    <button
-                      onClick={handleDownloadBrief}
-                      className="flex-1 py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-gray-600 text-teal-400 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
-                    >
-                      <FileText size={14} />
-                      Brief (.md)
-                    </button>
-                    {manifestData && (
-                      <button
-                        onClick={handleDownloadManifest}
-                        className="flex-1 py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-gray-600 text-blue-400 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
-                      >
-                        <Activity size={14} />
-                        Manifest (.json)
-                      </button>
-                    )}
-                    <button
-                      onClick={() => onIntentFinalized(finalIntent || 'Intent Default', briefText || undefined)}
-                      className="flex-1 py-2.5 bg-teal-500 hover:bg-teal-400 text-black font-semibold rounded-xl transition-colors shadow-[0_0_20px_rgba(20,184,166,0.4)] flex items-center justify-center gap-2"
-                    >
-                      <Zap size={14} />
-                      Horizon Scan
-                    </button>
-                  </div>
-                </motion.div>
-              )}
+                  <Zap size={16} />
+                  Proceed to Synthesis
+                </button>
+              </motion.div>
             </motion.div>
           )}
         </div>
