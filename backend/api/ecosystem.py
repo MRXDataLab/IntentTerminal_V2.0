@@ -45,8 +45,8 @@ DO NOT use generic category knowledge.
 
 Mapping logic (Semantic Market Web):
 - "core_topic": Extract from the North Star Statement — the central problem.
-- "subjects" (Tier 1 Nodes): Major themes from the Brief (e.g. "Battery Life", "Brand Trust", "Price Sensitivity").
-- "components" (Tier 2 Nodes): Sub-topics mapped to a specific subject (e.g. "FAME II Subsidy").
+- "subjects" (Tier 1 Nodes): Extract the actual "Hypotheses to Stress-Test" from the Brief as the subjects. Use the hypothesis text as the node name.
+- "components" (Tier 2 Nodes): Sub-topics mapped to a specific hypothesis (e.g. "FAME II Subsidy").
 - "signals" (Tier 3 Nodes): The actual internet sources/keywords mapped to a component.
 - "force_metadata": For EVERY node, assign it one of the 5 Strategic Forces (Demand Gravity, Choice Architecture, Value Elasticity, Reinforcement Stability, Competitive Energy) as a background tag.
 
@@ -147,6 +147,15 @@ def generate_dynamic_ecosystem_graph(intent: str, brief: str | None = None) -> D
 @router.post("/generate-ecosystem")
 def generate_ecosystem(payload: IntentPayload):
     graph_data = generate_dynamic_ecosystem_graph(payload.intent, payload.brief)
+    
+    # ── DEV BYPASS CAPTURE: Save snapshot of this run ──
+    import pathlib
+    capture_dir = pathlib.Path("latest_run_data")
+    capture_dir.mkdir(exist_ok=True)
+    (capture_dir / "latest_graph.json").write_text(
+        json.dumps(graph_data, indent=2), encoding="utf-8"
+    )
+    
     return {
         "status": "success",
         "graph": graph_data

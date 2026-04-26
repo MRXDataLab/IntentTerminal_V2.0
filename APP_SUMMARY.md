@@ -1,51 +1,86 @@
-# Outtlyr (MRX Module 1) Application Summary
+# Outtlyr – Nucleus Ingestion (Module 1) Application Summary
 
-This document provides a comprehensive overview of the functionality and architectural layers of the Outtlyr primary intelligence platform.
-
-## Architecture
-
-*   **Frontend**: Next.js (React) application styled with Tailwind CSS, utilizing Framer Motion for animations and Lucide React for iconography.
-*   **Backend**: FastAPI Python application handling requests and routing them to OpenRouter for LLM inference.
-*   **Integration**: Communication between the frontend and backend is handled via standard REST APIs (`/api/chat`, `/api/generate-brief`, `/api/generate-ecosystem`).
-
-## Core Pipeline & User Journey
-
-The application operates as a sequential three-phase pipeline, driving the user from initial problem definition to final data ingestion setup.
-
-### Phase 1: The Intake Terminal
-The first phase focuses on calibrating the research intent through an interactive, AI-driven diagnostic process.
-
-*   **Document Context Upload**: Users can fast-track the intake by uploading documents (`.md`, `.txt`, `.csv`, `.pdf`). The backend parses the content (truncated to 4,000 characters for token efficiency) to pre-score system pillars.
-*   **Diagnostic Chat Interface**: An LLM-powered agent acts as a strategic consultant, asking one short, targeted question at a time to uncover the root cause of the research request. The history is kept to a 6-message rolling window to optimize token burn.
-*   **5-Pillar Scoring System**: The backend evaluates the conversation against five critical pillars:
-    1.  Market Context & Trigger
-    2.  Strategic Decision & Goal
-    3.  Target Lens & Hypothesis
-    4.  Scope & Assets
-    5.  Competitive Landscape & Constraints
-*   **Visual Radar Reveal**: A staged UI that displays readiness metrics using a live-updating radar visualization. The threshold for completion is dynamically set at 60%.
-*   **Intent Locking & Brief Generation**: Once parameters are met (or if the user bypasses fine-tuning), the system locks a "North Star Statement". It then calls the `/api/generate-brief` endpoint to synthesize the raw input into a highly structured **5-Tier Strategic Research Brief**.
-*   **Outcome**: Generates an actionable `.md` file downloaded to the user's local machine, providing a structured mandate (including Ghost Brand discovery, Regulatory Physics, and an Evidence Blueprint).
-
-### Phase 2: Category Ecosystem Map
-The second phase transforms the Strategic Research Brief into an interactive visual taxonomy.
-
-*   **Brief-Driven Nodes**: The backend (`/api/generate-ecosystem`) uses the generated Strategic Brief as its primary source of truth. It explicitly maps entities, signals, datasets, and platforms mentioned in the brief rather than relying on generic knowledge.
-*   **Dynamic Thematic Categories**: The system extracts 4 to 6 specific thematic pillars from the brief (moving away from static forces), establishing them as root categories in the graph.
-*   **Force-Directed Graph**: Uses `react-force-graph-2d` to render a living, interactive canvas of the ecosystem.
-*   **Dynamic Visual Legend**: The UI dynamically assigns colors from a predefined palette to the generated thematic categories, displaying a live legend outlining the key themes bridging the graph components.
-*   **Outcome**: Maps out target domains and structural/subjective nodes, preparing the exact "Source Seeds" needed for internet discovery.
-
-### Phase 3: Audit Dashboard
-The final phase (currently a transition point in Module 1) receives the defined node list.
-
-*   **Node Hand-off**: The frontend successfully extracts all active node labels from the Ecosystem Map.
-*   **Ingestion Hand-shake**: Prepares the parameters required to trigger the deeper MRX Data Ingestion Pipeline (Module 2/Inference Engine), acting as a verified data blueprint.
+This document provides an accurate, up-to-date overview of the architecture, pipeline, and key components of the Outtlyr Nucleus Ingestion web application.
 
 ---
 
-## Notable Recent Optimizations
+## Architecture
 
-1.  **Reduced AI Hallucination**: The ecosystem map directly inherits entities from the Research brief rather than inventing broad market categories.
-2.  **Token Efficiency**: Truncation logic and conversational window limits ensure API calls to OpenRouter scale efficiently for high-volume engagements.
-3.  **Conversational Tone Formatting**: Constraints placed on the AI Intake agent heavily refine questions—forcing brief, jargon-free, one-at-a-time clarifications avoiding overly dense research methodologies.
+| Layer      | Technology                                                                 |
+|------------|---------------------------------------------------------------------------|
+| Frontend   | Next.js 14 (App Router), Vanilla CSS + Tailwind utility classes, Framer Motion, Lucide React |
+| Backend    | FastAPI (Python), with a multi-provider LLM client (`llm_client.py`)     |
+| LLM Access | Primary: Google Gemini (native SDK). Fallback: OpenRouter (rate-limit safety net) |
+| Graph Engine | NetworkX (backend topology generation) + `react-force-graph-2d` (frontend render) |
+| Storage    | Local disk — `Strategic_Brief.md`, `Link_Farming_Manifest.json`, `latest_run_data/` |
+
+**Key REST API Routes:**
+
+| Route | Purpose |
+|-------|---------|
+| `POST /api/chat` | Intake Terminal conversational agent |
+| `POST /api/context-upload` | Parse and pre-score uploaded documents |
+| `POST /api/generate-brief` | Generate the Strategic Research Brief (Artifact 1) |
+| `POST /api/generate-manifest` | Generate the Link Farming Manifest (Artifact 3) |
+| `POST /api/generate-ecosystem` | Generate the Category Graph topology |
+| `GET  /api/latest-run` | Dev Bypass: serve last captured live run snapshot |
+| `POST /api/truth-map` | Generate nodes for the Living Truth Map |
+
+---
+
+## Core Pipeline & User Journey
+
+The application operates as a three-phase sequential pipeline.
+
+---
+
+### Phase 1: Intake Terminal (Module 1)
+
+The entry point to the system. Calibrates the research intent through an interactive, AI-driven diagnostic process.
+
+- **Document Context Upload**: Users can fast-track intake by uploading `.md`, `.txt`, `.csv`, or `.pdf` files. The backend parses and truncates content to 4,000 characters to pre-score the five diagnostic pillars.
+- **Diagnostic Chat Interface**: An LLM-powered consultant agent asks one focused question at a time to uncover the root cause of the research problem. Conversation history is capped at a 6-message rolling window for token efficiency.
+- **5-Pillar Scoring System**: The backend evaluates the conversation against five structured pillars:
+  1. Market Context & Trigger
+  2. Strategic Decision & Goal
+  3. Target Lens & Hypothesis
+  4. Scope & Assets
+  5. Competitive Landscape & Constraints
+- **Study Archetype Templates**: Users can optionally select a study type (e.g., "Brand Health", "Market Entry", "Erosion Diagnosis") which shapes how the LLM synthesizes the brief.
+- **Intent Locking**: Once pillar thresholds are met (or the user bypasses), the system locks a "North Star Statement" — the single-sentence Research Intent.
+- **🧪 Dev Bypass**: A developer-only button in the navigation bar that instantly jumps to the Synthesis Review page using the most recent live-run's cached data (intent, brief, manifest, and graph), costing zero LLM tokens.
+
+---
+
+### Phase 2: Synthesis Review (Module 1)
+
+Transforms the locked Research Intent into three structured artifacts for client review and approval.
+
+- **Artifact 1 – Strategic Research Brief**: A 10-section structured markdown document synthesized by the LLM from the pillar extractions. Sections include: Market Context, Strategic Goal, Hypotheses to Stress-Test, Target Cohort, Search Perimeter, Threat Matrix, Internal Ground Truth, Stop-Rules, and Deliverables. Displayed in a collapsible drawer at the bottom of the right pane and downloadable as `.md`.
+- **Artifact 2 – Category Graph (Ecosystem Map)**: An interactive node-link graph generated by the backend using the brief as its primary data source. The LLM extracts real entities, brands, signals, and platforms from the brief and maps them to a Subject → Component → Signal hierarchy, tagging each node with one of the 5 Strategic Forces (`Demand Gravity`, `Choice Architecture`, `Value Elasticity`, `Reinforcement Stability`, `Competitive Energy`). Three view modes are available via tabs in the top-right of the canvas:
+  - **Flowchart** (default): A vertical column-based hierarchy.
+  - **Sunburst Chart**: Nested radial rings by force category.
+  - **Legacy**: Physics-based `react-force-graph-2d` force-directed canvas.
+- **Artifact 3 – Link Farming Manifest**: A machine-readable JSON payload listing boolean search nets, platform targets (Reddit, YouTube, E-commerce), entity anchors (rivals, ghost brands), and signal taxonomy. Displayed as a metric summary card in the left sidebar.
+- **Left Sidebar Controls**: Research Intent display, Relationships Mapped counter, Strategic Overlay toggle (colors nodes by Strategic Force), Key Subjects legend, Manifest summary, and Request Refinement.
+- **Approval Gate**: A "Confirm Methodology" button sends the approved manifest and node list forward to Phase 3.
+
+---
+
+### Phase 3: Discovery Audit / Living Truth Map (Module 2 Bridge)
+
+The final handoff phase, currently acting as a transition bridge to the deeper ingestion engine.
+
+- **Living Truth Map**: A dynamic, node-based canvas that receives the approved hypothesis set and monitors data ingestion in near real-time. Nodes represent hypotheses and source terrain (Reddit, YouTube, Amazon reviews). Color, pulse, and edge thickness change as data is ingested.
+- **Confidence Progress Bar**: Tracks Statistical Confidence (MSU — Marginal Signal Utility) rather than raw volume, filling as signal variance stabilizes.
+- **Node Hand-off**: Forwards the approved node list and manifest to the MRX Data Ingestion Pipeline (Module 2 / Inference Engine).
+
+---
+
+## Notable Architecture Decisions
+
+1. **LLM Fallback Chain**: `llm_client.py` wraps both the native Gemini SDK and OpenRouter. If Gemini hits a rate limit or spending cap, the system transparently fails over to OpenRouter without user-visible errors.
+2. **Brief-Driven Graph**: The ecosystem map inherits entities *directly from the Strategic Brief* rather than hallucinating generic market knowledge — a critical anti-hallucination design choice.
+3. **sessionStorage Graph Caching**: All three graph view components (`EcosystemMap`, `EcosystemMapFlowchart`, `EcosystemMapSunburst`) cache the graph JSON in `sessionStorage` after the first fetch, preventing redundant LLM calls when toggling between views.
+4. **Dev Bypass / Run Capture**: Every live run automatically snapshots `latest_intent.txt`, `latest_brief.md`, `latest_manifest.json`, and `latest_graph.json` to `backend/latest_run_data/`. The Dev Bypass button reads these files and replays the session with zero API cost.
+5. **Token Efficiency**: Context truncation (4,000 char upload limit, 7,000 char brief limit for graph generation) and a 6-message conversational window limit keep API costs predictable at scale.

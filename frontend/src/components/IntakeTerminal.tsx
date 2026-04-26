@@ -88,6 +88,10 @@ export default function IntakeTerminal({ onInteractionComplete, existingPayload 
   const handleSend = async () => {
     if (!input.trim() || isLoading) return;
     
+    if (selectedTemplate === null) {
+      setSelectedTemplate('none');
+    }
+    
     const userMsg: Message = { role: 'user', content: input };
     const updatedMessages = [...messages, userMsg];
     setMessages(updatedMessages);
@@ -394,24 +398,50 @@ export default function IntakeTerminal({ onInteractionComplete, existingPayload 
   const readinessInfo = getReadinessLabel(overallReadiness);
 
   return (
-    <div className="flex h-screen w-full bg-[#0a0a0a] text-white overflow-hidden">
+    <div className="flex flex-col h-screen w-full bg-[#0a0a0a] text-white overflow-hidden">
       
-      {/* Left Pane - Chat Interface */}
-      <div className="w-1/2 h-full flex flex-col border-r border-[#333] relative">
-        <div className="p-6 border-b border-[#333] flex items-center justify-between z-10 bg-[#0a0a0a]/80 backdrop-blur-md">
-          <div className="flex items-center gap-3">
-            <div className="flex items-center shrink-0">
-               <img src="/outtlyr-logo.png" alt="Outtlyr" className="h-16 w-auto object-contain mr-3 shrink-0 bg-transparent" onError={(e) => { e.currentTarget.style.display='none'; (e.currentTarget.nextElementSibling as HTMLElement).classList.remove('hidden') }} />
-               <span className="hidden font-bold text-xl tracking-tight mr-1 text-white">Outtlyr</span>
-            </div>
-            <div className="w-px h-6 bg-[#333] mx-2"></div>
-            <div className="w-2 h-2 rounded-full bg-teal-500 shadow-[0_0_10px_rgba(20,184,166,0.8)] animate-pulse"></div>
-            <h1 className="text-lg font-medium tracking-wide text-gray-300">Intake Terminal</h1>
+      {/* Full-Width Top Header */}
+      <div className="w-full px-6 py-4 border-b border-[#333] flex items-center justify-between z-20 bg-[#0a0a0a]/80 backdrop-blur-md shrink-0">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center shrink-0">
+             <img src="/outtlyr-logo.png" alt="Outtlyr" className="h-10 w-auto object-contain mr-3 shrink-0 bg-transparent" onError={(e) => { e.currentTarget.style.display='none'; (e.currentTarget.nextElementSibling as HTMLElement).classList.remove('hidden') }} />
+             <span className="hidden font-bold text-xl tracking-tight mr-1 text-white">Outtlyr</span>
           </div>
+          <div className="w-px h-6 bg-[#333] mx-2"></div>
+          <div className="w-2 h-2 rounded-full bg-teal-500 shadow-[0_0_10px_rgba(20,184,166,0.8)] animate-pulse"></div>
+          <h1 className="text-lg font-medium tracking-wide text-gray-300">Intake Terminal</h1>
+        </div>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => onInteractionComplete({
+              intent: 'DEV_TEST_MOCK',
+              parameters: [
+                { label: "Demand Gravity", score: 85 },
+                { label: "Choice Architecture", score: 70 },
+                { label: "Value Elasticity", score: 90 },
+                { label: "Reinforcement Stability", score: 80 },
+                { label: "Competitive Energy", score: 75 },
+              ],
+              pillarExtractions: null,
+              contextDocument: null,
+              template: "none",
+              chatHistory: [],
+              isRefinement: false,
+            })}
+            className="text-[10px] font-mono tracking-widest uppercase bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 border border-amber-500/50 px-3 py-1.5 rounded transition-colors"
+          >
+            🧪 Dev Bypass
+          </button>
           <span className="text-xs text-gray-500 uppercase tracking-widest font-mono">Phase_1: Alignment</span>
         </div>
+      </div>
 
-        <div className="flex-1 overflow-y-auto p-6 space-y-6">
+      {/* Bottom Deck (Two Halves) */}
+      <div className="flex flex-1 overflow-hidden">
+        
+        {/* Left Pane - Chat Interface */}
+        <div className="w-1/2 h-full flex flex-col border-r border-[#333] relative">
+          <div className="flex-1 overflow-y-auto p-6 space-y-6">
           <AnimatePresence initial={false}>
             {messages.map((msg, i) => (
               <motion.div 
@@ -653,6 +683,7 @@ export default function IntakeTerminal({ onInteractionComplete, existingPayload 
               </motion.div>
             </motion.div>
           )}
+        </div>
         </div>
       </div>
 

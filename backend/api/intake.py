@@ -301,6 +301,8 @@ def process_intake_chat(messages: List[Message], fast_track: bool, template: Opt
         model="google/gemini-2.0-flash-lite-preview:free"
     )
     
+    print(f"LLM RESULT: {json.dumps(llm_result)}")
+    
     params_data = llm_result.get("parameters", [])
     response_text = llm_result.get("response", "Thank you, could you elaborate?")
     is_finalized = llm_result.get("is_finalized", False)

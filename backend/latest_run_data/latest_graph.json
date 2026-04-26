@@ -1,0 +1,180 @@
+{
+  "directed": true,
+  "multigraph": false,
+  "graph": {},
+  "nodes": [
+    {
+      "type": "root",
+      "label": "Retention collapse within Kellogg's India Corn Portfolio and failure of Multigrain launch to convert trials into habitual routines",
+      "force": "root",
+      "id": "Retention collapse within Kellogg's India Corn Portfolio and failure of Multigrain launch to convert trials into habitual routines"
+    },
+    {
+      "type": "subject",
+      "label": "The Multigrain health claims are failing to create a sticky breakfast ritual because the taste profile does not meet the sensory expectations of traditional core buyers, leading to one-time trials without adoption.",
+      "force": "Demand Gravity",
+      "subject": "The Multigrain health claims are failing to create a sticky breakfast ritual because the taste profile does not meet the sensory expectations of traditional core buyers, leading to one-time trials without adoption.",
+      "id": "The Multigrain health claims are failing to create a sticky breakfast ritual because the taste profile does not meet the sensory expectations of traditional core buyers, leading to one-time trials without adoption."
+    },
+    {
+      "type": "component",
+      "label": "Multigrain Cornflakes launch",
+      "force": "Reinforcement Stability",
+      "subject": "The Multigrain health claims are failing to create a sticky breakfast ritual because the taste profile does not meet the sensory expectations of traditional core buyers, leading to one-time trials without adoption.",
+      "id": "Multigrain Cornflakes launch"
+    },
+    {
+      "type": "signal",
+      "label": "Sensory expectations",
+      "force": "Demand Gravity",
+      "subject": "The Multigrain health claims are failing to create a sticky breakfast ritual because the taste profile does not meet the sensory expectations of traditional core buyers, leading to one-time trials without adoption.",
+      "id": "Sensory expectations"
+    },
+    {
+      "type": "signal",
+      "label": "Functional claims",
+      "force": "Choice Architecture",
+      "subject": "The Multigrain health claims are failing to create a sticky breakfast ritual because the taste profile does not meet the sensory expectations of traditional core buyers, leading to one-time trials without adoption.",
+      "id": "Functional claims"
+    },
+    {
+      "type": "signal",
+      "label": "Ritual Language",
+      "force": "Reinforcement Stability",
+      "subject": "The Multigrain health claims are failing to create a sticky breakfast ritual because the taste profile does not meet the sensory expectations of traditional core buyers, leading to one-time trials without adoption.",
+      "id": "Ritual Language"
+    },
+    {
+      "type": "subject",
+      "label": "Local value players, specifically Mohan Cornflakes in the East, are successfully disrupting Kellogg\u2019s brand pull by offering a good enough substitute at a lower price point, causing a migration of price-sensitive families.",
+      "force": "Value Elasticity",
+      "subject": "Local value players, specifically Mohan Cornflakes in the East, are successfully disrupting Kellogg\u2019s brand pull by offering a good enough substitute at a lower price point, causing a migration of price-sensitive families.",
+      "id": "Local value players, specifically Mohan Cornflakes in the East, are successfully disrupting Kellogg\u2019s brand pull by offering a good enough substitute at a lower price point, causing a migration of price-sensitive families."
+    },
+    {
+      "type": "component",
+      "label": "Mohan Cornflakes (Value leader)",
+      "force": "Competitive Energy",
+      "subject": "Local value players, specifically Mohan Cornflakes in the East, are successfully disrupting Kellogg\u2019s brand pull by offering a good enough substitute at a lower price point, causing a migration of price-sensitive families.",
+      "id": "Mohan Cornflakes (Value leader)"
+    },
+    {
+      "type": "signal",
+      "label": "East region market share",
+      "force": "Competitive Energy",
+      "subject": "Local value players, specifically Mohan Cornflakes in the East, are successfully disrupting Kellogg\u2019s brand pull by offering a good enough substitute at a lower price point, causing a migration of price-sensitive families.",
+      "id": "East region market share"
+    },
+    {
+      "type": "signal",
+      "label": "Price-sensitive families",
+      "force": "Value Elasticity",
+      "subject": "Local value players, specifically Mohan Cornflakes in the East, are successfully disrupting Kellogg\u2019s brand pull by offering a good enough substitute at a lower price point, causing a migration of price-sensitive families.",
+      "id": "Price-sensitive families"
+    },
+    {
+      "type": "signal",
+      "label": "Unbranded value-tier sellers",
+      "force": "Competitive Energy",
+      "subject": "Local value players, specifically Mohan Cornflakes in the East, are successfully disrupting Kellogg\u2019s brand pull by offering a good enough substitute at a lower price point, causing a migration of price-sensitive families.",
+      "id": "Unbranded value-tier sellers"
+    },
+    {
+      "type": "subject",
+      "label": "Consumer breakfast preferences are shifting toward premium-lite formats; shoppers in Modern Trade are migrating away from the Cornflakes category entirely in favor of Muesli and Granola workarounds.",
+      "force": "Choice Architecture",
+      "subject": "Consumer breakfast preferences are shifting toward premium-lite formats; shoppers in Modern Trade are migrating away from the Cornflakes category entirely in favor of Muesli and Granola workarounds.",
+      "id": "Consumer breakfast preferences are shifting toward premium-lite formats; shoppers in Modern Trade are migrating away from the Cornflakes category entirely in favor of Muesli and Granola workarounds."
+    },
+    {
+      "type": "component",
+      "label": "Muesli and Granola brands",
+      "force": "Competitive Energy",
+      "subject": "Consumer breakfast preferences are shifting toward premium-lite formats; shoppers in Modern Trade are migrating away from the Cornflakes category entirely in favor of Muesli and Granola workarounds.",
+      "id": "Muesli and Granola brands"
+    },
+    {
+      "type": "signal",
+      "label": "Modern Trade shoppers",
+      "force": "Choice Architecture",
+      "subject": "Consumer breakfast preferences are shifting toward premium-lite formats; shoppers in Modern Trade are migrating away from the Cornflakes category entirely in favor of Muesli and Granola workarounds.",
+      "id": "Modern Trade shoppers"
+    },
+    {
+      "type": "signal",
+      "label": "E-commerce digital footprints",
+      "force": "Reinforcement Stability",
+      "subject": "Consumer breakfast preferences are shifting toward premium-lite formats; shoppers in Modern Trade are migrating away from the Cornflakes category entirely in favor of Muesli and Granola workarounds.",
+      "id": "E-commerce digital footprints"
+    },
+    {
+      "type": "signal",
+      "label": "Premium-lite formats",
+      "force": "Value Elasticity",
+      "subject": "Consumer breakfast preferences are shifting toward premium-lite formats; shoppers in Modern Trade are migrating away from the Cornflakes category entirely in favor of Muesli and Granola workarounds.",
+      "id": "Premium-lite formats"
+    }
+  ],
+  "links": [
+    {
+      "source": "Retention collapse within Kellogg's India Corn Portfolio and failure of Multigrain launch to convert trials into habitual routines",
+      "target": "The Multigrain health claims are failing to create a sticky breakfast ritual because the taste profile does not meet the sensory expectations of traditional core buyers, leading to one-time trials without adoption."
+    },
+    {
+      "source": "Retention collapse within Kellogg's India Corn Portfolio and failure of Multigrain launch to convert trials into habitual routines",
+      "target": "Local value players, specifically Mohan Cornflakes in the East, are successfully disrupting Kellogg\u2019s brand pull by offering a good enough substitute at a lower price point, causing a migration of price-sensitive families."
+    },
+    {
+      "source": "Retention collapse within Kellogg's India Corn Portfolio and failure of Multigrain launch to convert trials into habitual routines",
+      "target": "Consumer breakfast preferences are shifting toward premium-lite formats; shoppers in Modern Trade are migrating away from the Cornflakes category entirely in favor of Muesli and Granola workarounds."
+    },
+    {
+      "source": "The Multigrain health claims are failing to create a sticky breakfast ritual because the taste profile does not meet the sensory expectations of traditional core buyers, leading to one-time trials without adoption.",
+      "target": "Multigrain Cornflakes launch"
+    },
+    {
+      "source": "Multigrain Cornflakes launch",
+      "target": "Sensory expectations"
+    },
+    {
+      "source": "Multigrain Cornflakes launch",
+      "target": "Functional claims"
+    },
+    {
+      "source": "Multigrain Cornflakes launch",
+      "target": "Ritual Language"
+    },
+    {
+      "source": "Local value players, specifically Mohan Cornflakes in the East, are successfully disrupting Kellogg\u2019s brand pull by offering a good enough substitute at a lower price point, causing a migration of price-sensitive families.",
+      "target": "Mohan Cornflakes (Value leader)"
+    },
+    {
+      "source": "Mohan Cornflakes (Value leader)",
+      "target": "East region market share"
+    },
+    {
+      "source": "Mohan Cornflakes (Value leader)",
+      "target": "Price-sensitive families"
+    },
+    {
+      "source": "Mohan Cornflakes (Value leader)",
+      "target": "Unbranded value-tier sellers"
+    },
+    {
+      "source": "Consumer breakfast preferences are shifting toward premium-lite formats; shoppers in Modern Trade are migrating away from the Cornflakes category entirely in favor of Muesli and Granola workarounds.",
+      "target": "Muesli and Granola brands"
+    },
+    {
+      "source": "Muesli and Granola brands",
+      "target": "Modern Trade shoppers"
+    },
+    {
+      "source": "Muesli and Granola brands",
+      "target": "E-commerce digital footprints"
+    },
+    {
+      "source": "Muesli and Granola brands",
+      "target": "Premium-lite formats"
+    }
+  ]
+}

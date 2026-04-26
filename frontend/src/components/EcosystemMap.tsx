@@ -1,22 +1,22 @@
 "use client";
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
 import axios from 'axios';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Network, Activity, CheckCircle2, ArrowLeft } from 'lucide-react';
-import dynamic from 'next/dynamic';
-
-// Dynamically import force graph to avoid SSR issues
-const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), { ssr: false });
+import * as d3Hierarchy from 'd3-hierarchy';
 
 interface EcosystemMapProps {
   intent: string;
   brief?: string;
   onMapComplete: (graphNodes: string[]) => void;
   onBack: () => void;
+  hideSidebar?: boolean;
+  onGraphMetrics?: (metrics: any) => void;
+  strategicOverlayEnabled?: boolean;
 }
 
-// Strategic Overaly color palette (the 5 forces)
+// Strategic Overlay color palette (the 5 forces)
 const FORCE_COLORS: Record<string, string> = {
   "Demand Gravity":          "#f59e0b",
   "Choice Architecture":     "#8b5cf6",
@@ -27,18 +27,209 @@ const FORCE_COLORS: Record<string, string> = {
 
 // Dynamic Category color palette
 const CATEGORY_PALETTE = [
-  "#f59e0b", // Amber
-  "#8b5cf6", // Violet
-  "#14b8a6", // Teal
-  "#f43f5e", // Rose
-  "#0ea5e9", // Sky
-  "#a855f7", // Purple
-  "#ec4899", // Pink
-  "#84cc16", // Lime
+  "#f59e0b", "#8b5cf6", "#14b8a6", "#f43f5e", "#0ea5e9",
+  "#a855f7", "#ec4899", "#84cc16",
 ];
 
+// ─── NotebookLM Visual Constants ───
+const NODE_HEIGHT = 40;
+const NODE_PADDING_X = 24;
+const NODE_FONT = '500 13px "Inter", "Segoe UI", system-ui, sans-serif';
+const ROOT_FONT = '600 14px "Inter", "Segoe UI", system-ui, sans-serif';
+const CHEVRON_WIDTH = 32;
+const VERTICAL_GAP = 16; // gap between sibling nodes
+const HORIZONTAL_GAP = 100; // gap between tree tiers
 
-export default function EcosystemMap({ intent, brief, onMapComplete, onBack }: EcosystemMapProps) {
+// NotebookLM fill colors
+const FILL_ROOT = '#4a4563';
+const FILL_SUBJECT = '#3a4a42';
+const FILL_COMPONENT = '#2d4040';
+const FILL_SIGNAL = '#2d4040';
+
+function getFillColor(type: string): string {
+  if (type === 'root') return FILL_ROOT;
+  if (type === 'subject' || type === 'category') return FILL_SUBJECT;
+  if (type === 'component') return FILL_COMPONENT;
+  return FILL_SIGNAL;
+}
+
+// ─── Utility: Convert flat nodes+links into a d3 hierarchy ───
+interface TreeNode {
+  id: string;
+  label: string;
+  type: string;
+  force?: string;
+  subject?: string;
+  children: TreeNode[];
+}
+
+function buildTree(nodes: any[], links: any[]): TreeNode | null {
+  const nodeMap: Record<string, TreeNode> = {};
+  for (const n of nodes) {
+    nodeMap[n.id] = { ...n, children: [] };
+  }
+  for (const link of links) {
+    const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+    const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+    if (nodeMap[sourceId] && nodeMap[targetId]) {
+      nodeMap[sourceId].children.push(nodeMap[targetId]);
+    }
+  }
+  const root = nodes.find((n: any) => n.type === 'root');
+  return root ? nodeMap[root.id] : null;
+}
+
+// ─── Measure text width using an offscreen canvas ───
+let _measureCanvas: HTMLCanvasElement | null = null;
+function measureText(text: string, font: string): number {
+  // Safe fallback for Next.js Server-Side Rendering
+  if (typeof document === 'undefined') {
+    return text.length * 7; // Approximate width
+  }
+  
+  if (!_measureCanvas) _measureCanvas = document.createElement('canvas');
+  const ctx = _measureCanvas.getContext('2d')!;
+  ctx.font = font;
+  return ctx.measureText(text).width;
+}
+
+// ─── Compute node width based on its label ───
+function getNodeWidth(label: string, type: string, hasChildren: boolean): number {
+  const font = type === 'root' ? ROOT_FONT : NODE_FONT;
+  const textW = measureText(label, font);
+  return textW + NODE_PADDING_X * 2 + (hasChildren ? CHEVRON_WIDTH : 0);
+}
+
+// ─── Bezier path from parent to child (NotebookLM curve style) ───
+function buildLinkPath(
+  x1: number, y1: number, parentWidth: number,
+  x2: number, y2: number
+): string {
+  const startX = x1 + parentWidth / 2;
+  const startY = y1;
+  const endX = x2 - 0; // to left edge of child pill
+  const endY = y2;
+  const midX = startX + (endX - startX) * 0.5;
+  return `M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`;
+}
+
+
+// ─── Pill-shaped Node component ───
+interface MindMapNodeProps {
+  node: d3Hierarchy.HierarchyPointNode<TreeNode>;
+  expandedSet: Set<string>;
+  onToggle: (id: string) => void;
+  visibleIds: Set<string>;
+  revealIndex: number; // controls staggered animation order
+}
+
+function MindMapNode({ node, expandedSet, onToggle, visibleIds, revealIndex }: MindMapNodeProps) {
+  const d = node.data;
+  const hasChildren = d.children && d.children.length > 0;
+  const isExpanded = expandedSet.has(d.id);
+  const nodeW = getNodeWidth(d.label, d.type, hasChildren);
+  const fillColor = getFillColor(d.type);
+  const font = d.type === 'root' ? ROOT_FONT : NODE_FONT;
+  const textW = measureText(d.label, font);
+  const pillW = textW + NODE_PADDING_X * 2;
+  const cornerRadius = NODE_HEIGHT / 2;
+
+  return (
+    <motion.g
+      initial={{ opacity: 0, scale: 0.7 }}
+      animate={{ opacity: 1, scale: 1 }}
+      exit={{ opacity: 0, scale: 0.5 }}
+      transition={{
+        type: 'spring',
+        stiffness: 400,
+        damping: 30,
+        delay: revealIndex * 0.12,
+      }}
+      style={{ cursor: hasChildren ? 'pointer' : 'default' }}
+      onClick={(e) => {
+        e.stopPropagation();
+        if (hasChildren) onToggle(d.id);
+      }}
+    >
+      {/* Pill background */}
+      <motion.rect
+        x={node.y - nodeW / 2}
+        y={node.x - NODE_HEIGHT / 2}
+        width={nodeW}
+        height={NODE_HEIGHT}
+        rx={cornerRadius}
+        ry={cornerRadius}
+        fill={fillColor}
+        initial={false}
+        animate={{ x: node.y - nodeW / 2, y: node.x - NODE_HEIGHT / 2 }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      />
+
+      {/* Label text */}
+      <motion.text
+        x={node.y - nodeW / 2 + NODE_PADDING_X}
+        y={node.x}
+        dy="0.35em"
+        fill="#e2e2e8"
+        fontSize={d.type === 'root' ? 14 : 13}
+        fontWeight={d.type === 'root' ? 600 : 500}
+        fontFamily='"Inter", "Segoe UI", system-ui, sans-serif'
+        style={{ userSelect: 'none', pointerEvents: 'none' }}
+        initial={false}
+        animate={{ x: node.y - nodeW / 2 + NODE_PADDING_X, y: node.x }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+      >
+        {d.label}
+      </motion.text>
+
+      {/* Chevron section */}
+      {hasChildren && (
+        <>
+          {/* Separator line */}
+          <motion.line
+            x1={node.y - nodeW / 2 + pillW}
+            y1={node.x - NODE_HEIGHT * 0.3}
+            x2={node.y - nodeW / 2 + pillW}
+            y2={node.x + NODE_HEIGHT * 0.3}
+            stroke="rgba(255,255,255,0.15)"
+            strokeWidth={1}
+            initial={false}
+            animate={{
+              x1: node.y - nodeW / 2 + pillW,
+              x2: node.y - nodeW / 2 + pillW,
+              y1: node.x - NODE_HEIGHT * 0.3,
+              y2: node.x + NODE_HEIGHT * 0.3,
+            }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+          />
+
+          {/* Chevron arrow */}
+          <motion.g
+            initial={false}
+            animate={{
+              x: node.y - nodeW / 2 + pillW + CHEVRON_WIDTH / 2,
+              y: node.x,
+              rotate: isExpanded ? 90 : 0,
+            }}
+            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
+          >
+            <path
+              d="M -4 -5 L 3 0 L -4 5"
+              fill="none"
+              stroke="rgba(255,255,255,0.5)"
+              strokeWidth={1.8}
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </motion.g>
+        </>
+      )}
+    </motion.g>
+  );
+}
+
+
+export default function EcosystemMap({ intent, brief, onMapComplete, onBack, hideSidebar = false, onGraphMetrics, strategicOverlayEnabled }: EcosystemMapProps) {
   const [graphData, setGraphData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [analyzingNodes, setAnalyzingNodes] = useState(0);
@@ -46,13 +237,20 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack }: E
   const [categoriesLegend, setCategoriesLegend] = useState<{name: string, color: string, desc: string}[]>([]);
   const [showStrategicOverlay, setShowStrategicOverlay] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const [graphDimensions, setGraphDimensions] = useState({ width: 800, height: 600 });
+  const [dimensions, setDimensions] = useState({ width: 1200, height: 800 });
 
-  // Track container size for force graph
+  // ─── Expand/Collapse state ───
+  const [expandedSet, setExpandedSet] = useState<Set<string>>(new Set());
+
+  // ─── Staggered reveal state ───
+  const [visibleIds, setVisibleIds] = useState<Set<string>>(new Set());
+  const [revealDone, setRevealDone] = useState(false);
+
+  // Track container size
   useEffect(() => {
     const updateSize = () => {
       if (containerRef.current) {
-        setGraphDimensions({
+        setDimensions({
           width: containerRef.current.clientWidth,
           height: containerRef.current.clientHeight,
         });
@@ -61,43 +259,61 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack }: E
     updateSize();
     window.addEventListener('resize', updateSize);
     return () => window.removeEventListener('resize', updateSize);
-  }, [loading, graphData]);
+  }, [loading, graphData, hideSidebar]);
 
+  // Report metrics to parent
+  useEffect(() => {
+    if (onGraphMetrics) {
+      onGraphMetrics({
+        loading,
+        analyzingNodes,
+        totalNodes: graphData ? graphData.nodes.length : 0,
+        totalEdges: graphData ? graphData.links.length : 0,
+        categoriesLegend,
+        ecosystemNodeNames
+      });
+    }
+  }, [loading, analyzingNodes, graphData, categoriesLegend, ecosystemNodeNames, onGraphMetrics]);
+
+  // ─── Fetch graph data ───
   useEffect(() => {
     const fetchGraph = async () => {
       try {
-        const res = await axios.post('http://localhost:8000/api/generate-ecosystem', {
-          intent,
-          brief: brief || undefined
-        });
-        setGraphData(res.data.graph);
+        const cacheKey = 'ecosystem_graph';
+        const cached = sessionStorage.getItem(cacheKey);
+        let graphDataObj;
         
-        // Extract all non-root node labels to pass to the Audit Dashboard
-        const allNodeNames: string[] = (res.data.graph.nodes || [])
+        if (intent === 'DEV_TEST_MOCK') {
+            const bypassRes = await axios.get('http://localhost:8000/api/latest-run');
+            graphDataObj = bypassRes.data.graph;
+            sessionStorage.setItem(cacheKey, JSON.stringify(graphDataObj));
+        } else if (cached) {
+            graphDataObj = JSON.parse(cached);
+        } else {
+            const res = await axios.post('http://localhost:8000/api/generate-ecosystem', {
+              intent,
+              brief: brief || undefined
+            });
+            graphDataObj = res.data.graph;
+            sessionStorage.setItem(cacheKey, JSON.stringify(graphDataObj));
+        }
+        
+        setGraphData(graphDataObj);
+        
+        const allNodeNames: string[] = (graphDataObj.nodes || [])
           .filter((n: any) => n.type !== 'root')
           .map((n: any) => n.label || n.id);
         setEcosystemNodeNames(allNodeNames);
 
-        // Build dynamic categories legend (now tracking 'subject' nodes)
-        const catNodes = (res.data.graph.nodes || []).filter((n: any) => n.type === 'subject' || n.type === 'category');
+        const catNodes = (graphDataObj.nodes || []).filter((n: any) => n.type === 'subject' || n.type === 'category');
         const legendData = catNodes.map((n: any, index: number) => ({
           name: n.label,
           color: CATEGORY_PALETTE[index % CATEGORY_PALETTE.length],
           desc: n.description || "Key point from intent"
         }));
         setCategoriesLegend(legendData);
-        
-        // Simulating the "Scanning" process
-        let count = 0;
-        const interval = setInterval(() => {
-          count += 3;
-          setAnalyzingNodes(count);
-          if (count >= res.data.graph.nodes.length) {
-            clearInterval(interval);
-            setAnalyzingNodes(res.data.graph.nodes.length);
-            setLoading(false);
-          }
-        }, 150);
+        setAnalyzingNodes(graphDataObj.nodes.length);
+        setLoading(false);
 
       } catch (e) {
         console.error("Failed to generate ecosystem", e);
@@ -105,40 +321,171 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack }: E
       }
     };
     fetchGraph();
-  }, [intent]);
+  }, [intent, brief]);
 
-  // Radial subject color logic vs Strategic Force overlay
-  const getNodeColor = (node: any) => {
-    if (node.type === 'root') return '#ffffff';
-    
-    if (showStrategicOverlay && node.force) {
-      return FORCE_COLORS[node.force] || '#9ca3af';
+  // ─── Staggered reveal animation: tier by tier ───
+  useEffect(() => {
+    if (!graphData) return;
+    const treeRoot = buildTree(graphData.nodes, graphData.links);
+    if (!treeRoot) return;
+
+    // BFS order for staggered reveal
+    const bfsOrder: string[] = [];
+    const queue: TreeNode[] = [treeRoot];
+    while (queue.length > 0) {
+      const current = queue.shift()!;
+      bfsOrder.push(current.id);
+      for (const child of current.children) {
+        queue.push(child);
+      }
     }
 
-    const subjectName = node.subject || (node.type === 'subject' ? node.label : node.force);
-    const matchedCat = categoriesLegend.find(c => c.name === subjectName);
-    return matchedCat ? matchedCat.color : '#9ca3af';
-  };
+    // Start with the root visible immediately
+    const newVisible = new Set<string>([bfsOrder[0]]);
+    setVisibleIds(new Set(newVisible));
+    // Also auto-expand the root
+    setExpandedSet(prev => new Set([...prev, bfsOrder[0]]));
+    let i = 1; // Start from second node since root is already visible
+    
+    const interval = setInterval(() => {
+      if (i >= bfsOrder.length) {
+        clearInterval(interval);
+        setRevealDone(true);
+        return;
+      }
+      newVisible.add(bfsOrder[i]);
+      
+      // Auto-expand nodes as they appear (so their children can appear next)
+      const nodeData = graphData.nodes.find((n: any) => n.id === bfsOrder[i]);
+      if (nodeData) {
+        // Check if this node has children in the links
+        const hasKids = graphData.links.some((l: any) => {
+          const sid = typeof l.source === 'object' ? l.source.id : l.source;
+          return sid === bfsOrder[i];
+        });
+        if (hasKids) {
+          setExpandedSet(prev => new Set([...prev, bfsOrder[i]]));
+        }
+      }
+      
+      setVisibleIds(new Set(newVisible));
+      i++;
+    }, 350);
+
+    return () => clearInterval(interval);
+  }, [graphData]);
+
+  // ─── Toggle expand/collapse ───
+  const handleToggle = useCallback((id: string) => {
+    setExpandedSet(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  }, []);
+
+  // ─── Build the visible tree (pruned by expandedSet) ───
+  const { layoutNodes, layoutLinks } = useMemo(() => {
+    if (!graphData) return { layoutNodes: [], layoutLinks: [] };
+    const treeRoot = buildTree(graphData.nodes, graphData.links);
+    if (!treeRoot) return { layoutNodes: [], layoutLinks: [] };
+
+    // Prune: only keep children for expanded nodes
+    function prune(node: TreeNode): TreeNode {
+      if (!expandedSet.has(node.id)) {
+        return { ...node, children: [] };
+      }
+      return {
+        ...node,
+        children: node.children
+          .filter(c => visibleIds.has(c.id))
+          .map(c => prune(c)),
+      };
+    }
+
+    // Always include root node
+    const pruned = prune({ ...treeRoot, children: visibleIds.has(treeRoot.id) ? treeRoot.children : [] });
+    // Ensure root is marked visible so it always renders
+    if (!visibleIds.has(treeRoot.id) && graphData) {
+      return { layoutNodes: [], layoutLinks: [] };
+    }
+
+    // Create d3 hierarchy and compute tree layout
+    const root = d3Hierarchy.hierarchy(pruned);
+    
+    // Count visible leaf nodes to size the tree
+    const leafCount = root.leaves().length;
+    const treeHeight = Math.max(leafCount * (NODE_HEIGHT + VERTICAL_GAP), dimensions.height * 0.6);
+    const treeWidth = Math.max(dimensions.width * 0.7, 800);
+
+    const treeLayout = d3Hierarchy.tree<TreeNode>()
+      .size([treeHeight, treeWidth])
+      .separation((a, b) => {
+        // Give more space between different parent groups
+        return a.parent === b.parent ? 1 : 1.4;
+      });
+
+    treeLayout(root);
+
+    const nodes = root.descendants() as d3Hierarchy.HierarchyPointNode<TreeNode>[];
+    const links = root.links() as d3Hierarchy.HierarchyPointLink<TreeNode>[];
+
+    return { layoutNodes: nodes, layoutLinks: links };
+  }, [graphData, expandedSet, visibleIds, dimensions]);
+
+  // ─── Calculate SVG viewBox to center the tree ───
+  const viewBox = useMemo(() => {
+    if (layoutNodes.length === 0) return `0 0 ${dimensions.width} ${dimensions.height}`;
+    let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    for (const n of layoutNodes) {
+      const w = getNodeWidth(n.data.label, n.data.type, n.data.children.length > 0);
+      minX = Math.min(minX, n.x - NODE_HEIGHT);
+      maxX = Math.max(maxX, n.x + NODE_HEIGHT);
+      minY = Math.min(minY, n.y - w / 2 - 40);
+      maxY = Math.max(maxY, n.y + w / 2 + 40);
+    }
+    const padding = 60;
+    return `${minX - padding} ${minY - padding} ${maxX - minX + padding * 2} ${maxY - minY + padding * 2}`;
+  }, [layoutNodes, dimensions]);
+
+  // ─── Build revealIndex map for stagger delay ───
+  const revealIndexMap = useMemo(() => {
+    const map = new Map<string, number>();
+    let idx = 0;
+    // BFS from the graphData to get stable ordering
+    if (graphData) {
+      const treeRoot = buildTree(graphData.nodes, graphData.links);
+      if (treeRoot) {
+        const queue: TreeNode[] = [treeRoot];
+        while (queue.length > 0) {
+          const current = queue.shift()!;
+          map.set(current.id, idx++);
+          for (const child of current.children) {
+            queue.push(child);
+          }
+        }
+      }
+    }
+    return map;
+  }, [graphData]);
 
   return (
-    <div className="flex w-full h-screen bg-black text-white overflow-hidden relative">
+    <div className="flex w-full h-full text-white overflow-hidden relative" style={{ background: '#1e1e2e', minHeight: hideSidebar ? '100%' : '100vh' }}>
       {/* Left Sidebar Info */}
-      <div className="w-80 min-w-[20rem] h-full border-r border-[#333] bg-[#0a0a0a] z-10 flex flex-col pt-5 pb-5 shadow-2xl overflow-y-auto shrink-0">
-        <div className="px-5 mb-5 flex items-start gap-3">
-          <button onClick={onBack} className="mt-1 shrink-0 p-1.5 hover:bg-[#222] rounded-md text-gray-400 hover:text-white transition-colors border border-transparent hover:border-[#333]">
-            <ArrowLeft size={16} />
-          </button>
-          <div className="flex flex-col gap-2 w-full">
-            <div className="flex items-center">
-               <img src="/outtlyr-logo.png" alt="Outtlyr" className="h-12 w-auto object-contain shrink-0 bg-transparent" onError={(e) => { e.currentTarget.style.display='none'; (e.currentTarget.nextElementSibling as HTMLElement).classList.remove('hidden') }} />
-               <span className="hidden font-bold text-xl tracking-tight text-white">Outtlyr</span>
-            </div>
-            <div className="flex items-center gap-2 text-gray-300">
-              <Network className="text-blue-500" size={16} />
-              <h1 className="text-base font-medium tracking-wide">Category Graph</h1>
+      {!hideSidebar && (
+        <div className="w-80 min-w-[20rem] h-full border-r border-[#2a2a3a] bg-[#181825] z-10 flex flex-col pt-5 pb-5 shadow-2xl overflow-y-auto shrink-0">
+          <div className="px-5 mb-5 flex items-start gap-3">
+            <div className="flex flex-col gap-2 w-full">
+              <div className="flex items-center gap-2 text-gray-300">
+                <Network className="text-blue-500" size={16} />
+                <h1 className="text-base font-medium tracking-wide">Category Graph</h1>
+              </div>
             </div>
           </div>
-        </div>
 
         <div className="px-5 flex-1">
           <div className="mb-5">
@@ -157,7 +504,7 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack }: E
               <div className="w-full bg-gray-800 rounded-full h-1 mt-1.5">
                 <div 
                   className="bg-teal-500 h-1 rounded-full transition-all duration-300" 
-                  style={{ width: graphData ? `${(analyzingNodes / graphData.nodes.length) * 100}%` : '0%' }}
+                  style={{ width: graphData ? `${(visibleIds.size / graphData.nodes.length) * 100}%` : '0%' }}
                 ></div>
               </div>
             </div>
@@ -214,62 +561,72 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack }: E
             </motion.div>
           )}
         </div>
-      </div>
+        </div>
+      )}
 
-      {/* Right Map Canvas */}
-      <div ref={containerRef} className="flex-1 h-full relative">
-        <div className="absolute inset-0 bg-[linear-gradient(to_right,#1f2937_1px,transparent_1px),linear-gradient(to_bottom,#1f2937_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-20 z-0"></div>
+      {/* Right Map Canvas — NotebookLM Style */}
+      <div ref={containerRef} className="flex-1 h-full relative overflow-hidden" style={{ background: '#1e1e2e' }}>
         
         {loading ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center z-10 text-teal-400/80">
             <Activity size={48} className="animate-pulse mb-4" />
             <span className="font-mono tracking-widest">PERFORMING HORIZON SCAN...</span>
           </div>
-        ) : graphData ? (
-          <div className="absolute inset-0 cursor-move z-10">
-            <ForceGraph2D
-              width={graphDimensions.width}
-              height={graphDimensions.height}
-              graphData={graphData}
-              nodeColor={getNodeColor}
-              nodeRelSize={6}
-              linkWidth={1.5}
-              linkColor={() => '#334155'}
-              backgroundColor="#00000000"
-              cooldownTicks={100}
-              onEngineStop={() => {}}
-              nodeCanvasObject={(node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
-                const label = node.label;
-                const fontSize = Math.max(12 / globalScale, 4);
-                ctx.font = `${fontSize}px Inter, sans-serif`;
-                const textWidth = ctx.measureText(label).width;
-                const bckgDimensions = [textWidth, fontSize].map(n => n + fontSize * 0.8);
+        ) : graphData && layoutNodes.length > 0 ? (
+          <svg
+            width="100%"
+            height="100%"
+            viewBox={viewBox}
+            preserveAspectRatio="xMidYMid meet"
+            style={{ overflow: 'visible' }}
+          >
+            {/* Links (curved beziers) */}
+            <AnimatePresence>
+              {layoutLinks.map((link, i) => {
+                const parent = link.source as d3Hierarchy.HierarchyPointNode<TreeNode>;
+                const child = link.target as d3Hierarchy.HierarchyPointNode<TreeNode>;
+                const parentW = getNodeWidth(parent.data.label, parent.data.type, parent.data.children.length > 0);
 
-                ctx.fillStyle = 'rgba(10, 10, 10, 0.9)';
-                ctx.beginPath();
-                ctx.roundRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1], 4);
-                ctx.fill();
+                const startX = parent.y + parentW / 2;
+                const startY = parent.x;
+                const endX = child.y - getNodeWidth(child.data.label, child.data.type, child.data.children.length > 0) / 2;
+                const endY = child.x;
+                const midX = startX + (endX - startX) * 0.5;
+                const pathD = `M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`;
 
-                ctx.strokeStyle = getNodeColor(node);
-                ctx.lineWidth = 1.5 / globalScale;
-                ctx.stroke();
+                return (
+                  <motion.path
+                    key={`link-${parent.data.id}-${child.data.id}`}
+                    d={pathD}
+                    fill="none"
+                    stroke="#4a6a7a"
+                    strokeWidth={1.5}
+                    initial={{ pathLength: 0, opacity: 0 }}
+                    animate={{ pathLength: 1, opacity: 1 }}
+                    exit={{ pathLength: 0, opacity: 0 }}
+                    transition={{
+                      pathLength: { duration: 0.6, ease: 'easeInOut', delay: (revealIndexMap.get(child.data.id) || 0) * 0.12 },
+                      opacity: { duration: 0.3, delay: (revealIndexMap.get(child.data.id) || 0) * 0.12 },
+                    }}
+                  />
+                );
+              })}
+            </AnimatePresence>
 
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillStyle = getNodeColor(node);
-                ctx.fillText(label, node.x, node.y);
-
-                node.__bckgDimensions = bckgDimensions;
-              }}
-              nodePointerAreaPaint={(node: any, color: string, ctx: CanvasRenderingContext2D) => {
-                ctx.fillStyle = color;
-                const bckgDimensions = node.__bckgDimensions;
-                if (bckgDimensions) {
-                  ctx.fillRect(node.x - bckgDimensions[0] / 2, node.y - bckgDimensions[1] / 2, bckgDimensions[0], bckgDimensions[1]);
-                }
-              }}
-            />
-          </div>
+            {/* Nodes */}
+            <AnimatePresence>
+              {layoutNodes.map((node) => (
+                <MindMapNode
+                  key={node.data.id}
+                  node={node}
+                  expandedSet={expandedSet}
+                  onToggle={handleToggle}
+                  visibleIds={visibleIds}
+                  revealIndex={revealIndexMap.get(node.data.id) || 0}
+                />
+              ))}
+            </AnimatePresence>
+          </svg>
         ) : null}
       </div>
     </div>

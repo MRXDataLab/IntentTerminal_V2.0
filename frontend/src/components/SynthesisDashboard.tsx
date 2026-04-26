@@ -7,6 +7,8 @@ import { Zap, FileText, Activity, Network, CheckCircle2, XCircle, ArrowLeft, Mes
 import EcosystemMap from './EcosystemMap';
 import LivingTruthMap from './LivingTruthMap';
 import type { InteractionPayload } from '@/app/page';
+import SynthesisReviewOriginal from './SynthesisReviewOriginal';
+import SynthesisReviewAlt3 from './SynthesisReviewAlt3';
 
 type SynthesisStep = 'generating' | 'review' | 'truth_map';
 
@@ -24,13 +26,28 @@ export default function SynthesisDashboard({ interactionPayload, onComplete, onR
   const [graphNodes, setGraphNodes] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [genProgress, setGenProgress] = useState<string>('Initializing synthesis engine...');
-  const [showRejectionInput, setShowRejectionInput] = useState(false);
-  const [rejectionText, setRejectionText] = useState('');
+  const [uxMode, setUxMode] = useState<'original' | 'alt3'>('alt3');
+  // When DEV_TEST_MOCK is used, we overwrite this with the real recorded intent
+  const [resolvedIntent, setResolvedIntent] = useState<string>(interactionPayload.intent);
 
   // Auto-generate artifacts on mount
   useEffect(() => {
     const generate = async () => {
       try {
+        if (interactionPayload.intent === 'DEV_TEST_MOCK') {
+          setGenProgress('DEV BYPASS: Fetching latest recorded run...');
+          const bypassRes = await axios.get('http://localhost:8000/api/latest-run');
+          const { intent, brief, manifest } = bypassRes.data;
+          
+          setResolvedIntent(intent);
+          setBriefText(brief);
+          setManifestData(manifest);
+          
+          setGenProgress('DEV BYPASS: Ready.');
+          setTimeout(() => setStep('review'), 400);
+          return;
+        }
+
         // Step 1: Generate Strategic Brief
         setGenProgress('Generating Strategic Research Brief...');
         const briefRes = await axios.post('http://localhost:8000/api/generate-brief', {
@@ -52,8 +69,8 @@ export default function SynthesisDashboard({ interactionPayload, onComplete, onR
             template: interactionPayload.template && interactionPayload.template !== 'none' ? interactionPayload.template : undefined,
           });
           setManifestData(manifestRes.data.manifest);
-        } catch (manifestErr) {
-          console.error('Manifest generation error (non-blocking)', manifestErr);
+        } catch (manifestErr: any) {
+          console.error('Manifest generation error (non-blocking): ' + (manifestErr.message || String(manifestErr)));
         }
 
         setGenProgress('Synthesis complete.');
@@ -111,40 +128,58 @@ export default function SynthesisDashboard({ interactionPayload, onComplete, onR
   };
 
   const handleReject = () => {
-    onRejected(rejectionText.trim() || undefined);
+    onRejected();
   };
 
   // ── Step 1: Generating Artifacts ──
   if (step === 'generating') {
     return (
-      <div className="flex w-full h-screen bg-black text-white items-center justify-center flex-col relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(139,92,246,0.08)_0,transparent_50%)]"></div>
-
-        {error ? (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-4 z-10">
-            <XCircle size={48} className="text-red-500" />
-            <h2 className="text-xl font-light text-red-200">{error}</h2>
-            <button onClick={onBack} className="mt-4 px-6 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-gray-300 transition-colors">
-              ← Back to Interaction Terminal
+      <div className="flex flex-col w-full h-screen bg-[#050505] text-white overflow-hidden">
+        {/* Top Header (Persistent during load) */}
+        <div className="flex items-center justify-between px-6 py-3 border-b border-[#1a1a1a] bg-[#0a0a0a] shrink-0 z-20">
+          <div className="flex items-center gap-3">
+            <button onClick={onBack} className="p-1.5 hover:bg-[#222] rounded-md text-gray-400 hover:text-white transition-colors border border-transparent hover:border-[#333]">
+              <ArrowLeft size={16} />
             </button>
-          </motion.div>
-        ) : (
-          <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center gap-6 z-10">
-            <div className="relative">
-              <div className="w-20 h-20 rounded-full border-2 border-violet-500/30 flex items-center justify-center">
-                <Zap size={32} className="text-violet-400 animate-pulse" />
+            <div className="flex items-center shrink-0">
+               <img src="/outtlyr-logo.png" alt="Outtlyr" className="h-8 w-auto object-contain mr-2 bg-transparent" onError={(e) => { e.currentTarget.style.display='none'; (e.currentTarget.nextElementSibling as HTMLElement).classList.remove('hidden') }} />
+               <span className="hidden font-bold text-lg tracking-tight mr-1 text-white">Outtlyr</span>
+            </div>
+            <div className="w-px h-4 bg-[#333]"></div>
+            <h1 className="text-sm font-medium tracking-wide text-gray-300">Module 2: Synthesis Review</h1>
+          </div>
+        </div>
+
+        {/* Loading Canvas */}
+        <div className="flex-1 flex flex-col items-center justify-center relative bg-black">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(139,92,246,0.08)_0,transparent_50%)]"></div>
+
+          {error ? (
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-4 z-10">
+              <XCircle size={48} className="text-red-500" />
+              <h2 className="text-xl font-light text-red-200">{error}</h2>
+              <button onClick={onBack} className="mt-4 px-6 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-gray-300 transition-colors">
+                ← Back to Interaction Terminal
+              </button>
+            </motion.div>
+          ) : (
+            <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center gap-6 z-10">
+              <div className="relative">
+                <div className="w-20 h-20 rounded-full border-2 border-violet-500/30 flex items-center justify-center">
+                  <Zap size={32} className="text-violet-400 animate-pulse" />
+                </div>
+                <div className="absolute inset-0 w-20 h-20 rounded-full border-2 border-violet-500/20 animate-ping"></div>
               </div>
-              <div className="absolute inset-0 w-20 h-20 rounded-full border-2 border-violet-500/20 animate-ping"></div>
-            </div>
-            <h2 className="text-2xl font-light tracking-widest text-violet-50">SYNTHESIS ENGINE</h2>
-            <p className="text-sm text-gray-400 font-mono">{genProgress}</p>
-            <div className="flex gap-2 mt-2">
-              <div className="w-2 h-2 rounded-full bg-violet-500/60 animate-bounce" style={{ animationDelay: '0ms' }} />
-              <div className="w-2 h-2 rounded-full bg-violet-500/60 animate-bounce" style={{ animationDelay: '150ms' }} />
-              <div className="w-2 h-2 rounded-full bg-violet-500/60 animate-bounce" style={{ animationDelay: '300ms' }} />
-            </div>
-          </motion.div>
-        )}
+              <h2 className="text-2xl font-light tracking-widest text-violet-50">SYNTHESIS ENGINE</h2>
+              <p className="text-sm text-gray-400 font-mono">{genProgress}</p>
+              <div className="flex gap-2 mt-2">
+                <div className="w-2 h-2 rounded-full bg-violet-500/60 animate-bounce" style={{ animationDelay: '0ms' }} />
+                <div className="w-2 h-2 rounded-full bg-violet-500/60 animate-bounce" style={{ animationDelay: '150ms' }} />
+                <div className="w-2 h-2 rounded-full bg-violet-500/60 animate-bounce" style={{ animationDelay: '300ms' }} />
+              </div>
+            </motion.div>
+          )}
+        </div>
       </div>
     );
   }
@@ -164,130 +199,49 @@ export default function SynthesisDashboard({ interactionPayload, onComplete, onR
   }
 
   // ── Step 2: Review & Approval Gate ──
+  
+  // Render chosen UX Mode
+  const renderReviewMode = () => {
+    const props = {
+      interactionPayload: { ...interactionPayload, intent: resolvedIntent },
+      briefText,
+      manifestData,
+      onBack: onBack,
+      onConfirm: handleMethodologyConfirmed,
+      onReject: onRejected,
+      onDownloadBrief: handleDownloadBrief,
+      onDownloadManifest: handleDownloadManifest
+    };
+
+    switch (uxMode) {
+      case 'alt3':
+        return <SynthesisReviewAlt3 {...props} />;
+      case 'original':
+      default:
+        return <SynthesisReviewOriginal {...props} />;
+    }
+  };
+
   return (
-    <div className="flex h-screen w-full bg-[#050505] text-white overflow-hidden">
-
-      {/* Left Pane: Brief + Manifest Review */}
-      <div className="w-1/2 h-full flex flex-col border-r border-[#222]">
-        {/* Header */}
-        <div className="p-5 border-b border-[#222] flex items-center justify-between bg-[#0a0a0a]/80 backdrop-blur-md shrink-0">
-          <div className="flex items-center gap-3">
-            <button onClick={onBack} className="p-1.5 hover:bg-[#222] rounded-md text-gray-400 hover:text-white transition-colors">
-              <ArrowLeft size={18} />
-            </button>
-            <div className="flex items-center shrink-0">
-              <img src="/outtlyr-logo.png" alt="Outtlyr" className="h-12 w-auto object-contain mr-3 shrink-0 bg-transparent" onError={(e) => { e.currentTarget.style.display='none'; (e.currentTarget.nextElementSibling as HTMLElement).classList.remove('hidden') }} />
-              <span className="hidden font-bold text-xl tracking-tight mr-1 text-white">Outtlyr</span>
-            </div>
-            <div className="w-px h-6 bg-[#333]"></div>
-            <div className="w-2 h-2 rounded-full bg-violet-500 shadow-[0_0_10px_rgba(139,92,246,0.8)] animate-pulse"></div>
-            <h1 className="text-base font-medium tracking-wide text-gray-300">Synthesis Review</h1>
-          </div>
-          <span className="text-xs text-gray-500 uppercase tracking-widest font-mono">Module_2: Synthesis</span>
-        </div>
-
-        {/* Artifacts Scroll Area */}
-        <div className="flex-1 overflow-y-auto p-6 space-y-5">
-          {/* North Star */}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="bg-violet-950/20 border border-violet-900/30 rounded-2xl p-4">
-            <h4 className="text-xs text-violet-400 uppercase tracking-widest font-mono mb-2">Research Intent</h4>
-            <p className="text-sm text-violet-50 leading-relaxed font-light italic">&quot;{interactionPayload.intent}&quot;</p>
-          </motion.div>
-
-          {/* Strategic Brief */}
-          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 }} className="bg-[#0d1f1a] border border-teal-900/40 rounded-2xl p-5">
-            <div className="flex items-center justify-between mb-3">
-              <div className="flex items-center gap-2">
-                <FileText size={16} className="text-teal-400 shrink-0" />
-                <span className="text-xs font-mono text-teal-500 uppercase tracking-widest">Strategic Research Brief</span>
-              </div>
-              <button onClick={handleDownloadBrief} className="px-3 py-1 bg-teal-500/10 hover:bg-teal-500/20 border border-teal-500/30 text-teal-400 text-xs rounded-lg transition-colors">
-                Download .md
-              </button>
-            </div>
-            <div className="max-h-80 overflow-y-auto">
-              <pre className="text-xs text-gray-300 leading-relaxed whitespace-pre-wrap font-mono">{briefText}</pre>
-            </div>
-          </motion.div>
-
-          {/* Manifest Summary */}
-          {manifestData && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} className="bg-[#0f1419] border border-blue-900/30 rounded-2xl p-5">
-              <div className="flex items-center justify-between mb-3">
-                <div className="flex items-center gap-2">
-                  <Activity size={16} className="text-blue-400 shrink-0" />
-                  <span className="text-xs font-mono text-blue-400 uppercase tracking-widest">Link Farming Manifest</span>
-                </div>
-                <button onClick={handleDownloadManifest} className="px-3 py-1 bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30 text-blue-400 text-xs rounded-lg transition-colors">
-                  Download .json
-                </button>
-              </div>
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div className="bg-black/30 rounded-xl p-3">
-                  <div className="text-2xl font-light text-blue-200">{manifestData.boolean_nets?.length || 0}</div>
-                  <div className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Boolean Nets</div>
-                </div>
-                <div className="bg-black/30 rounded-xl p-3">
-                  <div className="text-2xl font-light text-blue-200">{manifestData.signal_taxonomy?.length || 0}</div>
-                  <div className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Signal Tags</div>
-                </div>
-                <div className="bg-black/30 rounded-xl p-3">
-                  <div className="text-2xl font-light text-blue-200">{manifestData.entity_anchors?.tracked_competitors?.length || 0}</div>
-                  <div className="text-[10px] text-gray-500 uppercase tracking-widest mt-1">Rivals Tracked</div>
-                </div>
-              </div>
-            </motion.div>
-          )}
-        </div>
-
-        {/* Approval Actions */}
-        <div className="p-5 border-t border-[#222] bg-[#0a0a0a] space-y-3 shrink-0">
-          <AnimatePresence>
-            {showRejectionInput && (
-              <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-                <div className="flex gap-2 mb-3">
-                  <input
-                    value={rejectionText}
-                    onChange={(e) => setRejectionText(e.target.value)}
-                    placeholder="What needs to change? (optional)"
-                    className="flex-1 bg-black border border-red-900/40 focus:border-red-500/50 rounded-lg px-4 py-2.5 text-sm text-white placeholder-gray-600 outline-none"
-                    onKeyDown={(e) => e.key === 'Enter' && handleReject()}
-                  />
-                  <button onClick={handleReject} className="px-4 py-2.5 bg-red-500/10 hover:bg-red-500/20 border border-red-500/40 text-red-400 text-sm rounded-lg transition-colors">
-                    Send & Refine
-                  </button>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-          <div className="flex gap-3">
-            <button
-              onClick={() => setShowRejectionInput(!showRejectionInput)}
-              className="flex-1 py-2.5 bg-gray-800 hover:bg-gray-700 border border-gray-700 hover:border-red-500/40 text-gray-300 hover:text-red-400 text-sm font-medium rounded-xl transition-colors flex items-center justify-center gap-2"
-            >
-              <MessageSquare size={14} />
-              Request Refinement
-            </button>
-            <button
-              onClick={() => {/* Approval will go to Category Graph in right pane */}}
-              className="flex-1 py-2.5 bg-teal-500 hover:bg-teal-400 text-black font-semibold text-sm rounded-xl transition-colors shadow-[0_0_20px_rgba(20,184,166,0.3)] flex items-center justify-center gap-2"
-              style={{ display: 'none' }} // Hidden — approval is via Category Graph confirm
-            >
-              <CheckCircle2 size={14} />
-              Approve
-            </button>
-          </div>
-        </div>
-      </div>
-
-      {/* Right Pane: Category Graph (Methodology Preview) */}
-      <div className="w-1/2 h-full relative">
-        <EcosystemMap
-          intent={interactionPayload.intent}
-          brief={briefText || undefined}
-          onMapComplete={handleMethodologyConfirmed}
-          onBack={() => {}}
-        />
+    <div className="relative w-full h-full">
+      {renderReviewMode()}
+      
+      {/* ── DEV UX SWITCHER (Floating Bottom Left) ── */}
+      <div className="fixed bottom-4 left-4 z-50 bg-[#111] border border-[#333] rounded-xl p-2 shadow-2xl flex items-center gap-2 backdrop-blur-md">
+        <span className="text-[10px] text-gray-500 font-mono tracking-widest px-2 uppercase">UX Test:</span>
+        {['original', 'alt3'].map((mode) => (
+          <button
+            key={mode}
+            onClick={() => setUxMode(mode as any)}
+            className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${
+              uxMode === mode 
+                ? 'bg-violet-600/30 text-violet-400 border border-violet-500/50' 
+                : 'bg-transparent text-gray-400 hover:text-white hover:bg-[#222]'
+            }`}
+          >
+            {mode}
+          </button>
+        ))}
       </div>
     </div>
   );

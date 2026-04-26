@@ -1,52 +1,49 @@
 # Research Intent Form
 
-**North Star:** The strategic intent is to quantify the market size and competitive landscape of NEET coaching within India's Tier 1 cities (Delhi, Mumbai, Bengaluru, Chennai, Hyderabad, Kolkata) to inform a crucial investment analysis and project accurate ROI. This research will dissect pricing strategies, enrollment behaviors, and distinct price sensitivities across 'droppers' and regular K12 school-going medical aspirants for offline, online, and hybrid models. We aim to understand how these evolving models and segments are reshaping revenue streams and investment viability in a post-pandemic, highly competitive market dominated by players like Allen, Aakash-BYJU'S, Physics Wallah, and Unacademy, while also acknowledging the ongoing threat of strong student preference for traditional offline coaching. The core hypothesis posits that hybrid models currently offer the highest ROI.
+**North Star:** A Usage & Attitudes study focused on Behavioral Mapping to diagnose the retention collapse within Kellogg's India Corn Portfolio. The research will analyze the last 12 months of consumer shifts in Modern Trade and E-commerce (emphasizing the East region) to identify why the Multigrain launch and core products are failing to convert trials into habitual routines. By mapping 'Ritual Language' and 'Substitute Workarounds,' the study aims to uncover how Muesli/Granola and local value players (e.g., Mohan) are disrupting 'Demand Gravity' for the masterbrand.
 
 ## Pillars
-- **Market Context & Trigger**: Score 75/100
-- **Strategic Decision & Goal**: Score 80/100
-- **Target Lens & Hypothesis**: Score 80/100
-- **Scope & Assets**: Score 70/100
-- **Competitive Landscape & Constraints**: Score 80/100
+- **Market Context & Trigger**: Score 90/100
+- **Strategic Decision & Goal**: Score 85/100
+- **Target Lens & Hypothesis**: Score 85/100
+- **Scope & Assets**: Score 80/100
+- **Competitive Landscape & Constraints**: Score 85/100
 
 ## Extracted Data
 ```json
 {
   "market_context": {
-    "business_baseline": "NEET coaching is a multi-billion dollar industry in India, evolving beyond traditional hubs like Kota, with Tier 1 cities (Delhi, Mumbai, Bengaluru, Chennai, Hyderabad, Kolkata) becoming primary battlegrounds. The market is characterized by intense competition and high stakes.",
-    "catalyst": "Need to understand how the integration of hybrid learning models and the distinct needs of the 'dropper' segment are reshaping revenue streams and investment viability in a post-pandemic educational landscape.",
-    "urgency": "To inform a strategic investment analysis and provide foundational data required for accurate ROI projections."
+    "business_baseline": "Kellogg's as an established masterbrand in India with a declining Corn Portfolio YoY.",
+    "catalyst": "Consistent decline in offtakes and the failure of the Multigrain Cornflakes launch despite significant media spend.",
+    "urgency": "Previous interventions like packaging and claims have failed to reverse the trend."
   },
   "strategic_decision": {
-    "objective": "Quantify the market size and competitive landscape of NEET coaching across India\u2019s Tier 1 cities to inform a strategic investment analysis.",
-    "significance": "Provide foundational data required for accurate ROI projections for strategic investment analysis.",
+    "objective": "To identify why high distribution and initial trials are not converting into sustained repeat purchases/habitual routines.",
+    "significance": "Crucial for defending core portfolio against commoditization and breakfast format shifts.",
     "decomposition_nodes": [
-      "What is the total addressable market (TAM) and serviceable obtainable market (SOM) for NEET coaching specifically within Tier 1 cities?",
-      "How do pricing structures and fee schedules differ between traditional offline centers, hybrid models, and online-only platforms?",
-      "What are the distinct price sensitivities and enrollment triggers for 'droppers' (repeaters) versus regular school-going students?",
-      "Which market players currently hold the dominant share in Tier 1 cities, and what are their primary customer acquisition costs?",
-      "What are the projected operational margins and capital expenditure requirements for different coaching delivery models?"
+      "Category Relevance (Muesli/Granola migration)",
+      "Value Squeeze (Local rivals like Mohan)",
+      "Innovation Resonance (Multigrain failure)",
+      "Trial vs. Retention Paradox"
     ]
   },
   "target_lens": {
-    "audience": "Primary: Medical aspirants (Class 11 and 12 students, including K12 school-going students) and 'Droppers' (students dedicated to a gap year for exam preparation) residing in Tier 1 Indian cities. Secondary: Parents and guardians who act as the primary financial decision-makers and fee-payers. Institutional Segment: Existing coaching conglomerates (e.g., Allen, Aakash-BYJU'S), rising EdTech players (e.g., Physics Wallah, Unacademy), and localized premium boutique coaching centers.",
-    "hypothesis": "Hybrid coaching models currently yield the highest ROI due to a balance of premium pricing and reduced physical costs.",
-    "problem_statement": "Understanding how evolving learning models (hybrid) and distinct student segments ('droppers' and K12 students) are impacting revenue and investment viability to make informed strategic investment decisions."
+    "audience": "Modern Trade and E-commerce shoppers in India, with a specific regional concern in the East.",
+    "hypothesis": "Multigrain health claims are not resonating, or the taste profile does not meet expectations of traditional buyers.",
+    "problem_statement": "A disconnect between initial product trial satisfaction and long-term habitual usage."
   },
   "scope_assets": {
-    "sow": "Geographic: India's Tier 1 cities (Delhi, Mumbai, Bengaluru, Chennai, Hyderabad, Kolkata). Product: NEET coaching, specifically targeting medical aspirants from K12 schools and 'droppers'. Models: Offline, online, and hybrid.",
-    "client_data": null
+    "sow": "India-wide focus (emphasizing East) tracking a 12-month trend period across the Corn Portfolio including all sizes.",
+    "client_data": "Confirmed no specific internal trial or repeat-purchase datasets are available; baseline relies on market observation."
   },
   "competitive_landscape": {
     "visible_rivals": [
-      "Allen",
-      "Aakash-BYJU'S",
-      "Physics Wallah",
-      "Unacademy",
-      "Localized premium boutique coaching centers"
+      "Mohan Cornflakes",
+      "Muesli brands",
+      "Granola brands"
     ],
-    "ghost_rivals": "Local Offline Coaching centers",
-    "constraints": "Student still prefer offline coaching is a threat"
+    "ghost_rivals": "Local value players in the East offering lower price points.",
+    "constraints": "Distribution is robust; the barrier is consumer relevance and retention rather than physical availability."
   }
 }
 ```

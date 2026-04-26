@@ -116,6 +116,14 @@ Extract all specific entity names, geographic data, timelines, competitors, and 
         with open("Link_Farming_Manifest.json", "w") as f:
             json.dump(manifest_data, f, indent=2)
 
+        # ── DEV BYPASS CAPTURE: Save snapshot of this run ──
+        import pathlib
+        capture_dir = pathlib.Path("latest_run_data")
+        capture_dir.mkdir(exist_ok=True)
+        (capture_dir / "latest_manifest.json").write_text(
+            json.dumps(manifest_data, indent=2), encoding="utf-8"
+        )
+
         return ManifestResponse(manifest=manifest_data)
 
     except ValueError as e:

@@ -11,6 +11,7 @@ from api import ingest
 from api import brief
 from api import manifest
 from api import truth_map
+from api import dev_bypass
 
 app.include_router(intake.router, prefix="/api")
 app.include_router(ecosystem.router, prefix="/api")
@@ -20,6 +21,7 @@ app.include_router(ingest.router, prefix="/api")
 app.include_router(brief.router, prefix="/api")
 app.include_router(manifest.router, prefix="/api")
 app.include_router(truth_map.router, prefix="/api")
+app.include_router(dev_bypass.router, prefix="/api")
 
 # Configure CORS for Next.js frontend
 app.add_middleware(

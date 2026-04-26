@@ -19,7 +19,7 @@ FREE_MODELS = [
 ]
 
 def _call_gemini_native(system_prompt: str, user_prompt: str, chat_history: list = None, expect_json: bool = False):
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={GEMINI_API_KEY}"
     
     contents = []
     
@@ -51,11 +51,19 @@ def _call_gemini_native(system_prompt: str, user_prompt: str, chat_history: list
             "responseMimeType": "application/json"
         }
 
-    response = requests.post(url, json=payload, headers={"Content-Type": "application/json"})
-    
-    if response.status_code != 200:
-        raise Exception(f"Gemini API Error: {response.status_code} - {response.text}")
+    import time
+    max_retries = 3
+    for attempt in range(max_retries):
+        response = requests.post(url, json=payload, headers={"Content-Type": "application/json"})
         
+        if response.status_code == 429 and attempt < max_retries - 1:
+            time.sleep(2 ** attempt)
+            continue
+            
+        if response.status_code != 200:
+            raise Exception(f"Gemini API Error: {response.status_code} - {response.text}")
+        
+        break
     result = response.json()
     try:
         content = result["candidates"][0]["content"]["parts"][0]["text"]
@@ -103,7 +111,10 @@ def call_openrouter(
 ):
     # If a native Gemini API key is active, hijack the request and use it
     if GEMINI_API_KEY:
-        return _call_gemini_native(system_prompt, user_prompt, chat_history, expect_json)
+        try:
+            return _call_gemini_native(system_prompt, user_prompt, chat_history, expect_json)
+        except Exception as e:
+            print(f"Gemini Native Failed ({e}). Falling back to OpenRouter...")
 
     if not OPENROUTER_API_KEY:
         raise ValueError("OPENROUTER_API_KEY is not set in environment variables.")

@@ -144,6 +144,13 @@ Use the exact data from pillar_extractions to populate each section. Do NOT inve
             f.write("---\n\n")
             f.write(brief_text)
 
+        # ── DEV BYPASS CAPTURE: Save snapshot of this run ──
+        import pathlib
+        capture_dir = pathlib.Path("latest_run_data")
+        capture_dir.mkdir(exist_ok=True)
+        (capture_dir / "latest_intent.txt").write_text(request.research_intent, encoding="utf-8")
+        (capture_dir / "latest_brief.md").write_text(brief_text, encoding="utf-8")
+
         return BriefResponse(brief=brief_text)
 
     except ValueError as e:
