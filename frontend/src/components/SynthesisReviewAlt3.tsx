@@ -6,6 +6,7 @@ import { FileText, Activity, ArrowLeft, MessageSquare, Download, CheckCircle2, N
 import EcosystemMap from './EcosystemMap';
 import EcosystemMapFlowchart from './EcosystemMapFlowchart';
 import EcosystemMapSunburst from './EcosystemMapSunburst';
+import EcosystemMapMethodology from './EcosystemMapMethodology';
 import { SynthesisReviewProps } from './SynthesisReviewProps';
 
 export default function SynthesisReviewAlt3({ 
@@ -22,7 +23,7 @@ export default function SynthesisReviewAlt3({
   const [showRejectionInput, setShowRejectionInput] = useState(false);
   const [rejectionText, setRejectionText] = useState('');
   const [isBriefExpanded, setIsBriefExpanded] = useState(false);
-  const [graphStyle, setGraphStyle] = useState<'legacy' | 'flowchart' | 'sunburst'>('flowchart');
+  const [graphStyle, setGraphStyle] = useState<'legacy' | 'flowchart' | 'sunburst' | 'methodology'>('flowchart');
   
   // Graph State lifted from EcosystemMap
   const [graphMetrics, setGraphMetrics] = useState<any>(null);
@@ -222,6 +223,10 @@ export default function SynthesisReviewAlt3({
               onClick={() => setGraphStyle('sunburst')}
               className={`px-4 py-1.5 text-xs font-mono tracking-widest uppercase rounded-md transition-all ${graphStyle === 'sunburst' ? 'bg-teal-500/20 text-teal-400 shadow-[0_0_10px_rgba(20,184,166,0.2)]' : 'text-gray-500 hover:text-gray-300'}`}
             >Sunburst</button>
+            <button 
+              onClick={() => setGraphStyle('methodology')}
+              className={`px-4 py-1.5 text-xs font-mono tracking-widest uppercase rounded-md transition-all ${graphStyle === 'methodology' ? 'bg-teal-500/20 text-teal-400 shadow-[0_0_10px_rgba(20,184,166,0.2)]' : 'text-gray-500 hover:text-gray-300'}`}
+            >Methodology</button>
           </div>
 
           {/* Top Section - Graph Canvas */}
@@ -254,6 +259,19 @@ export default function SynthesisReviewAlt3({
                 brief={briefText || undefined}
                 onMapComplete={() => {}} 
                 onBack={() => {}} 
+                hideSidebar={true}
+                strategicOverlayEnabled={showStrategicOverlay}
+                onGraphMetrics={setGraphMetrics}
+              />
+            )}
+            {graphStyle === 'methodology' && (
+              <EcosystemMapMethodology
+                intent={interactionPayload.intent}
+                brief={briefText || undefined}
+                pillarExtractions={interactionPayload.pillarExtractions}
+                template={interactionPayload.template}
+                onMapComplete={() => {}}
+                onBack={() => {}}
                 hideSidebar={true}
                 strategicOverlayEnabled={showStrategicOverlay}
                 onGraphMetrics={setGraphMetrics}
