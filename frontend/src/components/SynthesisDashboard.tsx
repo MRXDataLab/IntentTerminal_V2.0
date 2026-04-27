@@ -32,6 +32,12 @@ export default function SynthesisDashboard({ interactionPayload, onComplete, onR
 
   // Auto-generate artifacts on mount
   useEffect(() => {
+    // Clear cached graph and methodology data so fresh LLM calls use the latest prompts
+    try {
+      sessionStorage.removeItem('ecosystem_graph');
+      sessionStorage.removeItem('methodology_data');
+    } catch (_) { /* SSR safety */ }
+
     const generate = async () => {
       try {
         if (interactionPayload.intent === 'DEV_TEST_MOCK') {

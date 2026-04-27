@@ -5,7 +5,6 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { FileText, Activity, ArrowLeft, MessageSquare, Download, CheckCircle2, Network, ChevronUp, ChevronDown } from 'lucide-react';
 import EcosystemMap from './EcosystemMap';
 import EcosystemMapFlowchart from './EcosystemMapFlowchart';
-import EcosystemMapSunburst from './EcosystemMapSunburst';
 import EcosystemMapMethodology from './EcosystemMapMethodology';
 import { SynthesisReviewProps } from './SynthesisReviewProps';
 
@@ -23,7 +22,7 @@ export default function SynthesisReviewAlt3({
   const [showRejectionInput, setShowRejectionInput] = useState(false);
   const [rejectionText, setRejectionText] = useState('');
   const [isBriefExpanded, setIsBriefExpanded] = useState(false);
-  const [graphStyle, setGraphStyle] = useState<'legacy' | 'flowchart' | 'sunburst' | 'methodology'>('flowchart');
+  const [graphStyle, setGraphStyle] = useState<'knowledge' | 'flowchart' | 'methodology'>('flowchart');
   
   // Graph State lifted from EcosystemMap
   const [graphMetrics, setGraphMetrics] = useState<any>(null);
@@ -212,17 +211,13 @@ export default function SynthesisReviewAlt3({
           {/* Graph Engine Tabs */}
           <div className="absolute top-4 right-4 z-50 flex items-center bg-[#111]/80 backdrop-blur-md p-1 rounded-lg border border-[#333] shadow-lg">
             <button 
-              onClick={() => setGraphStyle('legacy')}
-              className={`px-4 py-1.5 text-xs font-mono tracking-widest uppercase rounded-md transition-all ${graphStyle === 'legacy' ? 'bg-teal-500/20 text-teal-400 shadow-[0_0_10px_rgba(20,184,166,0.2)]' : 'text-gray-500 hover:text-gray-300'}`}
-            >Legacy</button>
+              onClick={() => setGraphStyle('knowledge')}
+              className={`px-4 py-1.5 text-xs font-mono tracking-widest uppercase rounded-md transition-all ${graphStyle === 'knowledge' ? 'bg-teal-500/20 text-teal-400 shadow-[0_0_10px_rgba(20,184,166,0.2)]' : 'text-gray-500 hover:text-gray-300'}`}
+            >Knowledge Graph</button>
             <button 
               onClick={() => setGraphStyle('flowchart')}
               className={`px-4 py-1.5 text-xs font-mono tracking-widest uppercase rounded-md transition-all ${graphStyle === 'flowchart' ? 'bg-teal-500/20 text-teal-400 shadow-[0_0_10px_rgba(20,184,166,0.2)]' : 'text-gray-500 hover:text-gray-300'}`}
             >Flowchart</button>
-            <button 
-              onClick={() => setGraphStyle('sunburst')}
-              className={`px-4 py-1.5 text-xs font-mono tracking-widest uppercase rounded-md transition-all ${graphStyle === 'sunburst' ? 'bg-teal-500/20 text-teal-400 shadow-[0_0_10px_rgba(20,184,166,0.2)]' : 'text-gray-500 hover:text-gray-300'}`}
-            >Sunburst</button>
             <button 
               onClick={() => setGraphStyle('methodology')}
               className={`px-4 py-1.5 text-xs font-mono tracking-widest uppercase rounded-md transition-all ${graphStyle === 'methodology' ? 'bg-teal-500/20 text-teal-400 shadow-[0_0_10px_rgba(20,184,166,0.2)]' : 'text-gray-500 hover:text-gray-300'}`}
@@ -231,7 +226,7 @@ export default function SynthesisReviewAlt3({
 
           {/* Top Section - Graph Canvas */}
           <div className={`w-full relative transition-all duration-500 ease-in-out ${isBriefExpanded ? 'h-[40%]' : 'h-[calc(100%-56px)]'}`}>
-            {graphStyle === 'legacy' && (
+            {graphStyle === 'knowledge' && (
               <EcosystemMap
                 intent={interactionPayload.intent}
                 brief={briefText || undefined}
@@ -244,17 +239,6 @@ export default function SynthesisReviewAlt3({
             )}
             {graphStyle === 'flowchart' && (
               <EcosystemMapFlowchart
-                intent={interactionPayload.intent}
-                brief={briefText || undefined}
-                onMapComplete={() => {}} 
-                onBack={() => {}} 
-                hideSidebar={true}
-                strategicOverlayEnabled={showStrategicOverlay}
-                onGraphMetrics={setGraphMetrics}
-              />
-            )}
-            {graphStyle === 'sunburst' && (
-              <EcosystemMapSunburst
                 intent={interactionPayload.intent}
                 brief={briefText || undefined}
                 onMapComplete={() => {}} 
