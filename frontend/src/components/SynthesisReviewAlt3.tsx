@@ -6,6 +6,7 @@ import { FileText, ArrowLeft, MessageSquare, Download, CheckCircle2, Network, Ch
 import EcosystemMap from './EcosystemMap';
 import EcosystemMapFlowchart from './EcosystemMapFlowchart';
 import EcosystemMapMethodology from './EcosystemMapMethodology';
+import EcosystemMap3D from './EcosystemMap3D';
 import { SynthesisReviewProps } from './SynthesisReviewProps';
 
 export default function SynthesisReviewAlt3({ 
@@ -22,7 +23,7 @@ export default function SynthesisReviewAlt3({
   const [showRejectionInput, setShowRejectionInput] = useState(false);
   const [rejectionText, setRejectionText] = useState('');
   const [isBriefExpanded, setIsBriefExpanded] = useState(false);
-  const [graphStyle, setGraphStyle] = useState<'knowledge' | 'flowchart' | 'methodology'>('flowchart');
+  const [graphStyle, setGraphStyle] = useState<'knowledge' | 'knowledge3d' | 'flowchart' | 'methodology'>('flowchart');
   
   // Graph State lifted from EcosystemMap
   const [graphMetrics, setGraphMetrics] = useState<any>(null);
@@ -191,6 +192,10 @@ export default function SynthesisReviewAlt3({
               className={`px-4 py-1.5 text-xs font-mono tracking-widest uppercase rounded-md transition-all ${graphStyle === 'knowledge' ? 'bg-teal-500/20 text-teal-400 shadow-[0_0_10px_rgba(20,184,166,0.2)]' : 'text-gray-500 hover:text-gray-300'}`}
             >Knowledge Graph</button>
             <button 
+              onClick={() => setGraphStyle('knowledge3d')}
+              className={`px-4 py-1.5 text-xs font-mono tracking-widest uppercase rounded-md transition-all ${graphStyle === 'knowledge3d' ? 'bg-teal-500/20 text-teal-400 shadow-[0_0_10px_rgba(20,184,166,0.2)]' : 'text-gray-500 hover:text-gray-300'}`}
+            >3D Graph</button>
+            <button 
               onClick={() => setGraphStyle('flowchart')}
               className={`px-4 py-1.5 text-xs font-mono tracking-widest uppercase rounded-md transition-all ${graphStyle === 'flowchart' ? 'bg-teal-500/20 text-teal-400 shadow-[0_0_10px_rgba(20,184,166,0.2)]' : 'text-gray-500 hover:text-gray-300'}`}
             >Flowchart</button>
@@ -208,6 +213,17 @@ export default function SynthesisReviewAlt3({
                 brief={briefText || undefined}
                 onMapComplete={() => {}} 
                 onBack={() => {}} 
+                hideSidebar={true}
+                strategicOverlayEnabled={showStrategicOverlay}
+                onGraphMetrics={setGraphMetrics}
+              />
+            )}
+            {graphStyle === 'knowledge3d' && (
+              <EcosystemMap3D
+                intent={interactionPayload.intent}
+                brief={briefText || undefined}
+                onMapComplete={() => {}}
+                onBack={() => {}}
                 hideSidebar={true}
                 strategicOverlayEnabled={showStrategicOverlay}
                 onGraphMetrics={setGraphMetrics}

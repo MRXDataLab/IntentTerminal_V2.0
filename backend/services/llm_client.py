@@ -1,42 +1,45 @@
 import os
 import json
+import time
 import requests
 from dotenv import load_dotenv
 
 load_dotenv()
 
-OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-FREE_MODELS = [
-    "openai/gpt-oss-20b:free",
-    "nvidia/nemotron-3-super-120b-a12b:free",
-    "google/gemma-4-31b-it:free",
-    "qwen/qwen3-next-80b-a3b-instruct:free",
-    "meta-llama/llama-3.3-70b-instruct:free",
-    "nousresearch/hermes-3-llama-3.1-405b:free",
-    "google/gemma-4-26b-a4b-it:free",
+# Gemini models to try in order (all free tier)
+GEMINI_MODELS = [
+    "gemini-2.5-flash",
+    "gemini-2.5-flash-lite",
+    "gemini-2.0-flash",
+    "gemini-2.0-flash-lite",
 ]
 
-def _call_gemini_native(system_prompt: str, user_prompt: str, chat_history: list = None, expect_json: bool = False):
-    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key={GEMINI_API_KEY}"
-    
+
+def _call_gemini(model: str, system_prompt: str, user_prompt: str, chat_history: list = None, expect_json: bool = False):
+    """Call a specific Gemini model via the native REST API."""
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={GEMINI_API_KEY}"
+
     contents = []
-    
-    # Process history
+
+    # Process chat history
     if chat_history:
         for msg in chat_history:
             role = "model" if msg["role"] in ["assistant", "agent"] else "user"
             contents.append({"role": role, "parts": [{"text": msg["content"]}]})
-            
-    # Add new prompt if exists
+
+    # Add new user prompt
     if user_prompt:
         contents.append({"role": "user", "parts": [{"text": user_prompt}]})
-        
-    # Edge case: If the first message in contents is 'model', Gemini throws an error.
-    # We must prepend a dummy user message to satisfy alternating turn requirements
+
+    # Gemini requires the first message to be from "user"
     if contents and contents[0]["role"] == "model":
         contents.insert(0, {"role": "user", "parts": [{"text": "Hello, let's begin."}]})
+
+    # If no contents at all (empty user_prompt and no history), add a placeholder
+    if not contents:
+        contents.append({"role": "user", "parts": [{"text": "Please respond based on the system instructions."}]})
 
     payload = {
         "systemInstruction": {
@@ -51,25 +54,28 @@ def _call_gemini_native(system_prompt: str, user_prompt: str, chat_history: list
             "responseMimeType": "application/json"
         }
 
-    import time
+    # Retry with backoff for rate limits
     max_retries = 3
     for attempt in range(max_retries):
-        response = requests.post(url, json=payload, headers={"Content-Type": "application/json"})
-        
+        response = requests.post(url, json=payload, headers={"Content-Type": "application/json"}, timeout=90)
+
         if response.status_code == 429 and attempt < max_retries - 1:
-            time.sleep(2 ** attempt)
+            wait = 2 ** (attempt + 1)
+            print(f"[Gemini {model}] Rate limited. Waiting {wait}s...")
+            time.sleep(wait)
             continue
-            
+
         if response.status_code != 200:
-            raise Exception(f"Gemini API Error: {response.status_code} - {response.text}")
-        
+            raise Exception(f"Gemini API Error ({model}): {response.status_code} - {response.text[:300]}")
+
         break
+
     result = response.json()
     try:
         content = result["candidates"][0]["content"]["parts"][0]["text"]
     except (KeyError, IndexError):
-        raise Exception(f"Failed to parse Gemini response: {result}")
-        
+        raise Exception(f"Failed to parse Gemini response ({model}): {json.dumps(result)[:300]}")
+
     if expect_json:
         try:
             return json.loads(content)
@@ -84,23 +90,10 @@ def _call_gemini_native(system_prompt: str, user_prompt: str, chat_history: list
             try:
                 return json.loads(cleaned.strip())
             except json.JSONDecodeError as e:
-                raise Exception(f"Failed to parse JSON from Gemini: {content}") from e
+                raise Exception(f"Failed to parse JSON from Gemini ({model}): {content[:300]}") from e
 
     return content
 
-
-def _call_once(model: str, messages: list, data_base: dict, headers: dict, expect_json: bool):
-    data = {**data_base, "model": model, "messages": messages}
-    if expect_json:
-        data["response_format"] = {"type": "json_object"}
-
-    response = requests.post(
-        url="https://openrouter.ai/api/v1/chat/completions",
-        headers=headers,
-        data=json.dumps(data),
-        timeout=60
-    )
-    return response
 
 def call_openrouter(
     system_prompt: str,
@@ -109,66 +102,27 @@ def call_openrouter(
     expect_json: bool = False,
     model: str = None
 ):
-    # If a native Gemini API key is active, hijack the request and use it
-    if GEMINI_API_KEY:
-        try:
-            return _call_gemini_native(system_prompt, user_prompt, chat_history, expect_json)
-        except Exception as e:
-            print(f"Gemini Native Failed ({e}). Falling back to OpenRouter...")
+    """
+    Main LLM entry point. Uses Gemini native API exclusively.
+    The 'model' parameter is accepted for backward compatibility but ignored —
+    all calls route through Gemini models.
+    """
+    if not GEMINI_API_KEY:
+        raise ValueError("GEMINI_API_KEY is not set in environment variables. Add it to backend/.env")
 
-    if not OPENROUTER_API_KEY:
-        raise ValueError("OPENROUTER_API_KEY is not set in environment variables.")
-
-    headers = {
-        "Authorization": f"Bearer {OPENROUTER_API_KEY}",
-        "Content-Type": "application/json"
-    }
-
-    messages = [{"role": "system", "content": system_prompt}]
-    if chat_history:
-        messages.extend(chat_history)
-    if user_prompt:
-        messages.append({"role": "user", "content": user_prompt})
-
-    models_to_try = [model] if model else FREE_MODELS
     last_error = None
-    
-    for m in models_to_try:
+
+    for gemini_model in GEMINI_MODELS:
         try:
-            response = _call_once(m, messages, {}, headers, expect_json)
-
-            if response.status_code in (400, 429, 502, 503, 404):
-                last_error = f"{m} failed ({response.status_code})"
-                continue
-
-            if response.status_code != 200:
-                raise Exception(f"OpenRouter API Error [{m}]: {response.status_code} - {response.text}")
-
-            result = response.json()
-            content = result["choices"][0]["message"]["content"]
-
-            if expect_json:
-                try:
-                    return json.loads(content)
-                except json.JSONDecodeError:
-                    cleaned = content.strip()
-                    if cleaned.startswith("```json"):
-                        cleaned = cleaned[7:]
-                    if cleaned.startswith("```"):
-                        cleaned = cleaned[3:]
-                    if cleaned.endswith("```"):
-                        cleaned = cleaned[:-3]
-                    try:
-                        return json.loads(cleaned.strip())
-                    except json.JSONDecodeError as e:
-                        raise Exception(f"Failed to parse JSON from LLM [{m}]: {content}") from e
-
-            return content
-
+            result = _call_gemini(gemini_model, system_prompt, user_prompt, chat_history, expect_json)
+            return result
         except Exception as e:
             last_error = str(e)
-            if "429" in str(e) or "rate" in str(e).lower() or "503" in str(e) or "502" in str(e):
+            print(f"[LLM] {gemini_model} failed: {last_error[:120]}. Trying next model...")
+            # Rate limit or server error → try next model
+            if "429" in last_error or "500" in last_error or "503" in last_error:
                 continue
-            raise
+            # For other errors (parsing, etc.), also try next model
+            continue
 
-    raise Exception(f"All models exhausted. Last error: {last_error}")
+    raise Exception(f"All Gemini models exhausted. Last error: {last_error}")
