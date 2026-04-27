@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState, useRef, useCallback, useMemo } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 import axios from 'axios';
-import { motion, AnimatePresence } from 'framer-motion';
-import { Network, Activity, CheckCircle2, ArrowLeft } from 'lucide-react';
+import { Network, Activity, CheckCircle2 } from 'lucide-react';
 import * as d3Hierarchy from 'd3-hierarchy';
 
 interface EcosystemMapProps {
@@ -36,9 +35,8 @@ const NODE_HEIGHT = 40;
 const NODE_PADDING_X = 24;
 const NODE_FONT = '500 13px "Inter", "Segoe UI", system-ui, sans-serif';
 const ROOT_FONT = '600 14px "Inter", "Segoe UI", system-ui, sans-serif';
-const CHEVRON_WIDTH = 32;
-const VERTICAL_GAP = 16; // gap between sibling nodes
-const HORIZONTAL_GAP = 100; // gap between tree tiers
+const VERTICAL_GAP = 20; // gap between sibling nodes
+const HORIZONTAL_GAP = 350; // horizontal distance between tiers
 
 // NotebookLM fill colors
 const FILL_ROOT = '#4a4563';
@@ -82,9 +80,8 @@ function buildTree(nodes: any[], links: any[]): TreeNode | null {
 // ─── Measure text width using an offscreen canvas ───
 let _measureCanvas: HTMLCanvasElement | null = null;
 function measureText(text: string, font: string): number {
-  // Safe fallback for Next.js Server-Side Rendering
   if (typeof document === 'undefined') {
-    return text.length * 7; // Approximate width
+    return text.length * 7; // Approximate width for SSR
   }
   
   if (!_measureCanvas) _measureCanvas = document.createElement('canvas');
@@ -93,81 +90,36 @@ function measureText(text: string, font: string): number {
   return ctx.measureText(text).width;
 }
 
-// ─── Compute node width based on its label ───
-function getNodeWidth(label: string, type: string, hasChildren: boolean): number {
+function getNodeWidth(label: string, type: string): number {
   const font = type === 'root' ? ROOT_FONT : NODE_FONT;
   const textW = measureText(label, font);
-  return textW + NODE_PADDING_X * 2 + (hasChildren ? CHEVRON_WIDTH : 0);
+  return textW + NODE_PADDING_X * 2;
 }
 
-// ─── Bezier path from parent to child (NotebookLM curve style) ───
-function buildLinkPath(
-  x1: number, y1: number, parentWidth: number,
-  x2: number, y2: number
-): string {
-  const startX = x1 + parentWidth / 2;
-  const startY = y1;
-  const endX = x2 - 0; // to left edge of child pill
-  const endY = y2;
-  const midX = startX + (endX - startX) * 0.5;
-  return `M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`;
-}
-
-
-// ─── Pill-shaped Node component ───
-interface MindMapNodeProps {
-  node: d3Hierarchy.HierarchyPointNode<TreeNode>;
-  expandedSet: Set<string>;
-  onToggle: (id: string) => void;
-  visibleIds: Set<string>;
-  revealIndex: number; // controls staggered animation order
-}
-
-function MindMapNode({ node, expandedSet, onToggle, visibleIds, revealIndex }: MindMapNodeProps) {
+// ─── Static Node Component ───
+function StaticMindMapNode({ node }: { node: d3Hierarchy.HierarchyPointNode<TreeNode> }) {
   const d = node.data;
-  const hasChildren = d.children && d.children.length > 0;
-  const isExpanded = expandedSet.has(d.id);
-  const nodeW = getNodeWidth(d.label, d.type, hasChildren);
+  const nodeW = getNodeWidth(d.label, d.type);
   const fillColor = getFillColor(d.type);
-  const font = d.type === 'root' ? ROOT_FONT : NODE_FONT;
-  const textW = measureText(d.label, font);
-  const pillW = textW + NODE_PADDING_X * 2;
   const cornerRadius = NODE_HEIGHT / 2;
 
+  // d3 nodeSize puts y as the horizontal axis, and x as the vertical axis
+  const xPos = node.y - nodeW / 2;
+  const yPos = node.x - NODE_HEIGHT / 2;
+
   return (
-    <motion.g
-      initial={{ opacity: 0, scale: 0.7 }}
-      animate={{ opacity: 1, scale: 1 }}
-      exit={{ opacity: 0, scale: 0.5 }}
-      transition={{
-        type: 'spring',
-        stiffness: 400,
-        damping: 30,
-        delay: revealIndex * 0.12,
-      }}
-      style={{ cursor: hasChildren ? 'pointer' : 'default' }}
-      onClick={(e) => {
-        e.stopPropagation();
-        if (hasChildren) onToggle(d.id);
-      }}
-    >
-      {/* Pill background */}
-      <motion.rect
-        x={node.y - nodeW / 2}
-        y={node.x - NODE_HEIGHT / 2}
+    <g>
+      <rect
+        x={xPos}
+        y={yPos}
         width={nodeW}
         height={NODE_HEIGHT}
         rx={cornerRadius}
         ry={cornerRadius}
         fill={fillColor}
-        initial={false}
-        animate={{ x: node.y - nodeW / 2, y: node.x - NODE_HEIGHT / 2 }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       />
-
-      {/* Label text */}
-      <motion.text
-        x={node.y - nodeW / 2 + NODE_PADDING_X}
+      <text
+        x={xPos + NODE_PADDING_X}
         y={node.x}
         dy="0.35em"
         fill="#e2e2e8"
@@ -175,105 +127,18 @@ function MindMapNode({ node, expandedSet, onToggle, visibleIds, revealIndex }: M
         fontWeight={d.type === 'root' ? 600 : 500}
         fontFamily='"Inter", "Segoe UI", system-ui, sans-serif'
         style={{ userSelect: 'none', pointerEvents: 'none' }}
-        initial={false}
-        animate={{ x: node.y - nodeW / 2 + NODE_PADDING_X, y: node.x }}
-        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
       >
         {d.label}
-      </motion.text>
-
-      {/* Chevron section */}
-      {hasChildren && (
-        <>
-          {/* Separator line */}
-          <motion.line
-            x1={node.y - nodeW / 2 + pillW}
-            y1={node.x - NODE_HEIGHT * 0.3}
-            x2={node.y - nodeW / 2 + pillW}
-            y2={node.x + NODE_HEIGHT * 0.3}
-            stroke="rgba(255,255,255,0.15)"
-            strokeWidth={1}
-            initial={false}
-            animate={{
-              x1: node.y - nodeW / 2 + pillW,
-              x2: node.y - nodeW / 2 + pillW,
-              y1: node.x - NODE_HEIGHT * 0.3,
-              y2: node.x + NODE_HEIGHT * 0.3,
-            }}
-            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          />
-
-          {/* Chevron arrow */}
-          <motion.g
-            initial={false}
-            animate={{
-              x: node.y - nodeW / 2 + pillW + CHEVRON_WIDTH / 2,
-              y: node.x,
-              rotate: isExpanded ? 90 : 0,
-            }}
-            transition={{ type: 'spring', stiffness: 400, damping: 25 }}
-          >
-            <path
-              d="M -4 -5 L 3 0 L -4 5"
-              fill="none"
-              stroke="rgba(255,255,255,0.5)"
-              strokeWidth={1.8}
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </motion.g>
-        </>
-      )}
-    </motion.g>
+      </text>
+    </g>
   );
 }
 
-
-export default function EcosystemMap({ intent, brief, onMapComplete, onBack, hideSidebar = false, onGraphMetrics, strategicOverlayEnabled }: EcosystemMapProps) {
+export default function EcosystemMap({ intent, brief, onMapComplete, hideSidebar = false, onGraphMetrics, showStrategicOverlay }: any) {
   const [graphData, setGraphData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  const [analyzingNodes, setAnalyzingNodes] = useState(0);
   const [ecosystemNodeNames, setEcosystemNodeNames] = useState<string[]>([]);
   const [categoriesLegend, setCategoriesLegend] = useState<{name: string, color: string, desc: string}[]>([]);
-  const [showStrategicOverlay, setShowStrategicOverlay] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [dimensions, setDimensions] = useState({ width: 1200, height: 800 });
-
-  // ─── Expand/Collapse state ───
-  const [expandedSet, setExpandedSet] = useState<Set<string>>(new Set());
-
-  // ─── Staggered reveal state ───
-  const [visibleIds, setVisibleIds] = useState<Set<string>>(new Set());
-  const [revealDone, setRevealDone] = useState(false);
-
-  // Track container size
-  useEffect(() => {
-    const updateSize = () => {
-      if (containerRef.current) {
-        setDimensions({
-          width: containerRef.current.clientWidth,
-          height: containerRef.current.clientHeight,
-        });
-      }
-    };
-    updateSize();
-    window.addEventListener('resize', updateSize);
-    return () => window.removeEventListener('resize', updateSize);
-  }, [loading, graphData, hideSidebar]);
-
-  // Report metrics to parent
-  useEffect(() => {
-    if (onGraphMetrics) {
-      onGraphMetrics({
-        loading,
-        analyzingNodes,
-        totalNodes: graphData ? graphData.nodes.length : 0,
-        totalEdges: graphData ? graphData.links.length : 0,
-        categoriesLegend,
-        ecosystemNodeNames
-      });
-    }
-  }, [loading, analyzingNodes, graphData, categoriesLegend, ecosystemNodeNames, onGraphMetrics]);
 
   // ─── Fetch graph data ───
   useEffect(() => {
@@ -312,7 +177,6 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack, hid
           desc: n.description || "Key point from intent"
         }));
         setCategoriesLegend(legendData);
-        setAnalyzingNodes(graphDataObj.nodes.length);
         setLoading(false);
 
       } catch (e) {
@@ -323,154 +187,54 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack, hid
     fetchGraph();
   }, [intent, brief]);
 
-  // ─── Staggered reveal animation: tier by tier ───
+  // Report metrics
   useEffect(() => {
-    if (!graphData) return;
-    const treeRoot = buildTree(graphData.nodes, graphData.links);
-    if (!treeRoot) return;
-
-    // BFS order for staggered reveal
-    const bfsOrder: string[] = [];
-    const queue: TreeNode[] = [treeRoot];
-    while (queue.length > 0) {
-      const current = queue.shift()!;
-      bfsOrder.push(current.id);
-      for (const child of current.children) {
-        queue.push(child);
-      }
-    }
-
-    // Start with the root visible immediately
-    const newVisible = new Set<string>([bfsOrder[0]]);
-    setVisibleIds(new Set(newVisible));
-    // Also auto-expand the root
-    setExpandedSet(prev => new Set([...prev, bfsOrder[0]]));
-    let i = 1; // Start from second node since root is already visible
-    
-    const interval = setInterval(() => {
-      if (i >= bfsOrder.length) {
-        clearInterval(interval);
-        setRevealDone(true);
-        return;
-      }
-      newVisible.add(bfsOrder[i]);
-      
-      // Auto-expand nodes as they appear (so their children can appear next)
-      const nodeData = graphData.nodes.find((n: any) => n.id === bfsOrder[i]);
-      if (nodeData) {
-        // Check if this node has children in the links
-        const hasKids = graphData.links.some((l: any) => {
-          const sid = typeof l.source === 'object' ? l.source.id : l.source;
-          return sid === bfsOrder[i];
-        });
-        if (hasKids) {
-          setExpandedSet(prev => new Set([...prev, bfsOrder[i]]));
-        }
-      }
-      
-      setVisibleIds(new Set(newVisible));
-      i++;
-    }, 350);
-
-    return () => clearInterval(interval);
-  }, [graphData]);
-
-  // ─── Toggle expand/collapse ───
-  const handleToggle = useCallback((id: string) => {
-    setExpandedSet(prev => {
-      const next = new Set(prev);
-      if (next.has(id)) {
-        next.delete(id);
-      } else {
-        next.add(id);
-      }
-      return next;
-    });
-  }, []);
-
-  // ─── Build the visible tree (pruned by expandedSet) ───
-  const { layoutNodes, layoutLinks } = useMemo(() => {
-    if (!graphData) return { layoutNodes: [], layoutLinks: [] };
-    const treeRoot = buildTree(graphData.nodes, graphData.links);
-    if (!treeRoot) return { layoutNodes: [], layoutLinks: [] };
-
-    // Prune: only keep children for expanded nodes
-    function prune(node: TreeNode): TreeNode {
-      if (!expandedSet.has(node.id)) {
-        return { ...node, children: [] };
-      }
-      return {
-        ...node,
-        children: node.children
-          .filter(c => visibleIds.has(c.id))
-          .map(c => prune(c)),
-      };
-    }
-
-    // Always include root node
-    const pruned = prune({ ...treeRoot, children: visibleIds.has(treeRoot.id) ? treeRoot.children : [] });
-    // Ensure root is marked visible so it always renders
-    if (!visibleIds.has(treeRoot.id) && graphData) {
-      return { layoutNodes: [], layoutLinks: [] };
-    }
-
-    // Create d3 hierarchy and compute tree layout
-    const root = d3Hierarchy.hierarchy(pruned);
-    
-    // Count visible leaf nodes to size the tree
-    const leafCount = root.leaves().length;
-    const treeHeight = Math.max(leafCount * (NODE_HEIGHT + VERTICAL_GAP), dimensions.height * 0.6);
-    const treeWidth = Math.max(dimensions.width * 0.7, 800);
-
-    const treeLayout = d3Hierarchy.tree<TreeNode>()
-      .size([treeHeight, treeWidth])
-      .separation((a, b) => {
-        // Give more space between different parent groups
-        return a.parent === b.parent ? 1 : 1.4;
+    if (onGraphMetrics && graphData) {
+      onGraphMetrics({
+        loading,
+        analyzingNodes: graphData.nodes.length,
+        totalNodes: graphData.nodes.length,
+        totalEdges: graphData.links.length,
+        categoriesLegend,
+        ecosystemNodeNames
       });
+    }
+  }, [loading, graphData, categoriesLegend, ecosystemNodeNames, onGraphMetrics]);
+
+  // ─── Compute Static Layout ───
+  const { layoutNodes, layoutLinks, viewBox } = useMemo(() => {
+    if (!graphData) return { layoutNodes: [], layoutLinks: [], viewBox: "0 0 1000 1000" };
+    const treeRoot = buildTree(graphData.nodes, graphData.links);
+    if (!treeRoot) return { layoutNodes: [], layoutLinks: [], viewBox: "0 0 1000 1000" };
+
+    const root = d3Hierarchy.hierarchy(treeRoot);
+    
+    // nodeSize ensures absolute deterministic pixel-spacing preventing overlaps
+    const treeLayout = d3Hierarchy.tree<TreeNode>()
+      .nodeSize([NODE_HEIGHT + VERTICAL_GAP, HORIZONTAL_GAP])
+      .separation((a, b) => a.parent === b.parent ? 1.2 : 1.8);
 
     treeLayout(root);
 
     const nodes = root.descendants() as d3Hierarchy.HierarchyPointNode<TreeNode>[];
     const links = root.links() as d3Hierarchy.HierarchyPointLink<TreeNode>[];
 
-    return { layoutNodes: nodes, layoutLinks: links };
-  }, [graphData, expandedSet, visibleIds, dimensions]);
-
-  // ─── Calculate SVG viewBox to center the tree ───
-  const viewBox = useMemo(() => {
-    if (layoutNodes.length === 0) return `0 0 ${dimensions.width} ${dimensions.height}`;
+    // Compute bounding box
     let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-    for (const n of layoutNodes) {
-      const w = getNodeWidth(n.data.label, n.data.type, n.data.children.length > 0);
-      minX = Math.min(minX, n.x - NODE_HEIGHT);
-      maxX = Math.max(maxX, n.x + NODE_HEIGHT);
-      minY = Math.min(minY, n.y - w / 2 - 40);
-      maxY = Math.max(maxY, n.y + w / 2 + 40);
-    }
-    const padding = 60;
-    return `${minX - padding} ${minY - padding} ${maxX - minX + padding * 2} ${maxY - minY + padding * 2}`;
-  }, [layoutNodes, dimensions]);
+    nodes.forEach(n => {
+      const w = getNodeWidth(n.data.label, n.data.type);
+      // d3 nodeSize puts layout top-down (x is vertical, y is horizontal)
+      // So map: vertical=n.x, horizontal=n.y
+      minX = Math.min(minX, n.y - w / 2);
+      maxX = Math.max(maxX, n.y + w / 2);
+      minY = Math.min(minY, n.x - NODE_HEIGHT / 2);
+      maxY = Math.max(maxY, n.x + NODE_HEIGHT / 2);
+    });
 
-  // ─── Build revealIndex map for stagger delay ───
-  const revealIndexMap = useMemo(() => {
-    const map = new Map<string, number>();
-    let idx = 0;
-    // BFS from the graphData to get stable ordering
-    if (graphData) {
-      const treeRoot = buildTree(graphData.nodes, graphData.links);
-      if (treeRoot) {
-        const queue: TreeNode[] = [treeRoot];
-        while (queue.length > 0) {
-          const current = queue.shift()!;
-          map.set(current.id, idx++);
-          for (const child of current.children) {
-            queue.push(child);
-          }
-        }
-      }
-    }
-    return map;
+    const padding = 100;
+    const computedViewBox = `${minX - padding} ${minY - padding} ${maxX - minX + padding * 2} ${maxY - minY + padding * 2}`;
+
+    return { layoutNodes: nodes, layoutLinks: links, viewBox: computedViewBox };
   }, [graphData]);
 
   return (
@@ -479,94 +243,45 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack, hid
       {!hideSidebar && (
         <div className="w-80 min-w-[20rem] h-full border-r border-[#2a2a3a] bg-[#181825] z-10 flex flex-col pt-5 pb-5 shadow-2xl overflow-y-auto shrink-0">
           <div className="px-5 mb-5 flex items-start gap-3">
-            <div className="flex flex-col gap-2 w-full">
-              <div className="flex items-center gap-2 text-gray-300">
-                <Network className="text-blue-500" size={16} />
-                <h1 className="text-base font-medium tracking-wide">Category Graph</h1>
+            <div className="flex items-center gap-2 text-gray-300">
+              <Network className="text-blue-500" size={16} />
+              <h1 className="text-base font-medium tracking-wide">Category Graph</h1>
+            </div>
+          </div>
+
+          <div className="px-5 flex-1">
+            <div className="mb-5">
+              <h4 className="text-[10px] text-gray-500 uppercase tracking-widest font-mono mb-2">Research Intent</h4>
+              <div className="bg-[#111] p-3 rounded-lg border border-[#222]">
+                <p className="text-[11px] text-gray-300 italic leading-relaxed break-words line-clamp-3">&quot;{intent}&quot;</p>
               </div>
             </div>
-          </div>
 
-        <div className="px-5 flex-1">
-          <div className="mb-5">
-            <h4 className="text-[10px] text-gray-500 uppercase tracking-widest font-mono mb-2">Research Intent</h4>
-            <div className="bg-[#111] p-3 rounded-lg border border-[#222]">
-               <p className="text-[11px] text-gray-300 italic leading-relaxed break-words line-clamp-3">&quot;{intent}&quot;</p>
-            </div>
-          </div>
-
-          <div className="space-y-3">
-            <div className="bg-gray-900/50 p-3 rounded-lg border border-gray-800">
-              <div className="flex justify-between items-center mb-1">
+            <div className="space-y-3">
+              <div className="bg-gray-900/50 p-3 rounded-lg border border-gray-800 flex justify-between items-center">
                 <span className="text-gray-400 text-xs">Nodes Mapped</span>
                 <span className="text-teal-400 font-mono text-xs">{graphData ? graphData.nodes.length : 0}</span>
               </div>
-              <div className="w-full bg-gray-800 rounded-full h-1 mt-1.5">
-                <div 
-                  className="bg-teal-500 h-1 rounded-full transition-all duration-300" 
-                  style={{ width: graphData ? `${(visibleIds.size / graphData.nodes.length) * 100}%` : '0%' }}
-                ></div>
-              </div>
-            </div>
-            
-            <div className="bg-gray-900/50 p-3 rounded-lg border border-gray-800">
-              <div className="flex justify-between items-center">
+              <div className="bg-gray-900/50 p-3 rounded-lg border border-gray-800 flex justify-between items-center">
                 <span className="text-gray-400 text-xs">Semantic Edges</span>
                 <span className="text-blue-400 font-mono text-xs">{graphData ? graphData.links.length : 0}</span>
               </div>
             </div>
-          </div>
-
-          {!loading && (
-            <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="mt-5">
-              
-              {/* Strategic Context Toggle */}
-              <div className="mb-4 bg-[#111] border border-[#222] p-2.5 rounded-lg flex items-center justify-between">
-                <span className="text-[11px] text-gray-300 font-medium">Strategic Overlay</span>
-                <button 
-                  onClick={() => setShowStrategicOverlay(!showStrategicOverlay)}
-                  className={`relative inline-flex h-5 w-9 shrink-0 cursor-pointer items-center justify-center rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 focus:ring-offset-black ${showStrategicOverlay ? 'bg-blue-600' : 'bg-gray-700'}`}
-                >
-                  <span className={`pointer-events-none inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${showStrategicOverlay ? 'translate-x-2' : '-translate-x-2'}`} />
+            
+            {!loading && (
+              <div className="mt-5">
+                <button onClick={() => onMapComplete(ecosystemNodeNames)} className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
+                  <CheckCircle2 size={16} />
+                  Confirm Methodology
                 </button>
               </div>
-
-              {/* Dynamic Legend */}
-              <div className="mb-5">
-                <h4 className="text-[9px] text-gray-500 uppercase tracking-widest font-mono mb-2">
-                  {showStrategicOverlay ? "Strategic Forces" : "Key Subjects"}
-                </h4>
-                <div className="space-y-1.5">
-                  {showStrategicOverlay ? (
-                    Object.entries(FORCE_COLORS).map(([name, color]) => (
-                      <div key={name} className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: color }} />
-                        <span className="text-[11px] text-gray-300 font-medium">{name}</span>
-                      </div>
-                    ))
-                  ) : (
-                    categoriesLegend.map((cat) => (
-                      <div key={cat.name} className="flex items-center gap-1.5">
-                        <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
-                        <span className="text-[11px] text-gray-300 font-medium">{cat.name}</span>
-                      </div>
-                    ))
-                  )}
-                </div>
-              </div>
-              <button onClick={() => onMapComplete(ecosystemNodeNames)} className="w-full py-2.5 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(59,130,246,0.3)]">
-                <CheckCircle2 size={16} />
-                Confirm Methodology
-              </button>
-            </motion.div>
-          )}
-        </div>
+            )}
+          </div>
         </div>
       )}
 
-      {/* Right Map Canvas — NotebookLM Style */}
-      <div ref={containerRef} className="flex-1 h-full relative overflow-hidden" style={{ background: '#1e1e2e' }}>
-        
+      {/* Right Map Canvas — Static NotebookLM Style */}
+      <div className="flex-1 h-full relative overflow-hidden flex items-center justify-center" style={{ background: '#1e1e2e' }}>
         {loading ? (
           <div className="absolute inset-0 flex flex-col items-center justify-center z-10 text-teal-400/80">
             <Activity size={48} className="animate-pulse mb-4" />
@@ -578,54 +293,40 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack, hid
             height="100%"
             viewBox={viewBox}
             preserveAspectRatio="xMidYMid meet"
-            style={{ overflow: 'visible' }}
+            style={{ overflow: 'visible', width: '100%', height: '100%', display: 'block' }}
           >
             {/* Links (curved beziers) */}
-            <AnimatePresence>
-              {layoutLinks.map((link, i) => {
-                const parent = link.source as d3Hierarchy.HierarchyPointNode<TreeNode>;
-                const child = link.target as d3Hierarchy.HierarchyPointNode<TreeNode>;
-                const parentW = getNodeWidth(parent.data.label, parent.data.type, parent.data.children.length > 0);
+            {layoutLinks.map((link) => {
+              const parent = link.source as d3Hierarchy.HierarchyPointNode<TreeNode>;
+              const child = link.target as d3Hierarchy.HierarchyPointNode<TreeNode>;
+              const parentW = getNodeWidth(parent.data.label, parent.data.type);
+              const childW = getNodeWidth(child.data.label, child.data.type);
 
-                const startX = parent.y + parentW / 2;
-                const startY = parent.x;
-                const endX = child.y - getNodeWidth(child.data.label, child.data.type, child.data.children.length > 0) / 2;
-                const endY = child.x;
-                const midX = startX + (endX - startX) * 0.5;
-                const pathD = `M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`;
+              const startX = parent.y + parentW / 2;
+              const startY = parent.x;
+              const endX = child.y - childW / 2;
+              const endY = child.x;
+              const midX = startX + (endX - startX) * 0.5;
+              const pathD = `M ${startX} ${startY} C ${midX} ${startY}, ${midX} ${endY}, ${endX} ${endY}`;
 
-                return (
-                  <motion.path
-                    key={`link-${parent.data.id}-${child.data.id}`}
-                    d={pathD}
-                    fill="none"
-                    stroke="#4a6a7a"
-                    strokeWidth={1.5}
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    animate={{ pathLength: 1, opacity: 1 }}
-                    exit={{ pathLength: 0, opacity: 0 }}
-                    transition={{
-                      pathLength: { duration: 0.6, ease: 'easeInOut', delay: (revealIndexMap.get(child.data.id) || 0) * 0.12 },
-                      opacity: { duration: 0.3, delay: (revealIndexMap.get(child.data.id) || 0) * 0.12 },
-                    }}
-                  />
-                );
-              })}
-            </AnimatePresence>
+              return (
+                <path
+                  key={`link-${parent.data.id}-${child.data.id}`}
+                  d={pathD}
+                  fill="none"
+                  stroke="#4a6a7a"
+                  strokeWidth={1.5}
+                />
+              );
+            })}
 
             {/* Nodes */}
-            <AnimatePresence>
-              {layoutNodes.map((node) => (
-                <MindMapNode
-                  key={node.data.id}
-                  node={node}
-                  expandedSet={expandedSet}
-                  onToggle={handleToggle}
-                  visibleIds={visibleIds}
-                  revealIndex={revealIndexMap.get(node.data.id) || 0}
-                />
-              ))}
-            </AnimatePresence>
+            {layoutNodes.map((node) => (
+              <StaticMindMapNode
+                key={node.data.id}
+                node={node}
+              />
+            ))}
           </svg>
         ) : null}
       </div>
