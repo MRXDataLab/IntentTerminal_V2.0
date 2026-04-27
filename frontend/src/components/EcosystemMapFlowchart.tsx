@@ -51,21 +51,51 @@ export default function EcosystemMapFlowchart({ intent, brief, hideSidebar = fal
         }
         
         const nodes = graphData.nodes || [];
+        const links = graphData.links || [];
         
-        // Build Tree structure
+        // Build Tree structure — group by force, but show hypothesis first in each group
         const root = nodes.find((n: any) => n.type === 'root') || { id: 'root', label: intent };
-        const childNodes = nodes.filter((n: any) => n.type !== 'root' && n.type !== 'error');
+        const subjectNodes = nodes.filter((n: any) => n.type === 'subject' || n.type === 'category');
         
-        const uniqueForces = Array.from(new Set(childNodes.map((n: any) => n.force || 'Strategic Category')));
+        // Build parent→children map from links
+        const childrenOf: Record<string, any[]> = {};
+        for (const link of links) {
+          const srcId = typeof link.source === 'object' ? link.source.id : link.source;
+          const tgtId = typeof link.target === 'object' ? link.target.id : link.target;
+          const targetNode = nodes.find((n: any) => n.id === tgtId);
+          if (targetNode) {
+            if (!childrenOf[srcId]) childrenOf[srcId] = [];
+            childrenOf[srcId].push(targetNode);
+          }
+        }
         
-        const forces = uniqueForces.map((forceName: any) => ({
-          forceNode: { force: forceName, label: forceName, description: 'Strategic Force Driver' },
-          children: childNodes.filter((c: any) => (c.force || 'Strategic Category') === forceName)
-        }));
+        // Group subjects by force, then attach their children hierarchically
+        const uniqueForces = Array.from(new Set(subjectNodes.map((n: any) => n.force || 'Strategic Category')));
+        
+        const forces = uniqueForces.map((forceName: any) => {
+          const hypotheses = subjectNodes.filter((s: any) => (s.force || 'Strategic Category') === forceName);
+          // For each hypothesis, collect its full subtree
+          const allChildren: any[] = [];
+          for (const hyp of hypotheses) {
+            allChildren.push({ ...hyp, _isHypothesis: true });
+            const components = childrenOf[hyp.id] || [];
+            for (const comp of components) {
+              allChildren.push(comp);
+              const signals = childrenOf[comp.id] || [];
+              for (const sig of signals) {
+                allChildren.push(sig);
+              }
+            }
+          }
+          return {
+            forceNode: { force: forceName, label: forceName, description: `${hypotheses.length} hypothesis${hypotheses.length !== 1 ? 'es' : ''}` },
+            children: allChildren
+          };
+        });
 
         setTreeData({ root, forces });
 
-        const allNodeNames = childNodes.map((n: any) => n.label || n.id);
+        const allNodeNames = nodes.filter((n: any) => n.type !== 'root' && n.type !== 'error').map((n: any) => n.label || n.id);
         
         if (onGraphMetrics) {
           onGraphMetrics({
@@ -165,31 +195,48 @@ export default function EcosystemMapFlowchart({ intent, brief, hideSidebar = fal
                   <p className="text-[10px] text-gray-500 leading-tight line-clamp-2">{col.forceNode.description || 'Strategic Force'}</p>
                 </motion.div>
 
-                {/* Level 3: Children (Nodes) */}
-                <div className="flex flex-col gap-3 w-full max-w-[280px] relative">
-                  {/* Vertical line passing through children */}
+                {/* Level 3: Children (Nodes) — hypotheses shown first with distinct styling */}
+                <div className="flex flex-col gap-2 w-full max-w-[300px] relative">
                   {col.children.length > 0 && (
                      <div className="absolute left-6 top-[-24px] bottom-6 w-px bg-[#222] z-0"></div>
                   )}
 
-                  {col.children.map((child, cIdx) => (
-                    <motion.div 
-                      key={cIdx}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.5 + (idx * 0.05) + (cIdx * 0.05) }}
-                      className="bg-[#0a0a0a] border border-[#222] rounded-md p-3 relative z-10 pl-10 hover:border-gray-600 hover:bg-[#111] transition-colors"
-                    >
-                      {/* Horizontal connector from passing vertical line */}
-                      <div className="absolute left-6 top-1/2 w-4 h-px bg-[#333] -translate-y-1/2"></div>
-                      <div className="absolute left-[22px] top-1/2 w-1.5 h-1.5 rounded-full bg-[#444] -translate-y-1/2"></div>
+                  {col.children.map((child, cIdx) => {
+                    const isHyp = child._isHypothesis || child.type === 'subject' || child.type === 'category';
+                    const isSignal = child.type === 'signal';
+                    const isContext = child.type === 'context';
+                    const isScope = child.type === 'scope';
+                    
+                    return (
+                      <motion.div 
+                        key={cIdx}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.5 + (idx * 0.05) + (cIdx * 0.04) }}
+                        className={`relative z-10 pl-10 transition-colors rounded-md ${
+                          isHyp 
+                            ? 'bg-[#0d1f1a] border border-teal-800/50 p-3 mt-2 mb-1' 
+                            : isContext
+                            ? 'bg-[#1a1408] border border-amber-900/30 p-2.5'
+                            : isSignal
+                            ? 'bg-transparent border border-[#1a1a1a] p-2 ml-4 opacity-70'
+                            : 'bg-[#0a0a0a] border border-[#222] p-2.5 hover:border-gray-600 hover:bg-[#111]'
+                        }`}
+                      >
+                        <div className="absolute left-6 top-1/2 w-4 h-px bg-[#333] -translate-y-1/2"></div>
+                        <div className={`absolute left-[22px] top-1/2 w-1.5 h-1.5 rounded-full -translate-y-1/2 ${isHyp ? 'bg-teal-500' : isContext ? 'bg-amber-500' : 'bg-[#444]'}`}></div>
 
-                      <h4 className="text-xs font-medium text-gray-200">{child.label}</h4>
-                      {child.description && (
-                        <p className="text-[10px] text-gray-500 mt-1 leading-snug">{child.description}</p>
-                      )}
-                    </motion.div>
-                  ))}
+                        <div className="flex items-center gap-2">
+                          {isHyp && <span className="text-[9px] font-mono text-teal-500 bg-teal-500/10 px-1.5 py-0.5 rounded shrink-0">HYPOTHESIS</span>}
+                          {isContext && <span className="text-[9px] font-mono text-amber-500 bg-amber-500/10 px-1.5 py-0.5 rounded shrink-0">{child.context_type === 'visible_rival' ? 'RIVAL' : child.context_type === 'ghost_rival' ? 'GHOST' : 'TRIGGER'}</span>}
+                          <h4 className={`text-xs font-medium ${isHyp ? 'text-teal-200' : isSignal ? 'text-gray-500' : 'text-gray-200'}`}>{child.label}</h4>
+                        </div>
+                        {child.description && !isSignal && (
+                          <p className="text-[10px] text-gray-500 mt-1 leading-snug">{child.description}</p>
+                        )}
+                      </motion.div>
+                    );
+                  })}
                 </div>
 
               </div>

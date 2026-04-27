@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { FileText, Activity, ArrowLeft, MessageSquare, Download, CheckCircle2, Network, ChevronUp, ChevronDown } from 'lucide-react';
+import { FileText, ArrowLeft, MessageSquare, Download, CheckCircle2, Network, ChevronUp, ChevronDown } from 'lucide-react';
 import EcosystemMap from './EcosystemMap';
 import EcosystemMapFlowchart from './EcosystemMapFlowchart';
 import EcosystemMapMethodology from './EcosystemMapMethodology';
@@ -134,45 +134,21 @@ export default function SynthesisReviewAlt3({
                     </div>
                   ))
                 ) : (
-                  graphMetrics?.categoriesLegend?.map((cat: any) => (
-                    <div key={cat.name} className="flex items-center gap-1.5">
-                      <div className="w-2 h-2 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
-                      <span className="text-[11px] text-gray-300 font-medium">{cat.name}</span>
+                  graphMetrics?.categoriesLegend?.map((cat: any, idx: number) => (
+                    <div key={cat.name} className="bg-[#0a0a0a] border border-[#1a1a1a] rounded-lg p-2.5 mb-2">
+                      <div className="flex items-center gap-2 mb-1">
+                        <div className="w-2.5 h-2.5 rounded-full shrink-0" style={{ backgroundColor: cat.color }} />
+                        <span className="text-[11px] text-gray-200 font-medium flex-1">{cat.name}</span>
+                        <span className="text-[9px] text-gray-500 font-mono">H{idx + 1}</span>
+                      </div>
+                      {cat.desc && (
+                        <p className="text-[10px] text-gray-500 leading-snug ml-4.5 pl-0.5">{cat.desc}</p>
+                      )}
                     </div>
                   ))
                 )}
               </div>
             </div>
-
-            {/* Link Manifest Document */}
-            {manifestData && (
-              <div className="pt-4 border-t border-[#222]">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-2">
-                    <Activity size={16} className="text-blue-400 shrink-0" />
-                    <span className="text-xs font-mono text-blue-400 uppercase tracking-widest">Manifest</span>
-                  </div>
-                  <button onClick={onDownloadManifest} className="text-blue-400/50 hover:text-blue-400 transition-colors">
-                    <Download size={16} />
-                  </button>
-                </div>
-                
-                <div className="flex flex-col gap-2">
-                  <div className="flex items-center justify-between bg-black/40 border border-[#222] rounded-xl p-3">
-                    <span className="text-[10px] text-gray-400 uppercase tracking-widest">Boolean Nets</span>
-                    <span className="text-lg font-light text-blue-300">{manifestData.boolean_nets?.length || 0}</span>
-                  </div>
-                  <div className="flex items-center justify-between bg-black/40 border border-[#222] rounded-xl p-3">
-                    <span className="text-[10px] text-gray-400 uppercase tracking-widest">Signal Tags</span>
-                    <span className="text-lg font-light text-blue-300">{manifestData.signal_taxonomy?.length || 0}</span>
-                  </div>
-                  <div className="flex items-center justify-between bg-black/40 border border-[#222] rounded-xl p-3">
-                    <span className="text-[10px] text-gray-400 uppercase tracking-widest">Rivals Tracked</span>
-                    <span className="text-lg font-light text-blue-300">{manifestData.entity_anchors?.tracked_competitors?.length || 0}</span>
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Request Refinement Action */}
             <div className="pt-4 border-t border-[#222]">

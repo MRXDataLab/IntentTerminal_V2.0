@@ -27,13 +27,13 @@ const FORCE_COLORS: Record<string, string> = {
 };
 
 const NODE_STYLES: Record<string, { fill: string; border: string; size: number; shape: string; fontWeight: number; fontSize: number; opacity: number }> = {
-  root:      { fill: '#6d28d9', border: '#a78bfa', size: 26, shape: 'circle',   fontWeight: 700, fontSize: 13, opacity: 1.0 },
-  subject:   { fill: '#0d9488', border: '#5eead4', size: 18, shape: 'circle',   fontWeight: 600, fontSize: 11, opacity: 1.0 },
-  component: { fill: '#1e40af', border: '#60a5fa', size: 10, shape: 'circle',   fontWeight: 500, fontSize: 9,  opacity: 0.85 },
-  signal:    { fill: '#374151', border: '#6b7280', size: 5,  shape: 'circle',   fontWeight: 400, fontSize: 8,  opacity: 0.5 },
-  context:   { fill: '#b45309', border: '#fbbf24', size: 10, shape: 'diamond',  fontWeight: 500, fontSize: 9,  opacity: 0.9 },
-  scope:     { fill: '#1e3a5f', border: '#38bdf8', size: 7,  shape: 'square',   fontWeight: 400, fontSize: 8,  opacity: 0.6 },
-  category:  { fill: '#0d9488', border: '#5eead4', size: 18, shape: 'circle',   fontWeight: 600, fontSize: 11, opacity: 1.0 },
+  root:      { fill: '#6d28d9', border: '#a78bfa', size: 20, shape: 'circle',   fontWeight: 700, fontSize: 12, opacity: 1.0 },
+  subject:   { fill: '#0d9488', border: '#5eead4', size: 14, shape: 'circle',   fontWeight: 600, fontSize: 10, opacity: 1.0 },
+  component: { fill: '#1e40af', border: '#60a5fa', size: 8,  shape: 'circle',   fontWeight: 500, fontSize: 8,  opacity: 0.85 },
+  signal:    { fill: '#374151', border: '#6b7280', size: 4,  shape: 'circle',   fontWeight: 400, fontSize: 7,  opacity: 0.45 },
+  context:   { fill: '#b45309', border: '#fbbf24', size: 8,  shape: 'diamond',  fontWeight: 500, fontSize: 8,  opacity: 0.9 },
+  scope:     { fill: '#1e3a5f', border: '#38bdf8', size: 6,  shape: 'square',   fontWeight: 400, fontSize: 7,  opacity: 0.55 },
+  category:  { fill: '#0d9488', border: '#5eead4', size: 14, shape: 'circle',   fontWeight: 600, fontSize: 10, opacity: 1.0 },
 };
 
 const EDGE_COLORS: Record<string, string> = {
@@ -204,6 +204,61 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack, hid
       if (fgRef.current) fgRef.current.zoomToFit(600, 80);
     }
   }, [focusedSubject]);
+
+  // Drag handler — when dragging a subject, move its descendants too
+  const handleNodeDrag = useCallback((node: any, translate: { x: number; y: number }) => {
+    if (!graphData || (node.type !== 'subject' && node.type !== 'category')) return;
+    
+    const descendants = getDescendantIds(node.id, graphData.links);
+    descendants.delete(node.id); // Don't double-move the dragged node itself
+    
+    for (const descId of descendants) {
+      const descNode = graphData.nodes.find((n: any) => n.id === descId);
+      if (descNode) {
+        descNode.fx = (descNode.fx ?? descNode.x) + translate.x;
+        descNode.fy = (descNode.fy ?? descNode.y) + translate.y;
+        descNode.x = descNode.fx;
+        descNode.y = descNode.fy;
+      }
+    }
+  }, [graphData]);
+
+  // Track previous drag position for computing deltas
+  const lastDragPos = useRef<{ x: number; y: number } | null>(null);
+
+  const handleNodeDragWithDelta = useCallback((node: any) => {
+    if (!graphData || (node.type !== 'subject' && node.type !== 'category')) {
+      lastDragPos.current = null;
+      return;
+    }
+    
+    const currentPos = { x: node.x, y: node.y };
+    if (lastDragPos.current) {
+      const dx = currentPos.x - lastDragPos.current.x;
+      const dy = currentPos.y - lastDragPos.current.y;
+      
+      const descendants = getDescendantIds(node.id, graphData.links);
+      descendants.delete(node.id);
+      
+      for (const descId of descendants) {
+        const descNode = graphData.nodes.find((n: any) => n.id === descId);
+        if (descNode) {
+          descNode.fx = (descNode.fx ?? descNode.x) + dx;
+          descNode.fy = (descNode.fy ?? descNode.y) + dy;
+          descNode.x = descNode.fx;
+          descNode.y = descNode.fy;
+        }
+      }
+    }
+    lastDragPos.current = { ...currentPos };
+  }, [graphData]);
+
+  const handleNodeDragEnd = useCallback((node: any) => {
+    lastDragPos.current = null;
+    // Re-freeze the dragged node
+    node.fx = node.x;
+    node.fy = node.y;
+  }, []);
 
   // Paint node — with focus/dim logic
   const paintNode = useCallback((node: any, ctx: CanvasRenderingContext2D, globalScale: number) => {
@@ -439,13 +494,15 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack, hid
             linkDirectionalParticles={0}
             onNodeHover={(node: any) => setHoveredNode(node)}
             onNodeClick={handleNodeClick}
+            onNodeDrag={handleNodeDragWithDelta}
+            onNodeDragEnd={handleNodeDragEnd}
             onBackgroundClick={handleBackgroundClick}
             cooldownTicks={80}
             d3AlphaDecay={0.06}
             d3VelocityDecay={0.45}
             d3AlphaMin={0.001}
             dagMode="radialout"
-            dagLevelDistance={120}
+            dagLevelDistance={150}
             onEngineStop={() => {
               if (fgRef.current && graphData) {
                 graphData.nodes.forEach((node: any) => {
