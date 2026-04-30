@@ -9,8 +9,9 @@ import LivingTruthMap from './LivingTruthMap';
 import type { InteractionPayload } from '@/app/page';
 import SynthesisReviewOriginal from './SynthesisReviewOriginal';
 import SynthesisReviewAlt3 from './SynthesisReviewAlt3';
+import DiscoveryTerminal from './DiscoveryTerminal';
 
-type SynthesisStep = 'generating' | 'review' | 'truth_map';
+type SynthesisStep = 'generating' | 'review' | 'discovery' | 'truth_map';
 
 interface SynthesisDashboardProps {
   interactionPayload: InteractionPayload;
@@ -120,9 +121,15 @@ export default function SynthesisDashboard({ interactionPayload, onComplete, onR
     URL.revokeObjectURL(url);
   };
 
-  // Category Graph confirmed → move to Living Truth Map
+  // Category Graph confirmed → move to Discovery Terminal
   const handleMethodologyConfirmed = (nodes: string[]) => {
     setGraphNodes(nodes);
+    setStep('discovery');
+  };
+
+  // Discovery complete → move to Living Truth Map
+  const handleDiscoveryComplete = (discoveryResults: any[]) => {
+    // Store discovery results for the audit page
     setStep('truth_map');
   };
 
@@ -187,6 +194,19 @@ export default function SynthesisDashboard({ interactionPayload, onComplete, onR
           )}
         </div>
       </div>
+    );
+  }
+
+  // ── Step 2.5: Discovery Terminal ──
+  if (step === 'discovery') {
+    return (
+      <DiscoveryTerminal
+        manifest={manifestData || {}}
+        intent={resolvedIntent}
+        graphNodes={graphNodes}
+        onComplete={handleDiscoveryComplete}
+        onBack={() => setStep('review')}
+      />
     );
   }
 
