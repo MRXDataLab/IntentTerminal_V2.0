@@ -147,13 +147,17 @@ Return ONLY the JSON array."""
         # Sort by relevance score descending
         ranked = sorted(raw_results, key=lambda x: x.get("relevance_score", 0), reverse=True)
 
+        # Generate CSV file
+        csv_path = _save_results_csv(job_id, ranked[:200], intent, engine)
+
         _jobs[job_id]["status"] = "complete"
         _jobs[job_id]["results"] = ranked[:200]
         _jobs[job_id]["paa_tree"] = result.get("paa_tree", [])
         _jobs[job_id]["stats"] = result.get("stats", {})
+        _jobs[job_id]["csv_path"] = csv_path
         _jobs[job_id]["progress"] = {
             "phase": "complete",
-            "message": f"Discovery complete. {len(ranked)} ranked URLs ready.",
+            "message": f"Discovery complete. {len(ranked)} ranked URLs ready. CSV saved.",
         }
 
     except Exception as e:
@@ -162,6 +166,41 @@ Return ONLY the JSON array."""
 
 
 import json
+import csv
+import io
+import pathlib
+
+
+def _save_results_csv(job_id: str, results: List[Dict], intent: str, engine: str) -> str:
+    """Save ranked discovery results to a CSV file on disk."""
+    output_dir = pathlib.Path("discovery_outputs")
+    output_dir.mkdir(exist_ok=True)
+    csv_path = output_dir / f"discovery_{job_id}.csv"
+
+    fieldnames = [
+        "rank", "relevance_score", "title", "url", "vertical", "source",
+        "summary", "signal_tags", "extraction_rationale", "seed_query"
+    ]
+
+    with open(csv_path, "w", newline="", encoding="utf-8") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames, extrasaction="ignore")
+        writer.writeheader()
+        for i, r in enumerate(results):
+            writer.writerow({
+                "rank": i + 1,
+                "relevance_score": r.get("relevance_score", ""),
+                "title": r.get("title", ""),
+                "url": r.get("url", ""),
+                "vertical": r.get("vertical", ""),
+                "source": r.get("source", ""),
+                "summary": r.get("summary", ""),
+                "signal_tags": "; ".join(r.get("signal_tags", [])) if isinstance(r.get("signal_tags"), list) else r.get("signal_tags", ""),
+                "extraction_rationale": r.get("extraction_rationale", ""),
+                "seed_query": r.get("seed_query", ""),
+            })
+
+    print(f"[Discovery] CSV saved: {csv_path} ({len(results)} rows)")
+    return str(csv_path)
 
 
 @router.post("/discovery/start")
@@ -221,3 +260,27 @@ def get_discovery_results(job_id: str):
         "paa_tree": job["paa_tree"],
         "stats": job["stats"],
     }
+
+
+@router.get("/discovery/csv/{job_id}")
+def download_discovery_csv(job_id: str):
+    """Download the discovery results as a CSV file."""
+    from fastapi.responses import FileResponse
+
+    if job_id not in _jobs:
+        raise HTTPException(status_code=404, detail=f"Job '{job_id}' not found.")
+
+    job = _jobs[job_id]
+    if job["status"] != "complete":
+        raise HTTPException(status_code=400, detail=f"Job is still {job['status']}.")
+
+    csv_path = job.get("csv_path")
+    if not csv_path or not pathlib.Path(csv_path).exists():
+        # Generate CSV on the fly if not saved yet
+        csv_path = _save_results_csv(job_id, job["results"], "", job.get("engine", "unknown"))
+
+    return FileResponse(
+        path=csv_path,
+        media_type="text/csv",
+        filename=f"outtlyr_discovery_{job_id}.csv",
+    )

@@ -337,12 +337,38 @@ export default function DiscoveryTerminal({ manifest, intent, graphNodes, onComp
           <h1 className="text-sm font-medium tracking-wide text-gray-300">Discovery Complete</h1>
           <CheckCircle2 size={14} className="text-emerald-400" />
         </div>
-        <button
-          onClick={() => onComplete(results)}
-          className="flex items-center gap-2 px-5 py-2 bg-amber-500 hover:bg-amber-400 text-black text-xs font-semibold rounded-lg transition-colors shadow-[0_0_15px_rgba(245,158,11,0.3)]"
-        >
-          Proceed to Audit Dashboard →
-        </button>
+        <div className="flex items-center gap-3">
+          <a
+            href={`http://localhost:8000/api/discovery/csv/${jobId}`}
+            download
+            className="flex items-center gap-2 px-4 py-2 bg-[#222] hover:bg-[#333] text-gray-300 text-xs font-medium rounded-lg transition-colors border border-[#333]"
+          >
+            📥 Download CSV
+          </a>
+          <button
+            onClick={() => {
+              const content = JSON.stringify(manifest, null, 2);
+              const blob = new Blob([content], { type: 'application/json;charset=utf-8' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = 'Outtlyr_Link_Farming_Manifest.json';
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              URL.revokeObjectURL(url);
+            }}
+            className="flex items-center gap-2 px-4 py-2 bg-[#222] hover:bg-[#333] text-gray-300 text-xs font-medium rounded-lg transition-colors border border-[#333]"
+          >
+            📄 Download Manifest
+          </button>
+          <button
+            onClick={() => onComplete(results)}
+            className="flex items-center gap-2 px-5 py-2 bg-amber-500 hover:bg-amber-400 text-black text-xs font-semibold rounded-lg transition-colors shadow-[0_0_15px_rgba(245,158,11,0.3)]"
+          >
+            Proceed to Audit Dashboard →
+          </button>
+        </div>
       </div>
 
       <div className="flex-1 flex overflow-hidden">

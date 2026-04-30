@@ -17,7 +17,8 @@ export default function SynthesisReviewAlt3({
   onConfirm, 
   onReject, 
   onDownloadBrief, 
-  onDownloadManifest 
+  onDownloadManifest,
+  onDevBypassDiscovery,
 }: SynthesisReviewProps) {
   
   const [showRejectionInput, setShowRejectionInput] = useState(false);
@@ -60,6 +61,14 @@ export default function SynthesisReviewAlt3({
         </div>
         
         <div className="flex items-center gap-3">
+          {onDevBypassDiscovery && (
+            <button
+              onClick={onDevBypassDiscovery}
+              className="text-[10px] font-mono tracking-widest uppercase bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 border border-amber-500/50 px-3 py-1.5 rounded transition-colors"
+            >
+              🧪 Skip to Discovery
+            </button>
+          )}
           <button 
             onClick={() => onConfirm(graphMetrics?.ecosystemNodeNames || [])} 
             disabled={!graphMetrics || graphMetrics.loading}

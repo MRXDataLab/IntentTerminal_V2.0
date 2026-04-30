@@ -127,6 +127,26 @@ export default function SynthesisDashboard({ interactionPayload, onComplete, onR
     setStep('discovery');
   };
 
+  // Dev Bypass → skip straight to Discovery using cached manifest
+  const handleDevBypassDiscovery = async () => {
+    try {
+      const bypassRes = await axios.get('http://localhost:8000/api/latest-run');
+      const { intent, brief, manifest, graph } = bypassRes.data;
+      setResolvedIntent(intent);
+      setBriefText(brief);
+      setManifestData(manifest);
+      // Extract node names from cached graph
+      const nodes = (graph.nodes || [])
+        .filter((n: any) => n.type !== 'root')
+        .map((n: any) => n.label || n.id);
+      setGraphNodes(nodes);
+      setStep('discovery');
+    } catch (e) {
+      console.error('Dev bypass failed:', e);
+      alert('Dev bypass failed. Run a full live session first to generate cached data.');
+    }
+  };
+
   // Discovery complete → move to Living Truth Map
   const handleDiscoveryComplete = (discoveryResults: any[]) => {
     // Store discovery results for the audit page
@@ -236,7 +256,8 @@ export default function SynthesisDashboard({ interactionPayload, onComplete, onR
       onConfirm: handleMethodologyConfirmed,
       onReject: onRejected,
       onDownloadBrief: handleDownloadBrief,
-      onDownloadManifest: handleDownloadManifest
+      onDownloadManifest: handleDownloadManifest,
+      onDevBypassDiscovery: handleDevBypassDiscovery,
     };
 
     switch (uxMode) {

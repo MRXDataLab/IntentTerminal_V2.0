@@ -9,4 +9,5 @@ export interface SynthesisReviewProps {
   onReject: (rejectionContext?: string) => void;
   onDownloadBrief: () => void;
   onDownloadManifest: () => void;
+  onDevBypassDiscovery?: () => void;
 }
