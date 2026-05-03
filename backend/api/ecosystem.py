@@ -6,6 +6,7 @@ from typing import List, Dict, Any
 import networkx as nx
 
 from services.llm_client import call_openrouter
+from kb.kb_loader import load_kb
 
 router = APIRouter()
 
@@ -16,109 +17,30 @@ class IntentPayload(BaseModel):
 # We no longer use a fixed list of forces; categories are dynamically derived from the intent/brief.
 
 
-SYSTEM_PROMPT_ECOSYSTEM_GENERIC = """You are a Strategic Ecosystem Graph Architect for Outllyr — a domain taxonomy and strategic intelligence expert.
-Given a research intent, generate a clean, readable ecosystem landscape map.
 
-CRITICAL RULES:
-1. Derive 4-6 key thematic pillars directly from the research intent. DO NOT use generic categories.
-2. Every node label MUST be condensed to 2-3 words maximum. No full sentences. Examples: "Price Sensitivity", "Gen-Z Churn", "Ola S1 Pro".
-3. Keep the graph CLEAN: 4-6 categories, 2-4 nodes per category. Do not over-populate.
+def _get_ecosystem_generic_prompt() -> str:
+    """Load the generic ecosystem prompt from KB."""
+    return load_kb("agents/ecosystem_generic_agent.md")
 
-Your output MUST be a strict JSON object:
-{
-  "core_topic": "2-3 word core subject",
-  "categories": [
-    {
-      "category_name": "2-3 Word Theme",
-      "description": "Brief description of this point",
-      "force_metadata": "One of: Demand Gravity, Choice Architecture, Value Elasticity, Reinforcement Stability, Competitive Energy",
-      "nodes": ["2-3 Word Entity A", "2-3 Word Entity B", "2-3 Word Entity C"]
-    }
-  ]
-}
-"""
+def _get_ecosystem_brief_prompt() -> str:
+    """Load the brief-driven ecosystem prompt from KB."""
+    return load_kb("agents/ecosystem_brief_agent.md")
 
-SYSTEM_PROMPT_ECOSYSTEM_WITH_BRIEF = """You are a Strategic Ecosystem Graph Architect for Outllyr.
-You will receive a Research Intent and a fully synthesized Strategic Research Brief.
-Your job is to convert them into a clean, readable Subject-Relationship Web.
-
-CRITICAL RULES:
-1. Extract nodes from ACTUAL named entities, brands, platforms, signals, rivals, and keywords found in the brief AND the intake conversation. DO NOT invent generic categories. You CAN use very close references to the topics, keywords, and rivals mentioned.
-2. Every node label MUST be condensed to 2-3 words maximum. No full sentences. Examples: "Price Sensitivity", "Gen-Z Churn", "Ola S1 Pro", "r/IndiaEV".
-3. The graph must remain CLEAN and READABLE. Limit to 4-6 subjects, 2-4 components per subject, and 1-3 signals per component. Do not over-populate any tier.
-
-MAPPING LOGIC (6-Tier Semantic Market Web):
-
-- "core_topic": The central business problem extracted from the Strategic Goal. Condensed to 2-4 words.
-
-- "subjects" (Tier 1 — Hypotheses): The actual hypotheses to stress-test from the brief. MUST be prefixed with "H1: ", "H2: ", "H3: " etc. followed by a condensed 2-3 word label. Example: "H1: Price Erosion", "H2: Silent Churn", "H3: Brand Fatigue". Each MUST include a "description" field: one sentence explaining the hypothesis. Limit: 3-5 subjects.
-
-- "components" (Tier 2 — Sub-topics): Specific sub-dimensions mapped to each hypothesis. Condensed to 2-3 words. Each MUST include a "description" field: one sentence explaining this research angle. Generate at least 5 components per subject to ensure depth.
-
-- "signals" (Tier 3 — Internet Keywords): The actual search terms, forum topics, platform names, and related keywords the scrapers will hunt for. These should be SPECIFIC and RELEVANT to the parent component — include subreddit names, product names, trending phrases, review keywords, and niche forum terms. Condensed to 2-3 words each. Generate at least 5 signals per component. Be generous — more keywords give the graph depth.
-  Each signal MUST include a "description" field: a single plain sentence explaining what this keyword captures and why it matters for the study.
-
-- "context_nodes" (Tier 4 — Competitive & Market Context): Extract from the brief:
-  - Visible Rivals (named competitors the client fights daily)
-  - Ghost Rivals (white-label or indirect threats stealing share)
-  - Market Triggers (the catalyst event that started this study)
-  Attach each to the most relevant subject. Limit: 3-6 total across all subjects.
-
-- "scope_nodes" (Tier 5 — Study Boundaries): Extract from the brief:
-  - Geographic scope (e.g., "Tier-1 India", "Pan-US")
-  - Temporal window (e.g., "Oct 2025 – Apr 2026")
-  - Target cohort (e.g., "Gen-Z Gamers", "Urban Commuters")
-  Attach to the root node. Limit: 2-4 total.
-
-- "force_metadata": For EVERY node at every tier, assign one of the 5 Strategic Forces:
-  Demand Gravity, Choice Architecture, Value Elasticity, Reinforcement Stability, Competitive Energy.
-
-OUTPUT FORMAT — strict JSON, no markdown:
-{
-  "core_topic": "2-4 word problem statement",
-  "subjects": [
-    {
-      "name": "H1: Price Erosion",
-      "force_metadata": "One of the 5 forces",
-      "description": "One sentence explaining this hypothesis.",
-      "components": [
-        {
-          "name": "2-3 Word Sub-topic",
-          "force_metadata": "One of the 5 forces",
-          "description": "One sentence explaining this research angle.",
-          "signals": [
-            {"name": "2-3 Word Signal", "force_metadata": "One of the 5 forces", "description": "One sentence explaining what this keyword captures."}
-          ]
-        }
-      ],
-      "context_nodes": [
-        {"name": "Rival or Trigger", "type": "visible_rival", "force_metadata": "Competitive Energy", "description": "One sentence about this rival or trigger."}
-      ]
-    }
-  ],
-  "scope_nodes": [
-    {"name": "Tier-1 India", "type": "geography", "force_metadata": "Demand Gravity", "description": "Geographic focus of this study."},
-    {"name": "Oct 25 – Apr 26", "type": "timeline", "force_metadata": "Demand Gravity", "description": "Temporal window for data collection."},
-    {"name": "Gen-Z Gamers", "type": "cohort", "force_metadata": "Demand Gravity", "description": "Primary target audience for signal filtering."}
-  ]
-}
-"""
 
 def generate_dynamic_ecosystem_graph(intent: str, brief: str | None = None) -> Dict[str, Any]:
     try:
         if brief:
-            system_prompt = SYSTEM_PROMPT_ECOSYSTEM_WITH_BRIEF
+            system_prompt = _get_ecosystem_brief_prompt()
             user_prompt = (
                 f"Research Intent: {intent}\n\n"
                 f"=== STRATEGIC RESEARCH BRIEF (PRIMARY SOURCE) ===\n"
                 f"{brief[:7000]}\n"
                 f"=== END BRIEF ===\n\n"
-                f"Generate the Category Graph JSON. Extract hypotheses, rivals, signals, geographic scope, "
-                f"and timeline from the brief above. Condense every node label to 2-3 words. "
-                f"Keep the graph structured: 3-5 hypotheses, at least 5 components each, at least 5 signals each."
+                f"Now generate the Category Graph JSON by mapping the brief's tiers, units, signals, and sources directly to the 5 Strategic Forces.\n"
+                f"Every node must be a named entity, platform, signal, or source from the brief above."
             )
         else:
-            system_prompt = SYSTEM_PROMPT_ECOSYSTEM_GENERIC
+            system_prompt = _get_ecosystem_generic_prompt()
             user_prompt = f"Map the ecosystem for this research intent: {intent}"
 
         llm_result = call_openrouter(
@@ -144,7 +66,7 @@ def generate_dynamic_ecosystem_graph(intent: str, brief: str | None = None) -> D
         
         # ── Tier 1-4: Subjects → Components → Signals → Context Nodes ──
         subjects = llm_result.get("subjects", [])
-        if not subjects and "categories" in llm_result:  # fallback for generic prompt
+        if not subjects and "categories" in llm_result: # fallback
             subjects = llm_result.get("categories", [])
             
         for subject in subjects:
@@ -157,7 +79,7 @@ def generate_dynamic_ecosystem_graph(intent: str, brief: str | None = None) -> D
             
             # Tier 2: Components
             components = subject.get("components", [])
-            if not components and "nodes" in subject:  # fallback handling
+            if not components and "nodes" in subject: # fallback handling
                 components = [{"name": n, "force_metadata": subj_force, "signals": []} for n in subject.get("nodes", [])]
                 
             for comp in components:

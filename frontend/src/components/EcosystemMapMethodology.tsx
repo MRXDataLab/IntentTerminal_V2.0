@@ -19,6 +19,7 @@ interface EcosystemMapMethodologyProps {
   hideSidebar?: boolean;
   onGraphMetrics?: (metrics: any) => void;
   strategicOverlayEnabled?: boolean;
+  hasPlayed?: boolean;
 }
 
 const FORCE_COLORS: Record<string, string> = {

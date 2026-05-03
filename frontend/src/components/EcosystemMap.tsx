@@ -16,6 +16,7 @@ interface EcosystemMapProps {
   hideSidebar?: boolean;
   onGraphMetrics?: (metrics: any) => void;
   strategicOverlayEnabled?: boolean;
+  hasPlayed?: boolean;
 }
 
 const FORCE_COLORS: Record<string, string> = {
@@ -364,7 +365,7 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack, hid
 
       {/* Left Sidebar */}
       {!hideSidebar && (
-        <div className="w-80 min-w-[20rem] h-full border-r border-[#2a2a3a] bg-[#0f0f18] z-10 flex flex-col pt-5 pb-5 shadow-2xl overflow-y-auto shrink-0">
+        <div className="w-[500px] h-full border-r border-[#2a2a3a] bg-[#0f0f18] z-10 flex flex-col pt-5 pb-5 shadow-2xl overflow-y-auto shrink-0">
           <div className="px-5 mb-5">
             <div className="flex items-center gap-2 text-gray-300">
               <Network className="text-blue-500" size={16} />
@@ -501,8 +502,7 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack, hid
             d3AlphaDecay={0.06}
             d3VelocityDecay={0.45}
             d3AlphaMin={0.001}
-            dagMode="radialout"
-            dagLevelDistance={150}
+
             onEngineStop={() => {
               if (fgRef.current && graphData) {
                 graphData.nodes.forEach((node: any) => {

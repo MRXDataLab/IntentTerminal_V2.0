@@ -10,4 +10,6 @@ export interface SynthesisReviewProps {
   onDownloadBrief: () => void;
   onDownloadManifest: () => void;
   onDevBypassDiscovery?: () => void;
+  hasPlayed?: boolean;
+  onPlay?: () => void;
 }

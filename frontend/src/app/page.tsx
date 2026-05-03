@@ -61,7 +61,12 @@ export default function Home() {
           interactionPayload={interactionPayload}
           onComplete={handleSynthesisApproved}
           onRejected={handleSynthesisRejected}
-          onBack={() => setPhase('interaction')}
+          onBack={(resolvedIntent) => {
+            if (resolvedIntent && resolvedIntent !== 'DEV_TEST_MOCK') {
+              setInteractionPayload(prev => prev ? { ...prev, intent: resolvedIntent } : null);
+            }
+            setPhase('interaction');
+          }}
         />
       )}
       {phase === 'discovery' && manifestData && (

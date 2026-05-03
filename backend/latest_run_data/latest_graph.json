@@ -5,165 +5,500 @@
   "nodes": [
     {
       "type": "root",
-      "label": "Retention collapse within Kellogg's India Corn Portfolio and the commercial failure of the Multigrain launch to convert trials into habitual routines.",
+      "label": "Diagnosing the retention collapse and failure to convert trials into habitual routines for Kellogg's India Corn Portfolio.",
       "force": "root",
-      "id": "Retention collapse within Kellogg's India Corn Portfolio and the commercial failure of the Multigrain launch to convert trials into habitual routines."
+      "description": "The central business problem driving this research study.",
+      "id": "Diagnosing the retention collapse and failure to convert trials into habitual routines for Kellogg's India Corn Portfolio."
     },
     {
       "type": "subject",
-      "label": "Multigrain health claims are failing to create a sticky breakfast ritual because the taste profile does not meet the sensory expectations of traditional core buyers, leading to one-time trials without adoption.",
-      "force": "Demand Gravity",
-      "subject": "Multigrain health claims are failing to create a sticky breakfast ritual because the taste profile does not meet the sensory expectations of traditional core buyers, leading to one-time trials without adoption.",
-      "id": "Multigrain health claims are failing to create a sticky breakfast ritual because the taste profile does not meet the sensory expectations of traditional core buyers, leading to one-time trials without adoption."
-    },
-    {
-      "type": "component",
-      "label": "Multigrain sensory and taste profile gap",
-      "force": "Reinforcement Stability",
-      "subject": "Multigrain health claims are failing to create a sticky breakfast ritual because the taste profile does not meet the sensory expectations of traditional core buyers, leading to one-time trials without adoption.",
-      "id": "Multigrain sensory and taste profile gap"
-    },
-    {
-      "type": "signal",
-      "label": "Ritual Language digital footprints",
-      "force": "Reinforcement Stability",
-      "subject": "Multigrain health claims are failing to create a sticky breakfast ritual because the taste profile does not meet the sensory expectations of traditional core buyers, leading to one-time trials without adoption.",
-      "id": "Ritual Language digital footprints"
-    },
-    {
-      "type": "signal",
-      "label": "Functional claim update feedback",
-      "force": "Choice Architecture",
-      "subject": "Multigrain health claims are failing to create a sticky breakfast ritual because the taste profile does not meet the sensory expectations of traditional core buyers, leading to one-time trials without adoption.",
-      "id": "Functional claim update feedback"
-    },
-    {
-      "type": "component",
-      "label": "Masterbrand media investment and trial metrics",
-      "force": "Competitive Energy",
-      "subject": "Multigrain health claims are failing to create a sticky breakfast ritual because the taste profile does not meet the sensory expectations of traditional core buyers, leading to one-time trials without adoption.",
-      "id": "Masterbrand media investment and trial metrics"
-    },
-    {
-      "type": "signal",
-      "label": "One-time trial adoption sentiment",
-      "force": "Demand Gravity",
-      "subject": "Multigrain health claims are failing to create a sticky breakfast ritual because the taste profile does not meet the sensory expectations of traditional core buyers, leading to one-time trials without adoption.",
-      "id": "One-time trial adoption sentiment"
-    },
-    {
-      "type": "subject",
-      "label": "Local value players, specifically Mohan Cornflakes in the East, are successfully disrupting Kellogg\u2019s brand pull by offering a good enough substitute at a lower price point, causing a migration of price-sensitive families.",
+      "label": "The Multigrain Cornflakes' health claims are failing to resonate with the target audience, indicating a miscalibration in Value Elasticity that hinders trial conversion into habitual routines.",
       "force": "Value Elasticity",
-      "subject": "Local value players, specifically Mohan Cornflakes in the East, are successfully disrupting Kellogg\u2019s brand pull by offering a good enough substitute at a lower price point, causing a migration of price-sensitive families.",
-      "id": "Local value players, specifically Mohan Cornflakes in the East, are successfully disrupting Kellogg\u2019s brand pull by offering a good enough substitute at a lower price point, causing a migration of price-sensitive families."
+      "subject": "The Multigrain Cornflakes' health claims are failing to resonate with the target audience, indicating a miscalibration in Value Elasticity that hinders trial conversion into habitual routines.",
+      "description": "",
+      "id": "The Multigrain Cornflakes' health claims are failing to resonate with the target audience, indicating a miscalibration in Value Elasticity that hinders trial conversion into habitual routines."
     },
     {
       "type": "component",
-      "label": "Mohan Cornflakes East Region disruption",
-      "force": "Competitive Energy",
-      "subject": "Local value players, specifically Mohan Cornflakes in the East, are successfully disrupting Kellogg\u2019s brand pull by offering a good enough substitute at a lower price point, causing a migration of price-sensitive families.",
-      "id": "Mohan Cornflakes East Region disruption"
-    },
-    {
-      "type": "signal",
-      "label": "East Region unbranded substitute workarounds",
-      "force": "Competitive Energy",
-      "subject": "Local value players, specifically Mohan Cornflakes in the East, are successfully disrupting Kellogg\u2019s brand pull by offering a good enough substitute at a lower price point, causing a migration of price-sensitive families.",
-      "id": "East Region unbranded substitute workarounds"
-    },
-    {
-      "type": "signal",
-      "label": "Value-tier seller sentiment in East India",
+      "label": "Multigrain Cornflakes launch",
       "force": "Value Elasticity",
-      "subject": "Local value players, specifically Mohan Cornflakes in the East, are successfully disrupting Kellogg\u2019s brand pull by offering a good enough substitute at a lower price point, causing a migration of price-sensitive families.",
-      "id": "Value-tier seller sentiment in East India"
+      "subject": "The Multigrain Cornflakes' health claims are failing to resonate with the target audience, indicating a miscalibration in Value Elasticity that hinders trial conversion into habitual routines.",
+      "description": "",
+      "id": "Multigrain Cornflakes launch"
+    },
+    {
+      "type": "signal",
+      "label": "substantial media investment",
+      "force": "Value Elasticity",
+      "subject": "The Multigrain Cornflakes' health claims are failing to resonate with the target audience, indicating a miscalibration in Value Elasticity that hinders trial conversion into habitual routines.",
+      "description": "",
+      "id": "substantial media investment"
+    },
+    {
+      "type": "component",
+      "label": "health claims",
+      "force": "Value Elasticity",
+      "subject": "The Multigrain Cornflakes' health claims are failing to resonate with the target audience, indicating a miscalibration in Value Elasticity that hinders trial conversion into habitual routines.",
+      "description": "",
+      "id": "health claims"
+    },
+    {
+      "type": "signal",
+      "label": "product claims",
+      "force": "Value Elasticity",
+      "subject": "The Multigrain Cornflakes' health claims are failing to resonate with the target audience, indicating a miscalibration in Value Elasticity that hinders trial conversion into habitual routines.",
+      "description": "",
+      "id": "product claims"
+    },
+    {
+      "type": "component",
+      "label": "packaging adjustments",
+      "force": "Choice Architecture",
+      "subject": "The Multigrain Cornflakes' health claims are failing to resonate with the target audience, indicating a miscalibration in Value Elasticity that hinders trial conversion into habitual routines.",
+      "description": "",
+      "id": "packaging adjustments"
+    },
+    {
+      "type": "component",
+      "label": "sizes adjustments",
+      "force": "Value Elasticity",
+      "subject": "The Multigrain Cornflakes' health claims are failing to resonate with the target audience, indicating a miscalibration in Value Elasticity that hinders trial conversion into habitual routines.",
+      "description": "",
+      "id": "sizes adjustments"
+    },
+    {
+      "type": "component",
+      "label": "Innovation Gap",
+      "force": "Competitive Energy",
+      "subject": "The Multigrain Cornflakes' health claims are failing to resonate with the target audience, indicating a miscalibration in Value Elasticity that hinders trial conversion into habitual routines.",
+      "description": "",
+      "id": "Innovation Gap"
+    },
+    {
+      "type": "component",
+      "label": "Category Relevance",
+      "force": "Demand Gravity",
+      "subject": "The Multigrain Cornflakes' health claims are failing to resonate with the target audience, indicating a miscalibration in Value Elasticity that hinders trial conversion into habitual routines.",
+      "description": "",
+      "id": "Category Relevance"
+    },
+    {
+      "type": "component",
+      "label": "consumer shifts",
+      "force": "Demand Gravity",
+      "subject": "The disconnect between initial product trial satisfaction and long-term habitual usage points to a failure in Reinforcement Stability, where initial positive experiences are not adequately fortified to establish enduring consumption patterns.",
+      "description": "",
+      "id": "consumer shifts"
     },
     {
       "type": "subject",
-      "label": "Consumer breakfast preferences are shifting toward premium-lite formats; shoppers in Modern Trade are migrating away from the Cornflakes category entirely in favor of Muesli and Granola workarounds.",
+      "label": "The taste profile of the Multigrain Cornflakes, and potentially core products, establishes a significant Choice Architecture friction point, impeding repeat purchases despite initial trial satisfaction.",
       "force": "Choice Architecture",
-      "subject": "Consumer breakfast preferences are shifting toward premium-lite formats; shoppers in Modern Trade are migrating away from the Cornflakes category entirely in favor of Muesli and Granola workarounds.",
-      "id": "Consumer breakfast preferences are shifting toward premium-lite formats; shoppers in Modern Trade are migrating away from the Cornflakes category entirely in favor of Muesli and Granola workarounds."
+      "subject": "The taste profile of the Multigrain Cornflakes, and potentially core products, establishes a significant Choice Architecture friction point, impeding repeat purchases despite initial trial satisfaction.",
+      "description": "",
+      "id": "The taste profile of the Multigrain Cornflakes, and potentially core products, establishes a significant Choice Architecture friction point, impeding repeat purchases despite initial trial satisfaction."
     },
     {
       "type": "component",
-      "label": "Muesli and Granola premium-lite migration",
+      "label": "taste profile",
       "force": "Choice Architecture",
-      "subject": "Consumer breakfast preferences are shifting toward premium-lite formats; shoppers in Modern Trade are migrating away from the Cornflakes category entirely in favor of Muesli and Granola workarounds.",
-      "id": "Muesli and Granola premium-lite migration"
+      "subject": "The taste profile of the Multigrain Cornflakes, and potentially core products, establishes a significant Choice Architecture friction point, impeding repeat purchases despite initial trial satisfaction.",
+      "description": "",
+      "id": "taste profile"
     },
     {
-      "type": "signal",
-      "label": "Modern Trade shopper digital sentiment",
+      "type": "component",
+      "label": "core products",
       "force": "Choice Architecture",
-      "subject": "Consumer breakfast preferences are shifting toward premium-lite formats; shoppers in Modern Trade are migrating away from the Cornflakes category entirely in favor of Muesli and Granola workarounds.",
-      "id": "Modern Trade shopper digital sentiment"
+      "subject": "The taste profile of the Multigrain Cornflakes, and potentially core products, establishes a significant Choice Architecture friction point, impeding repeat purchases despite initial trial satisfaction.",
+      "description": "",
+      "id": "core products"
     },
     {
-      "type": "signal",
-      "label": "E-commerce morning meal occasion trade-offs",
+      "type": "component",
+      "label": "Kellogg's Corn Portfolio",
       "force": "Demand Gravity",
-      "subject": "Consumer breakfast preferences are shifting toward premium-lite formats; shoppers in Modern Trade are migrating away from the Cornflakes category entirely in favor of Muesli and Granola workarounds.",
-      "id": "E-commerce morning meal occasion trade-offs"
+      "subject": "The observed retention collapse is attributable to a weakening of Demand Gravity for Kellogg's Corn Portfolio, driven by the emergence of 'Substitute Workarounds' and 'Ritual Language' shifts towards alternatives such as Muesli/Granola and local value players.",
+      "description": "",
+      "id": "Kellogg's Corn Portfolio"
+    },
+    {
+      "type": "signal",
+      "label": "declining Corn Portfolio YoY",
+      "force": "Reinforcement Stability",
+      "subject": "The taste profile of the Multigrain Cornflakes, and potentially core products, establishes a significant Choice Architecture friction point, impeding repeat purchases despite initial trial satisfaction.",
+      "description": "",
+      "id": "declining Corn Portfolio YoY"
+    },
+    {
+      "type": "signal",
+      "label": "consistent decline in offtakes",
+      "force": "Reinforcement Stability",
+      "subject": "The taste profile of the Multigrain Cornflakes, and potentially core products, establishes a significant Choice Architecture friction point, impeding repeat purchases despite initial trial satisfaction.",
+      "description": "",
+      "id": "consistent decline in offtakes"
+    },
+    {
+      "type": "component",
+      "label": "Multigrain Cornflakes",
+      "force": "Choice Architecture",
+      "subject": "The taste profile of the Multigrain Cornflakes, and potentially core products, establishes a significant Choice Architecture friction point, impeding repeat purchases despite initial trial satisfaction.",
+      "description": "",
+      "id": "Multigrain Cornflakes"
+    },
+    {
+      "type": "component",
+      "label": "Trial vs. Retention Paradox",
+      "force": "Reinforcement Stability",
+      "subject": "The disconnect between initial product trial satisfaction and long-term habitual usage points to a failure in Reinforcement Stability, where initial positive experiences are not adequately fortified to establish enduring consumption patterns.",
+      "description": "",
+      "id": "Trial vs. Retention Paradox"
+    },
+    {
+      "type": "component",
+      "label": "Modern Trade",
+      "force": "Choice Architecture",
+      "subject": "The taste profile of the Multigrain Cornflakes, and potentially core products, establishes a significant Choice Architecture friction point, impeding repeat purchases despite initial trial satisfaction.",
+      "description": "",
+      "id": "Modern Trade"
+    },
+    {
+      "type": "component",
+      "label": "E-commerce",
+      "force": "Choice Architecture",
+      "subject": "The taste profile of the Multigrain Cornflakes, and potentially core products, establishes a significant Choice Architecture friction point, impeding repeat purchases despite initial trial satisfaction.",
+      "description": "",
+      "id": "E-commerce"
+    },
+    {
+      "type": "subject",
+      "label": "The observed retention collapse is attributable to a weakening of Demand Gravity for Kellogg's Corn Portfolio, driven by the emergence of 'Substitute Workarounds' and 'Ritual Language' shifts towards alternatives such as Muesli/Granola and local value players.",
+      "force": "Demand Gravity",
+      "subject": "The observed retention collapse is attributable to a weakening of Demand Gravity for Kellogg's Corn Portfolio, driven by the emergence of 'Substitute Workarounds' and 'Ritual Language' shifts towards alternatives such as Muesli/Granola and local value players.",
+      "description": "",
+      "id": "The observed retention collapse is attributable to a weakening of Demand Gravity for Kellogg's Corn Portfolio, driven by the emergence of 'Substitute Workarounds' and 'Ritual Language' shifts towards alternatives such as Muesli/Granola and local value players."
+    },
+    {
+      "type": "component",
+      "label": "Substitute Workarounds",
+      "force": "Demand Gravity",
+      "subject": "The observed retention collapse is attributable to a weakening of Demand Gravity for Kellogg's Corn Portfolio, driven by the emergence of 'Substitute Workarounds' and 'Ritual Language' shifts towards alternatives such as Muesli/Granola and local value players.",
+      "description": "",
+      "id": "Substitute Workarounds"
+    },
+    {
+      "type": "signal",
+      "label": "e-commerce platforms",
+      "force": "Choice Architecture",
+      "subject": "The observed retention collapse is attributable to a weakening of Demand Gravity for Kellogg's Corn Portfolio, driven by the emergence of 'Substitute Workarounds' and 'Ritual Language' shifts towards alternatives such as Muesli/Granola and local value players.",
+      "description": "",
+      "id": "e-commerce platforms"
+    },
+    {
+      "type": "signal",
+      "label": "digital conversations",
+      "force": "Demand Gravity",
+      "subject": "The observed retention collapse is attributable to a weakening of Demand Gravity for Kellogg's Corn Portfolio, driven by the emergence of 'Substitute Workarounds' and 'Ritual Language' shifts towards alternatives such as Muesli/Granola and local value players.",
+      "description": "",
+      "id": "digital conversations"
+    },
+    {
+      "type": "component",
+      "label": "Ritual Language shifts",
+      "force": "Demand Gravity",
+      "subject": "The observed retention collapse is attributable to a weakening of Demand Gravity for Kellogg's Corn Portfolio, driven by the emergence of 'Substitute Workarounds' and 'Ritual Language' shifts towards alternatives such as Muesli/Granola and local value players.",
+      "description": "",
+      "id": "Ritual Language shifts"
+    },
+    {
+      "type": "component",
+      "label": "Muesli/Granola",
+      "force": "Competitive Energy",
+      "subject": "The observed retention collapse is attributable to a weakening of Demand Gravity for Kellogg's Corn Portfolio, driven by the emergence of 'Substitute Workarounds' and 'Ritual Language' shifts towards alternatives such as Muesli/Granola and local value players.",
+      "description": "",
+      "id": "Muesli/Granola"
+    },
+    {
+      "type": "component",
+      "label": "local value players",
+      "force": "Competitive Energy",
+      "subject": "The observed retention collapse is attributable to a weakening of Demand Gravity for Kellogg's Corn Portfolio, driven by the emergence of 'Substitute Workarounds' and 'Ritual Language' shifts towards alternatives such as Muesli/Granola and local value players.",
+      "description": "",
+      "id": "local value players"
+    },
+    {
+      "type": "signal",
+      "label": "Mohan Cornflakes",
+      "force": "Competitive Energy",
+      "subject": "The observed retention collapse is attributable to a weakening of Demand Gravity for Kellogg's Corn Portfolio, driven by the emergence of 'Substitute Workarounds' and 'Ritual Language' shifts towards alternatives such as Muesli/Granola and local value players.",
+      "description": "",
+      "id": "Mohan Cornflakes"
+    },
+    {
+      "type": "signal",
+      "label": "other unknown local sellers",
+      "force": "Competitive Energy",
+      "subject": "The observed retention collapse is attributable to a weakening of Demand Gravity for Kellogg's Corn Portfolio, driven by the emergence of 'Substitute Workarounds' and 'Ritual Language' shifts towards alternatives such as Muesli/Granola and local value players.",
+      "description": "",
+      "id": "other unknown local sellers"
+    },
+    {
+      "type": "component",
+      "label": "Value Squeeze",
+      "force": "Competitive Energy",
+      "subject": "The observed retention collapse is attributable to a weakening of Demand Gravity for Kellogg's Corn Portfolio, driven by the emergence of 'Substitute Workarounds' and 'Ritual Language' shifts towards alternatives such as Muesli/Granola and local value players.",
+      "description": "",
+      "id": "Value Squeeze"
+    },
+    {
+      "type": "component",
+      "label": "East region",
+      "force": "Demand Gravity",
+      "subject": "The observed retention collapse is attributable to a weakening of Demand Gravity for Kellogg's Corn Portfolio, driven by the emergence of 'Substitute Workarounds' and 'Ritual Language' shifts towards alternatives such as Muesli/Granola and local value players.",
+      "description": "",
+      "id": "East region"
+    },
+    {
+      "type": "subject",
+      "label": "The disconnect between initial product trial satisfaction and long-term habitual usage points to a failure in Reinforcement Stability, where initial positive experiences are not adequately fortified to establish enduring consumption patterns.",
+      "force": "Reinforcement Stability",
+      "subject": "The disconnect between initial product trial satisfaction and long-term habitual usage points to a failure in Reinforcement Stability, where initial positive experiences are not adequately fortified to establish enduring consumption patterns.",
+      "description": "",
+      "id": "The disconnect between initial product trial satisfaction and long-term habitual usage points to a failure in Reinforcement Stability, where initial positive experiences are not adequately fortified to establish enduring consumption patterns."
+    },
+    {
+      "type": "component",
+      "label": "initial product trial satisfaction",
+      "force": "Reinforcement Stability",
+      "subject": "The disconnect between initial product trial satisfaction and long-term habitual usage points to a failure in Reinforcement Stability, where initial positive experiences are not adequately fortified to establish enduring consumption patterns.",
+      "description": "",
+      "id": "initial product trial satisfaction"
+    },
+    {
+      "type": "component",
+      "label": "long-term habitual usage",
+      "force": "Reinforcement Stability",
+      "subject": "The disconnect between initial product trial satisfaction and long-term habitual usage points to a failure in Reinforcement Stability, where initial positive experiences are not adequately fortified to establish enduring consumption patterns.",
+      "description": "",
+      "id": "long-term habitual usage"
+    },
+    {
+      "type": "component",
+      "label": "sustained repeat purchases",
+      "force": "Reinforcement Stability",
+      "subject": "The disconnect between initial product trial satisfaction and long-term habitual usage points to a failure in Reinforcement Stability, where initial positive experiences are not adequately fortified to establish enduring consumption patterns.",
+      "description": "",
+      "id": "sustained repeat purchases"
+    },
+    {
+      "type": "component",
+      "label": "retention collapse",
+      "force": "Reinforcement Stability",
+      "subject": "The disconnect between initial product trial satisfaction and long-term habitual usage points to a failure in Reinforcement Stability, where initial positive experiences are not adequately fortified to establish enduring consumption patterns.",
+      "description": "",
+      "id": "retention collapse"
+    },
+    {
+      "type": "signal",
+      "label": "12 months of consumer shifts",
+      "force": "Demand Gravity",
+      "subject": "The disconnect between initial product trial satisfaction and long-term habitual usage points to a failure in Reinforcement Stability, where initial positive experiences are not adequately fortified to establish enduring consumption patterns.",
+      "description": "",
+      "id": "12 months of consumer shifts"
+    },
+    {
+      "type": "component",
+      "label": "Modern Trade shoppers",
+      "force": "Choice Architecture",
+      "subject": "The disconnect between initial product trial satisfaction and long-term habitual usage points to a failure in Reinforcement Stability, where initial positive experiences are not adequately fortified to establish enduring consumption patterns.",
+      "description": "",
+      "id": "Modern Trade shoppers"
+    },
+    {
+      "type": "component",
+      "label": "E-commerce shoppers",
+      "force": "Choice Architecture",
+      "subject": "The disconnect between initial product trial satisfaction and long-term habitual usage points to a failure in Reinforcement Stability, where initial positive experiences are not adequately fortified to establish enduring consumption patterns.",
+      "description": "",
+      "id": "E-commerce shoppers"
     }
   ],
   "links": [
     {
-      "source": "Retention collapse within Kellogg's India Corn Portfolio and the commercial failure of the Multigrain launch to convert trials into habitual routines.",
-      "target": "Multigrain health claims are failing to create a sticky breakfast ritual because the taste profile does not meet the sensory expectations of traditional core buyers, leading to one-time trials without adoption."
+      "source": "Diagnosing the retention collapse and failure to convert trials into habitual routines for Kellogg's India Corn Portfolio.",
+      "target": "The Multigrain Cornflakes' health claims are failing to resonate with the target audience, indicating a miscalibration in Value Elasticity that hinders trial conversion into habitual routines."
     },
     {
-      "source": "Retention collapse within Kellogg's India Corn Portfolio and the commercial failure of the Multigrain launch to convert trials into habitual routines.",
-      "target": "Local value players, specifically Mohan Cornflakes in the East, are successfully disrupting Kellogg\u2019s brand pull by offering a good enough substitute at a lower price point, causing a migration of price-sensitive families."
+      "source": "Diagnosing the retention collapse and failure to convert trials into habitual routines for Kellogg's India Corn Portfolio.",
+      "target": "The taste profile of the Multigrain Cornflakes, and potentially core products, establishes a significant Choice Architecture friction point, impeding repeat purchases despite initial trial satisfaction."
     },
     {
-      "source": "Retention collapse within Kellogg's India Corn Portfolio and the commercial failure of the Multigrain launch to convert trials into habitual routines.",
-      "target": "Consumer breakfast preferences are shifting toward premium-lite formats; shoppers in Modern Trade are migrating away from the Cornflakes category entirely in favor of Muesli and Granola workarounds."
+      "source": "Diagnosing the retention collapse and failure to convert trials into habitual routines for Kellogg's India Corn Portfolio.",
+      "target": "The observed retention collapse is attributable to a weakening of Demand Gravity for Kellogg's Corn Portfolio, driven by the emergence of 'Substitute Workarounds' and 'Ritual Language' shifts towards alternatives such as Muesli/Granola and local value players."
     },
     {
-      "source": "Multigrain health claims are failing to create a sticky breakfast ritual because the taste profile does not meet the sensory expectations of traditional core buyers, leading to one-time trials without adoption.",
-      "target": "Multigrain sensory and taste profile gap"
+      "source": "Diagnosing the retention collapse and failure to convert trials into habitual routines for Kellogg's India Corn Portfolio.",
+      "target": "The disconnect between initial product trial satisfaction and long-term habitual usage points to a failure in Reinforcement Stability, where initial positive experiences are not adequately fortified to establish enduring consumption patterns."
     },
     {
-      "source": "Multigrain health claims are failing to create a sticky breakfast ritual because the taste profile does not meet the sensory expectations of traditional core buyers, leading to one-time trials without adoption.",
-      "target": "Masterbrand media investment and trial metrics"
+      "source": "The Multigrain Cornflakes' health claims are failing to resonate with the target audience, indicating a miscalibration in Value Elasticity that hinders trial conversion into habitual routines.",
+      "target": "Multigrain Cornflakes launch"
     },
     {
-      "source": "Multigrain sensory and taste profile gap",
-      "target": "Ritual Language digital footprints"
+      "source": "The Multigrain Cornflakes' health claims are failing to resonate with the target audience, indicating a miscalibration in Value Elasticity that hinders trial conversion into habitual routines.",
+      "target": "health claims"
     },
     {
-      "source": "Multigrain sensory and taste profile gap",
-      "target": "Functional claim update feedback"
+      "source": "The Multigrain Cornflakes' health claims are failing to resonate with the target audience, indicating a miscalibration in Value Elasticity that hinders trial conversion into habitual routines.",
+      "target": "packaging adjustments"
     },
     {
-      "source": "Masterbrand media investment and trial metrics",
-      "target": "One-time trial adoption sentiment"
+      "source": "The Multigrain Cornflakes' health claims are failing to resonate with the target audience, indicating a miscalibration in Value Elasticity that hinders trial conversion into habitual routines.",
+      "target": "sizes adjustments"
     },
     {
-      "source": "Local value players, specifically Mohan Cornflakes in the East, are successfully disrupting Kellogg\u2019s brand pull by offering a good enough substitute at a lower price point, causing a migration of price-sensitive families.",
-      "target": "Mohan Cornflakes East Region disruption"
+      "source": "The Multigrain Cornflakes' health claims are failing to resonate with the target audience, indicating a miscalibration in Value Elasticity that hinders trial conversion into habitual routines.",
+      "target": "Innovation Gap"
     },
     {
-      "source": "Mohan Cornflakes East Region disruption",
-      "target": "East Region unbranded substitute workarounds"
+      "source": "The Multigrain Cornflakes' health claims are failing to resonate with the target audience, indicating a miscalibration in Value Elasticity that hinders trial conversion into habitual routines.",
+      "target": "Category Relevance"
     },
     {
-      "source": "Mohan Cornflakes East Region disruption",
-      "target": "Value-tier seller sentiment in East India"
+      "source": "Multigrain Cornflakes launch",
+      "target": "substantial media investment"
     },
     {
-      "source": "Consumer breakfast preferences are shifting toward premium-lite formats; shoppers in Modern Trade are migrating away from the Cornflakes category entirely in favor of Muesli and Granola workarounds.",
-      "target": "Muesli and Granola premium-lite migration"
+      "source": "health claims",
+      "target": "product claims"
     },
     {
-      "source": "Muesli and Granola premium-lite migration",
-      "target": "Modern Trade shopper digital sentiment"
+      "source": "Category Relevance",
+      "target": "consumer shifts"
     },
     {
-      "source": "Muesli and Granola premium-lite migration",
-      "target": "E-commerce morning meal occasion trade-offs"
+      "source": "consumer shifts",
+      "target": "12 months of consumer shifts"
+    },
+    {
+      "source": "The taste profile of the Multigrain Cornflakes, and potentially core products, establishes a significant Choice Architecture friction point, impeding repeat purchases despite initial trial satisfaction.",
+      "target": "taste profile"
+    },
+    {
+      "source": "The taste profile of the Multigrain Cornflakes, and potentially core products, establishes a significant Choice Architecture friction point, impeding repeat purchases despite initial trial satisfaction.",
+      "target": "core products"
+    },
+    {
+      "source": "The taste profile of the Multigrain Cornflakes, and potentially core products, establishes a significant Choice Architecture friction point, impeding repeat purchases despite initial trial satisfaction.",
+      "target": "Multigrain Cornflakes"
+    },
+    {
+      "source": "The taste profile of the Multigrain Cornflakes, and potentially core products, establishes a significant Choice Architecture friction point, impeding repeat purchases despite initial trial satisfaction.",
+      "target": "Trial vs. Retention Paradox"
+    },
+    {
+      "source": "The taste profile of the Multigrain Cornflakes, and potentially core products, establishes a significant Choice Architecture friction point, impeding repeat purchases despite initial trial satisfaction.",
+      "target": "Modern Trade"
+    },
+    {
+      "source": "The taste profile of the Multigrain Cornflakes, and potentially core products, establishes a significant Choice Architecture friction point, impeding repeat purchases despite initial trial satisfaction.",
+      "target": "E-commerce"
+    },
+    {
+      "source": "core products",
+      "target": "Kellogg's Corn Portfolio"
+    },
+    {
+      "source": "core products",
+      "target": "declining Corn Portfolio YoY"
+    },
+    {
+      "source": "core products",
+      "target": "consistent decline in offtakes"
+    },
+    {
+      "source": "The observed retention collapse is attributable to a weakening of Demand Gravity for Kellogg's Corn Portfolio, driven by the emergence of 'Substitute Workarounds' and 'Ritual Language' shifts towards alternatives such as Muesli/Granola and local value players.",
+      "target": "Kellogg's Corn Portfolio"
+    },
+    {
+      "source": "The observed retention collapse is attributable to a weakening of Demand Gravity for Kellogg's Corn Portfolio, driven by the emergence of 'Substitute Workarounds' and 'Ritual Language' shifts towards alternatives such as Muesli/Granola and local value players.",
+      "target": "Substitute Workarounds"
+    },
+    {
+      "source": "The observed retention collapse is attributable to a weakening of Demand Gravity for Kellogg's Corn Portfolio, driven by the emergence of 'Substitute Workarounds' and 'Ritual Language' shifts towards alternatives such as Muesli/Granola and local value players.",
+      "target": "Ritual Language shifts"
+    },
+    {
+      "source": "The observed retention collapse is attributable to a weakening of Demand Gravity for Kellogg's Corn Portfolio, driven by the emergence of 'Substitute Workarounds' and 'Ritual Language' shifts towards alternatives such as Muesli/Granola and local value players.",
+      "target": "Muesli/Granola"
+    },
+    {
+      "source": "The observed retention collapse is attributable to a weakening of Demand Gravity for Kellogg's Corn Portfolio, driven by the emergence of 'Substitute Workarounds' and 'Ritual Language' shifts towards alternatives such as Muesli/Granola and local value players.",
+      "target": "local value players"
+    },
+    {
+      "source": "The observed retention collapse is attributable to a weakening of Demand Gravity for Kellogg's Corn Portfolio, driven by the emergence of 'Substitute Workarounds' and 'Ritual Language' shifts towards alternatives such as Muesli/Granola and local value players.",
+      "target": "Value Squeeze"
+    },
+    {
+      "source": "The observed retention collapse is attributable to a weakening of Demand Gravity for Kellogg's Corn Portfolio, driven by the emergence of 'Substitute Workarounds' and 'Ritual Language' shifts towards alternatives such as Muesli/Granola and local value players.",
+      "target": "East region"
+    },
+    {
+      "source": "Substitute Workarounds",
+      "target": "e-commerce platforms"
+    },
+    {
+      "source": "Substitute Workarounds",
+      "target": "digital conversations"
+    },
+    {
+      "source": "Ritual Language shifts",
+      "target": "e-commerce platforms"
+    },
+    {
+      "source": "Ritual Language shifts",
+      "target": "digital conversations"
+    },
+    {
+      "source": "local value players",
+      "target": "Mohan Cornflakes"
+    },
+    {
+      "source": "local value players",
+      "target": "other unknown local sellers"
+    },
+    {
+      "source": "The disconnect between initial product trial satisfaction and long-term habitual usage points to a failure in Reinforcement Stability, where initial positive experiences are not adequately fortified to establish enduring consumption patterns.",
+      "target": "initial product trial satisfaction"
+    },
+    {
+      "source": "The disconnect between initial product trial satisfaction and long-term habitual usage points to a failure in Reinforcement Stability, where initial positive experiences are not adequately fortified to establish enduring consumption patterns.",
+      "target": "long-term habitual usage"
+    },
+    {
+      "source": "The disconnect between initial product trial satisfaction and long-term habitual usage points to a failure in Reinforcement Stability, where initial positive experiences are not adequately fortified to establish enduring consumption patterns.",
+      "target": "sustained repeat purchases"
+    },
+    {
+      "source": "The disconnect between initial product trial satisfaction and long-term habitual usage points to a failure in Reinforcement Stability, where initial positive experiences are not adequately fortified to establish enduring consumption patterns.",
+      "target": "retention collapse"
+    },
+    {
+      "source": "The disconnect between initial product trial satisfaction and long-term habitual usage points to a failure in Reinforcement Stability, where initial positive experiences are not adequately fortified to establish enduring consumption patterns.",
+      "target": "Trial vs. Retention Paradox"
+    },
+    {
+      "source": "The disconnect between initial product trial satisfaction and long-term habitual usage points to a failure in Reinforcement Stability, where initial positive experiences are not adequately fortified to establish enduring consumption patterns.",
+      "target": "consumer shifts"
+    },
+    {
+      "source": "The disconnect between initial product trial satisfaction and long-term habitual usage points to a failure in Reinforcement Stability, where initial positive experiences are not adequately fortified to establish enduring consumption patterns.",
+      "target": "Modern Trade shoppers"
+    },
+    {
+      "source": "The disconnect between initial product trial satisfaction and long-term habitual usage points to a failure in Reinforcement Stability, where initial positive experiences are not adequately fortified to establish enduring consumption patterns.",
+      "target": "E-commerce shoppers"
     }
   ]
 }

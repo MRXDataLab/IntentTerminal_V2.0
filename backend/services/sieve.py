@@ -10,29 +10,14 @@ import json
 from typing import List, Dict, Any
 from services.seeds import lookup
 from services.llm_client import call_openrouter
+from kb.kb_loader import load_kb
 
 CONFIDENCE_THRESHOLD = 0.6
 LLM_BATCH_SIZE = 12
 
-SYSTEM_PROMPT_SIEVE = """You are a signal relevance classifier for a market research system.
-You will receive a batch of raw text signals (comments, phrases, data points) along with the research intent context.
-For each signal, determine:
-1. Is it relevant to the research intent?
-2. What named entity or concept does it refer to (if any)?
-3. Your confidence score (0.0 to 1.0) that it is genuinely relevant.
-
-Return a JSON array — one entry per signal in the exact order provided:
-[
-  {
-    "original": "the original signal text",
-    "entity": "Extracted entity or concept name, or null",
-    "is_relevant": true,
-    "confidence": 0.85,
-    "suggested_label": "A clean 2-4 word tag for this signal",
-    "reason": "One concise sentence explaining why"
-  }
-]
-"""
+def _get_sieve_system_prompt() -> str:
+    """Load the signal classification prompt from KB."""
+    return load_kb("agents/sieve_agent.md")
 
 def classify_signals(signals: List[str], intent_context: str) -> List[Dict[str, Any]]:
     """
@@ -69,7 +54,7 @@ def classify_signals(signals: List[str], intent_context: str) -> List[Dict[str, 
 
         try:
             llm_result = call_openrouter(
-                system_prompt=SYSTEM_PROMPT_SIEVE,
+                system_prompt=_get_sieve_system_prompt(),
                 user_prompt=user_prompt,
                 expect_json=True
             )

@@ -15,6 +15,7 @@ interface EcosystemMap3DProps {
   hideSidebar?: boolean;
   onGraphMetrics?: (metrics: any) => void;
   strategicOverlayEnabled?: boolean;
+  hasPlayed?: boolean;
 }
 
 const FORCE_COLORS: Record<string, string> = {
@@ -100,7 +101,7 @@ function createTextSprite(text: string, color: string, fontSize: number): any {
   return sprite;
 }
 
-export default function EcosystemMap3D({ intent, brief, onMapComplete, onBack, hideSidebar = false, onGraphMetrics, strategicOverlayEnabled }: EcosystemMap3DProps) {
+export default function EcosystemMap3D({ intent, brief, onMapComplete, onBack, hideSidebar = false, onGraphMetrics, strategicOverlayEnabled, hasPlayed }: EcosystemMap3DProps) {
   const [graphData, setGraphData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [hoveredNode, setHoveredNode] = useState<any>(null);
@@ -140,12 +141,14 @@ export default function EcosystemMap3D({ intent, brief, onMapComplete, onBack, h
           .filter((n: any) => n.type === 'subject' || n.type === 'category')
           .map((n: any, i: number) => ({ name: n.label, color: CATEGORY_PALETTE[i % CATEGORY_PALETTE.length], desc: n.description || "" })),
         ecosystemNodeNames: (graphData?.nodes || []).filter((n: any) => n.type !== 'root').map((n: any) => n.label || n.id),
+        rootNodeLabel: graphData?.nodes?.find((n: any) => n.type === 'root')?.label || "",
       });
     }
   }, [loading, graphData, onGraphMetrics]);
 
   useEffect(() => {
     const fetchGraph = async () => {
+      if (hasPlayed === false) return;
       try {
         const cacheKey = 'ecosystem_graph';
         const cached = sessionStorage.getItem(cacheKey);
@@ -163,6 +166,31 @@ export default function EcosystemMap3D({ intent, brief, onMapComplete, onBack, h
           sessionStorage.setItem(cacheKey, JSON.stringify(graphDataObj));
         }
 
+        // Prune inter-hypothesis connections
+        if (graphDataObj && graphDataObj.nodes && graphDataObj.links) {
+          const rootNodes = new Set(graphDataObj.nodes.filter((n: any) => n.type === 'root').map((n: any) => n.id));
+          const hypNodes = new Set(graphDataObj.nodes.filter((n: any) => n.type === 'subject' || n.type === 'category').map((n: any) => n.id));
+          const nodeToHyp = new Map<string, string>();
+          
+          graphDataObj.nodes.forEach((n: any) => {
+            if (hypNodes.has(n.id) || hypNodes.has(n.label)) nodeToHyp.set(n.id, n.id);
+            else if (n.subject) nodeToHyp.set(n.id, n.subject);
+          });
+
+          graphDataObj.links = graphDataObj.links.filter((link: any) => {
+            const src = typeof link.source === 'object' ? link.source.id : link.source;
+            const tgt = typeof link.target === 'object' ? link.target.id : link.target;
+            
+            if (rootNodes.has(src) || rootNodes.has(tgt)) return true;
+            
+            const srcHyp = nodeToHyp.get(src);
+            const tgtHyp = nodeToHyp.get(tgt);
+            
+            if (!srcHyp || !tgtHyp) return true;
+            return srcHyp === tgtHyp;
+          });
+        }
+
         setGraphData(graphDataObj);
         setLoading(false);
 
@@ -175,7 +203,7 @@ export default function EcosystemMap3D({ intent, brief, onMapComplete, onBack, h
       }
     };
     fetchGraph();
-  }, [intent, brief]);
+  }, [intent, brief, hideSidebar, hasPlayed]);
 
   const handleNodeClick = useCallback((node: any) => {
     if (!node || !fgRef.current) return;
@@ -232,9 +260,23 @@ export default function EcosystemMap3D({ intent, brief, onMapComplete, onBack, h
     const type = node.type || 'signal';
     const config = NODE_CONFIG[type] || NODE_CONFIG.signal;
     const isFocused = !focusedNodeIds || focusedNodeIds.has(node.id);
+
+    let hypothesisColor = null;
+    if (graphData && !strategicOverlayEnabled) {
+      const isHypothesis = type === 'subject' || type === 'category';
+      const hypId = isHypothesis ? node.id : node.subject;
+      if (hypId) {
+        const catNodes = graphData.nodes.filter((n: any) => n.type === 'subject' || n.type === 'category');
+        const idx = catNodes.findIndex((n: any) => n.id === hypId || n.label === hypId);
+        if (idx !== -1) {
+          hypothesisColor = CATEGORY_PALETTE[idx % CATEGORY_PALETTE.length];
+        }
+      }
+    }
+
     const useForceColor = strategicOverlayEnabled && node.force && FORCE_COLORS[node.force];
-    const baseColor = useForceColor ? FORCE_COLORS[node.force] : config.color;
-    const emissiveColor = useForceColor ? FORCE_COLORS[node.force] : config.emissive;
+    const baseColor = useForceColor ? FORCE_COLORS[node.force] : (hypothesisColor || config.color);
+    const emissiveColor = useForceColor ? FORCE_COLORS[node.force] : (hypothesisColor || config.emissive);
 
     const group = new THREE.Group();
 
@@ -269,7 +311,7 @@ export default function EcosystemMap3D({ intent, brief, onMapComplete, onBack, h
     if (showLabel && isFocused) {
       const label = node.label || node.id || '';
       const labelColor = type === 'root' ? '#e2e2e8' : type === 'subject' || type === 'category' ? '#c0f0e8' : '#a0a8c0';
-      const labelSize = type === 'root' ? 5 : type === 'subject' || type === 'category' ? 4 : 3;
+      const labelSize = type === 'root' ? 8 : type === 'subject' || type === 'category' ? 7 : 5;
       const sprite = createTextSprite(label, labelColor, labelSize);
       if (sprite) {
         sprite.position.set(0, config.size + labelSize * 0.8, 0);
@@ -302,9 +344,11 @@ export default function EcosystemMap3D({ intent, brief, onMapComplete, onBack, h
   return (
     <div ref={containerRef} className="w-full h-full relative overflow-hidden" style={{ background: '#060610' }}>
       {loading ? (
-        <div className="absolute inset-0 flex flex-col items-center justify-center z-10 text-teal-400/80">
-          <Activity size={48} className="animate-pulse mb-4" />
-          <span className="font-mono tracking-widest">BUILDING 3D TOPOLOGY...</span>
+        <div className="w-full h-full flex flex-col items-center justify-center bg-[#050505]">
+          <Activity className={`text-teal-500 mb-4 ${hasPlayed === false ? '' : 'animate-pulse'}`} size={48} />
+          <span className="font-mono tracking-widest text-teal-500">
+            {hasPlayed === false ? 'AWAITING INITIATION...' : 'BUILDING 3D TOPOLOGY...'}
+          </span>
         </div>
       ) : graphData ? (
         <ForceGraph3D
@@ -323,11 +367,10 @@ export default function EcosystemMap3D({ intent, brief, onMapComplete, onBack, h
           onNodeHover={(node: any) => setHoveredNode(node)}
           onNodeClick={handleNodeClick}
           onBackgroundClick={handleBackgroundClick}
-          dagMode="radialout"
-          dagLevelDistance={80}
           cooldownTicks={100}
           d3AlphaDecay={0.04}
           d3VelocityDecay={0.35}
+
           onEngineStop={() => {
             if (fgRef.current && graphData) {
               graphData.nodes.forEach((node: any) => {

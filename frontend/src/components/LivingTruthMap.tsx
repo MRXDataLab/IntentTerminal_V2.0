@@ -161,23 +161,30 @@ export default function LivingTruthMap({ intent, brief, manifest, graphNodes, on
   const allNodeNames = (topology?.nodes || []).filter((n: any) => n.type !== 'root').map((n: any) => n.label || n.id);
 
   return (
-    <div className="flex w-full h-screen bg-black text-white overflow-hidden relative">
-      {/* Sidebar */}
-      <div className="w-80 min-w-[20rem] h-full border-r border-[#333] bg-[#0a0a0a] z-10 flex flex-col pt-5 pb-5 shadow-2xl overflow-y-auto shrink-0">
-        <div className="px-5 mb-5 flex items-start gap-3">
-          <button onClick={onBack} className="mt-1 shrink-0 p-1.5 hover:bg-[#222] rounded-md text-gray-400 hover:text-white transition-colors border border-transparent hover:border-[#333]">
+    <div className="flex flex-col w-full h-screen bg-black text-white overflow-hidden relative">
+      {/* Top Header */}
+      <div className="w-full px-6 py-4 border-b border-[#333] flex items-center justify-between z-20 bg-[#0a0a0a]/80 backdrop-blur-md shrink-0">
+        <div className="flex items-center gap-3">
+          <button onClick={onBack} className="p-1.5 hover:bg-[#222] rounded-md text-gray-400 hover:text-white transition-colors border border-transparent hover:border-[#333]">
             <ArrowLeft size={16} />
           </button>
-          <div className="flex flex-col gap-2 w-full">
-            <div className="flex items-center">
-              <img src="/outtlyr-logo.png" alt="Outtlyr" className="h-12 w-auto object-contain shrink-0 bg-transparent" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display='none'; }} />
-            </div>
-            <div className="flex items-center gap-2 text-gray-300">
-              <Network className="text-blue-500" size={16} />
-              <h1 className="text-base font-medium tracking-wide">Living Truth Map</h1>
-            </div>
+          <div className="flex items-center shrink-0">
+            <img src="/outtlyr-logo.png" alt="Outtlyr" className="h-10 w-auto object-contain mr-3 shrink-0 bg-transparent" onError={(e) => { (e.currentTarget as HTMLImageElement).style.display='none'; }} />
+            <span className="hidden font-bold text-xl tracking-tight mr-1 text-white">Outtlyr</span>
           </div>
+          <div className="w-px h-6 bg-[#333] mx-2"></div>
+          <div className="w-2 h-2 rounded-full bg-teal-500 shadow-[0_0_10px_rgba(20,184,166,0.8)] animate-pulse"></div>
+          <h1 className="text-lg font-medium tracking-wide text-gray-300">Living Truth Map</h1>
         </div>
+        <div className="flex items-center gap-4">
+          <span className="text-xs text-gray-500 uppercase tracking-widest font-mono">PHASE 4: INGESTION</span>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="flex flex-1 overflow-hidden relative">
+      {/* Sidebar */}
+      <div className="w-80 min-w-[20rem] h-full border-r border-[#333] bg-[#0a0a0a] z-10 flex flex-col pt-5 pb-5 shadow-2xl overflow-y-auto shrink-0">
 
         <div className="px-5 flex-1 space-y-4">
           {/* Research Intent */}
@@ -411,6 +418,7 @@ export default function LivingTruthMap({ intent, brief, manifest, graphNodes, on
             />
           )}
         </AnimatePresence>
+      </div>
       </div>
     </div>
   );

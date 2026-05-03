@@ -18,6 +18,7 @@ from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 
 from services.llm_client import call_openrouter
+from kb.kb_loader import load_kb
 from core.iu_manager import get_iu_manager
 from core.ingestion_sim import get_ingestion_simulator, reset_ingestion_simulator
 
@@ -25,91 +26,20 @@ router = APIRouter()
 
 
 # ──────────────────────────────────────────────────────────────────────────────
-# SYSTEM PROMPTS
+# SYSTEM PROMPTS — Loaded from KB
 # ──────────────────────────────────────────────────────────────────────────────
 
-SYSTEM_PROMPT_TRUTH_MAP = """You are the Outllyr Antigravity Topology Architect.
-You will receive a Strategic Research Brief and a Link Farming Manifest. Your job is to generate a Living Truth Map topology — a WebGL-compatible graph payload that represents the "Physics of the Market" for this study.
+def _get_truth_map_prompt() -> str:
+    """Load the truth map topology generation prompt from KB."""
+    return load_kb("agents/truth_map_agent.md")
 
-CRITICAL RULES:
-1. Extract ALL node names from the Brief and Manifest — use real entity names, not generic categories.
-2. Generate BOTH explicit hypotheses (from the brief) AND 2-3 suggested/emergent hypotheses the AI discovers.
-3. Map every hypothesis to specific source terrain nodes (platforms, subreddits, review clusters).
-4. Assign force_impact to every hypothesis node from: "Demand Gravity", "Choice Architecture", "Value Elasticity", "Reinforcement Stability", "Competitive Energy".
+def _get_insight_prompt() -> str:
+    """Load the node insight synthesis prompt from KB."""
+    return load_kb("agents/insight_agent.md")
 
-Output MUST be strict JSON matching this schema:
-{
-  "topology_id": "auto-generated",
-  "nodes": [
-    {
-      "id": "unique_snake_case_id",
-      "label": "Human Readable Label",
-      "type": "root | explicit_hypothesis | suggested_hypothesis | source_terrain",
-      "description": "1-2 sentence description of what this node represents",
-      "ui_state": "core | primary | emergent | source_terrain",
-      "force_impact": "One of the 5 forces OR null for root/source_terrain",
-      "live_status": "pending | ingesting | converged (for source_terrain only, null otherwise)",
-      "unlock_cost_iu": null (or integer like 50 for suggested_hypothesis nodes)
-    }
-  ],
-  "edges": [
-    {
-      "source": "source_node_id",
-      "target": "target_node_id",
-      "relationship": "investigates | suggests_investigation | scraped_from",
-      "weight": 1-5,
-      "dashed": false (true for suggests_investigation edges)
-    }
-  ]
-}
-
-TOPOLOGY STRUCTURE:
-- 1 root node (the core business problem)
-- 3-5 explicit_hypothesis nodes (directly from the brief's hypotheses/tiers)
-- 2-3 suggested_hypothesis nodes (AI-discovered, with unlock_cost_iu of 50-100)
-- 4-8 source_terrain nodes (specific platforms: r/subreddit, YouTube channels, Amazon review clusters, news outlets)
-- Edges connect root → hypotheses (investigates), root → suggested (suggests_investigation, dashed=true), hypotheses → source_terrain (scraped_from)
-"""
-
-SYSTEM_PROMPT_INSIGHT = """You are an Outllyr Strategic Analyst. Given a node from the Living Truth Map and the study context, generate a synthesized macro insight.
-
-Your output MUST be strict JSON:
-{
-  "headline": "One-line insight headline (max 15 words)",
-  "insight_text": "2-3 sentence strategic insight explaining WHY this node matters and what the data shows. Be specific with percentages and behavioral patterns.",
-  "force_impact_label": "The Strategic Force this impacts",
-  "force_impact_pct": -15 to +15 (percentage impact, negative = erosion, positive = reinforcement),
-  "severity": "critical | high | moderate | low",
-  "correlated_nodes": ["list of 1-3 related node labels that this insight correlates with"]
-}
-"""
-
-SYSTEM_PROMPT_SIGNALS = """You are an Outllyr Digital Exhaust Analyst. Given a node and study context, generate 3-5 realistic synthetic signal evidence cards that represent the kind of raw data a scraper would find.
-
-Each signal card should feel like a REAL comment/review/post from the internet. Include platform-specific language patterns.
-
-Your output MUST be strict JSON:
-{
-  "signals": [
-    {
-      "source_platform": "Reddit r/subreddit | YouTube | Amazon Reviews | Twitter | News Article",
-      "source_url": "realistic URL for this platform",
-      "timestamp": "ISO timestamp (recent, within last 30 days)",
-      "author": "realistic username",
-      "content": "The actual verbatim comment text (2-4 sentences, realistic tone)",
-      "signal_tags": ["tag_1", "tag_2"],
-      "sentiment": -1.0 to 1.0,
-      "engagement": {"upvotes": 0, "replies": 0}
-    }
-  ]
-}
-
-RULES:
-- Make comments feel AUTHENTIC — use casual language, typos, emotional tone
-- Tags should come from the study's signal_taxonomy
-- Vary platforms across the cards
-- Content must be directly relevant to the node's hypothesis
-"""
+def _get_signals_prompt() -> str:
+    """Load the signal evidence card generation prompt from KB."""
+    return load_kb("agents/signal_agent.md")
 
 
 # ──────────────────────────────────────────────────────────────────────────────
@@ -162,7 +92,7 @@ def generate_truth_map(request: TruthMapGenerateRequest):
         )
 
         topology = call_openrouter(
-            system_prompt=SYSTEM_PROMPT_TRUTH_MAP,
+            system_prompt=_get_truth_map_prompt(),
             user_prompt=user_prompt,
             expect_json=True,
         )
@@ -224,7 +154,7 @@ def get_node_insight(request: NodeActionRequest):
         )
 
         insight = call_openrouter(
-            system_prompt=SYSTEM_PROMPT_INSIGHT,
+            system_prompt=_get_insight_prompt(),
             user_prompt=user_prompt,
             expect_json=True,
         )
@@ -259,7 +189,7 @@ def get_node_signals(request: NodeActionRequest):
         )
 
         signals_data = call_openrouter(
-            system_prompt=SYSTEM_PROMPT_SIGNALS,
+            system_prompt=_get_signals_prompt(),
             user_prompt=user_prompt,
             expect_json=True,
         )

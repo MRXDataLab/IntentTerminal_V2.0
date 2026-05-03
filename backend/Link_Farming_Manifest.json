@@ -1,26 +1,20 @@
 {
-  "study_id": "d9fb7271-416f-4f2c-8194-ebb0be96a7b8",
+  "study_id": "5364f1e6-dc3d-4633-a488-0bf4048e2c85",
   "study_type": "general",
   "global_parameters": {
-    "time_window": "2023-05-01 to 2024-05-01",
+    "time_window": "2023-07-01 to 2024-06-30",
     "geo_fencing": [
       "IN"
     ],
     "product_scope": [
-      "Kellogg's Corn Flakes",
-      "Kellogg's Multigrain Corn Flakes",
-      "Mohan Cornflakes",
-      "Muesli",
-      "Granola"
+      "Kellogg's Corn Portfolio",
+      "Kellogg's Multigrain Cornflakes"
     ]
   },
   "entity_anchors": {
-    "primary_brand": "Kellogg's India",
+    "primary_brand": "Kellogg's",
     "tracked_competitors": [
-      "Mohan Cornflakes",
-      "Bagrry's",
-      "Yoga Bar",
-      "Tata Soulfull"
+      "Mohan Cornflakes"
     ],
     "ghost_brand_discovery": {
       "enabled": true,
@@ -28,107 +22,159 @@
         "amazon.in",
         "flipkart.com",
         "blinkit.com",
-        "bigbasket.com"
+        "jiomart.com"
       ]
     }
   },
   "boolean_nets": [
     {
-      "query": "(\"Kellogg's Multigrain\" OR \"Multigrain Cornflakes\") AND (taste OR flavor OR soggy OR texture OR disappointment OR \"one time buy\")",
+      "query": "(Kellogg's OR \"Kelloggs India\") AND (Multigrain OR \"Multigrain Cornflakes\") AND (taste OR flavor OR \"health claims\" OR \"doesn't like\") AND (habit OR routine OR \"repeat purchase\" OR \"not buying again\")",
       "target_signals": [
-        "innovation_resonance",
-        "sensory_gap"
-      ],
-      "priority": "high"
-    },
-    {
-      "query": "(\"Mohan Cornflakes\" OR \"local corn flakes\" OR \"cheaper alternative\") AND (East India OR Kolkata OR West Bengal OR Odisha OR Bihar)",
-      "target_signals": [
-        "value_squeeze",
-        "ghost_brand_velocity"
-      ],
-      "priority": "high"
-    },
-    {
-      "query": "(Kellogg's OR Cornflakes) AND (switch OR moved OR replaced OR \"stopped buying\") AND (Muesli OR Granola OR Oats)",
-      "target_signals": [
-        "category_migration",
-        "demand_gravity_leakage"
-      ],
-      "priority": "medium"
-    },
-    {
-      "query": "(Kellogg's OR corn flakes) AND (habit OR ritual OR breakfast OR morning OR daily OR everyday) AND (East OR West Bengal)",
-      "target_signals": [
-        "ritual_erosion",
+        "innovation_gap",
+        "taste_profile_mismatch",
         "habit_formation_failure"
       ],
+      "priority": "high"
+    },
+    {
+      "query": "(Kellogg's OR \"Kelloggs India\") AND (\"not repeat\" OR \"stopped buying\") AND (\"muesli\" OR \"granola\" OR \"oats\" OR \"alternative breakfast\") AND (\"substitute workaround\" OR \"different ritual\" OR \"better option\")",
+      "target_signals": [
+        "substitute_workarounds",
+        "ritual_language",
+        "category_relevance_shift",
+        "demand_gravity_loss"
+      ],
+      "priority": "high"
+    },
+    {
+      "query": "(Kellogg's OR \"Kelloggs India\") AND (\"Mohan Cornflakes\" OR \"local brand\" OR \"cheaper cornflakes\") AND (price OR value OR \"cost benefit\" OR \"too expensive\") AND (\"trial but not retention\" OR \"not worth it\")",
+      "target_signals": [
+        "value_squeeze",
+        "price_sensitivity",
+        "competitive_energy",
+        "trial_vs_retention_paradox"
+      ],
+      "priority": "high"
+    },
+    {
+      "query": "(Kellogg's OR \"Kelloggs India\") AND (\"corn flakes\" OR \"multigrain cornflakes\") AND (\"india\" OR \"east region\") AND (\"not buying again\" OR \"stopped using\" OR \"switched to\")",
+      "target_signals": [
+        "retention_collapse",
+        "switching_narratives",
+        "regional_disparity"
+      ],
       "priority": "medium"
+    },
+    {
+      "query": "(Kellogg's OR \"Kelloggs India\") AND (\"Multigrain Cornflakes\") AND (\"failed to gain traction\" OR \"not working\" OR \"disappointed with\")",
+      "target_signals": [
+        "innovation_gap",
+        "product_failure_signals"
+      ],
+      "priority": "medium"
+    },
+    {
+      "query": "(\"Muesli\" OR \"Granola\") AND (\"better than cornflakes\" OR \"healthier breakfast\" OR \"my new routine\") AND (Kellogg's OR \"corn flakes\")",
+      "target_signals": [
+        "competitive_preference",
+        "category_relevance_shift",
+        "ghost_brand_velocity"
+      ],
+      "priority": "medium"
+    },
+    {
+      "query": "(Kellogg's OR \"Kelloggs India\") AND (\"corn flakes\") AND (\"modern trade\" OR \"ecommerce\" OR \"online shopping\" OR \"store purchase\") AND (\"east region\") AND (\"declining sales\" OR \"not finding\")",
+      "target_signals": [
+        "channel_performance",
+        "regional_disparity",
+        "demand_gravity_loss"
+      ],
+      "priority": "low"
     }
   ],
   "platform_targets": {
     "youtube": {
       "category_ids": [
-        22,
-        26
+        28
       ],
       "min_views": 1000,
       "search_queries": [
-        "Kellogg's Multigrain review India",
-        "Mohan Cornflakes vs Kellogg's",
-        "Best cornflakes brand India review",
-        "healthy breakfast India cereal review"
+        "Kellogg's Cornflakes review India",
+        "Multigrain Cornflakes taste test",
+        "best breakfast India",
+        "Muesli vs Cornflakes",
+        "Mohan Cornflakes review"
       ]
     },
     "reddit": {
       "subreddits": [
-        "india",
-        "kolkata",
-        "FitnessIndia",
-        "IndianFood"
+        "r/india",
+        "r/indianfood",
+        "r/foodindia",
+        "r/eatcheapandhealthy",
+        "r/desifood"
       ],
       "search_queries": [
-        "Kellogg's corn flakes taste change",
-        "Mohan corn flakes quality",
-        "switching from cornflakes to muesli",
-        "breakfast cereal reviews India"
+        "Kellogg's Cornflakes problem",
+        "Multigrain not good",
+        "why switch from Cornflakes",
+        "Muesli instead of Cornflakes",
+        "Mohan Cornflakes quality"
       ]
     },
     "ecommerce": {
       "platforms": [
         "amazon.in",
         "flipkart.com",
-        "bigbasket.com",
-        "blinkit.com"
+        "blinkit.com",
+        "jiomart.com"
       ],
       "keywords": [
-        "cornflakes",
-        "multigrain flakes",
-        "mohans",
-        "muesli",
-        "granola"
+        "Kellogg's Cornflakes",
+        "Multigrain Cornflakes",
+        "Mohan Cornflakes",
+        "Muesli India",
+        "Granola India",
+        "breakfast cereals"
       ],
       "asins": []
     },
     "search_news": {
       "queries": [
-        "Kellogg's India market share decline",
-        "FMCG breakfast trends East India",
-        "Mohan Cornflakes expansion",
-        "Multigrain cereal success vs failure India"
+        "Kellogg's India sales decline",
+        "Indian breakfast cereal market trends",
+        "Multigrain Cornflakes review India",
+        "Muesli market growth India",
+        "Mohan Cornflakes vs Kellogg's"
       ],
-      "domains": []
+      "domains": [
+        "timesofindia.indiatimes.com",
+        "economictimes.indiatimes.com",
+        "livemint.com",
+        "business-standard.com"
+      ]
     }
   },
   "signal_taxonomy": [
-    "trial_retention_paradox",
+    "regret_clusters",
+    "switching_narratives",
+    "ghost_brand_velocity",
     "ritual_language",
     "substitute_workarounds",
-    "demand_gravity_leakage",
+    "demand_gravity_loss",
+    "category_relevance_shift",
     "value_squeeze",
-    "sensory_disconnect",
-    "switching_narratives",
-    "ghost_brand_velocity"
+    "innovation_gap",
+    "trial_vs_retention_paradox",
+    "taste_profile_mismatch",
+    "habit_formation_failure",
+    "price_sensitivity",
+    "competitive_energy",
+    "competitive_preference",
+    "product_failure_signals",
+    "channel_performance",
+    "regional_disparity",
+    "retention_collapse"
   ],
   "stop_rules": {
     "msu_threshold": 0.02,

@@ -1,24 +1,11 @@
 import json
 from typing import List, Dict, Any
 from services.llm_client import call_openrouter
+from kb.kb_loader import load_kb
 
-SYSTEM_PROMPT_RISK = """You are an expert Data Risk and Bias Analyst.
-Compare the expected theoretical Ecosystem Graph (list of nodes) against the ACTUAL ingested data sources.
-Identify 2 to 3 critical blind spots, missing perspectives, or coverage gaps.
-
-Your output must be a strict JSON object matching this schema:
-{
-  "risks": [
-    {
-      "type": "COVERAGE_GAP or PERSPECTIVE_BIAS",
-      "node": "The associated graph node name",
-      "description": "A deep, consultative explanation of the risk.",
-      "severity": "HIGH or MEDIUM or LOW",
-      "suggestion": "Specific actionable suggestion to find this missing data."
-    }
-  ]
-}
-"""
+def _get_risk_system_prompt() -> str:
+    """Load the risk detection prompt from KB."""
+    return load_kb("agents/risk_agent.md")
 
 class RiskDetector:
     """
@@ -40,7 +27,7 @@ class RiskDetector:
         
         try:
             llm_result = call_openrouter(
-                system_prompt=SYSTEM_PROMPT_RISK,
+                system_prompt=_get_risk_system_prompt(),
                 user_prompt=user_prompt,
                 expect_json=True
             )

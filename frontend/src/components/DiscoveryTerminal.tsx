@@ -6,7 +6,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Search, Radio, Globe, Zap, Shield, ChevronRight,
   ExternalLink, ArrowLeft, CheckCircle2, AlertTriangle,
-  MessageSquare, Video, Newspaper, ShoppingCart, Activity
+  MessageSquare, Video, Newspaper, ShoppingCart, Activity, Database
 } from 'lucide-react';
 
 interface DiscoveryTerminalProps {
@@ -14,6 +14,7 @@ interface DiscoveryTerminalProps {
   intent: string;
   graphNodes: string[];
   onComplete: (results: any[]) => void;
+  onSkip: () => void;
   onBack: () => void;
 }
 
@@ -48,7 +49,7 @@ const VERTICAL_ICONS: Record<string, any> = {
   paa: ChevronRight,
 };
 
-export default function DiscoveryTerminal({ manifest, intent, graphNodes, onComplete, onBack }: DiscoveryTerminalProps) {
+export default function DiscoveryTerminal({ manifest, intent, graphNodes, onComplete, onSkip, onBack }: DiscoveryTerminalProps) {
   const [phase, setPhase] = useState<'select_engine' | 'scanning' | 'complete'>('select_engine');
   const [engines, setEngines] = useState<Engine[]>([]);
   const [selectedEngine, setSelectedEngine] = useState<string | null>(null);
@@ -137,16 +138,27 @@ export default function DiscoveryTerminal({ manifest, intent, graphNodes, onComp
     return (
       <div className="flex flex-col w-full h-screen bg-[#050505] text-white overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-[#1a1a1a] bg-[#0a0a0a] shrink-0">
+        <div className="w-full px-6 py-4 border-b border-[#333] flex items-center justify-between z-20 bg-[#0a0a0a]/80 backdrop-blur-md shrink-0">
           <div className="flex items-center gap-3">
             <button onClick={onBack} className="p-1.5 hover:bg-[#222] rounded-md text-gray-400 hover:text-white transition-colors border border-transparent hover:border-[#333]">
               <ArrowLeft size={16} />
             </button>
             <div className="flex items-center shrink-0">
-              <img src="/outtlyr-logo.png" alt="Outtlyr" className="h-8 w-auto object-contain mr-2 bg-transparent" onError={(e) => { e.currentTarget.style.display='none' }} />
+              <img src="/outtlyr-logo.png" alt="Outtlyr" className="h-10 w-auto object-contain mr-3 shrink-0 bg-transparent" onError={(e) => { e.currentTarget.style.display='none' }} />
+              <span className="hidden font-bold text-xl tracking-tight mr-1 text-white">Outtlyr</span>
             </div>
-            <div className="w-px h-4 bg-[#333]"></div>
-            <h1 className="text-sm font-medium tracking-wide text-gray-300">Discovery Terminal</h1>
+            <div className="w-px h-6 bg-[#333] mx-2"></div>
+            <div className="w-2 h-2 rounded-full bg-teal-500 shadow-[0_0_10px_rgba(20,184,166,0.8)] animate-pulse"></div>
+            <h1 className="text-lg font-medium tracking-wide text-gray-300">Discovery Terminal</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-xs text-gray-500 uppercase tracking-widest font-mono">PHASE 3: SOURCING</span>
+            <button
+              onClick={onSkip}
+              className="text-[10px] font-mono tracking-widest uppercase bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 border border-amber-500/50 px-3 py-1.5 rounded transition-colors"
+            >
+              🧪 Skip to Intelligence Map
+            </button>
           </div>
         </div>
 
@@ -214,21 +226,28 @@ export default function DiscoveryTerminal({ manifest, intent, graphNodes, onComp
     return (
       <div className="flex flex-col w-full h-screen bg-[#050505] text-white overflow-hidden">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-[#1a1a1a] bg-[#0a0a0a] shrink-0">
+        <div className="w-full px-6 py-4 border-b border-[#333] flex items-center justify-between z-20 bg-[#0a0a0a]/80 backdrop-blur-md shrink-0">
           <div className="flex items-center gap-3">
+            <button onClick={onBack} className="p-1.5 hover:bg-[#222] rounded-md text-gray-400 hover:text-white transition-colors border border-transparent hover:border-[#333]">
+              <ArrowLeft size={16} />
+            </button>
             <div className="flex items-center shrink-0">
-              <img src="/outtlyr-logo.png" alt="Outtlyr" className="h-8 w-auto object-contain mr-2 bg-transparent" onError={(e) => { e.currentTarget.style.display='none' }} />
+              <img src="/outtlyr-logo.png" alt="Outtlyr" className="h-10 w-auto object-contain mr-3 shrink-0 bg-transparent" onError={(e) => { e.currentTarget.style.display='none' }} />
+              <span className="hidden font-bold text-xl tracking-tight mr-1 text-white">Outtlyr</span>
             </div>
-            <div className="w-px h-4 bg-[#333]"></div>
-            <h1 className="text-sm font-medium tracking-wide text-gray-300">Discovery Terminal</h1>
+            <div className="w-px h-6 bg-[#333] mx-2"></div>
+            <h1 className="text-lg font-medium tracking-wide text-gray-300">Discovery Terminal</h1>
             <div className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: engineColor }}></div>
             <span className="text-[10px] font-mono text-gray-500 uppercase">{selectedEngine}</span>
           </div>
+          <div className="flex items-center gap-4">
+            <span className="text-xs text-gray-500 uppercase tracking-widest font-mono">PHASE 3: SOURCING</span>
+          </div>
         </div>
 
-        <div className="flex-1 flex overflow-hidden">
-          {/* Left: Stats + Verticals */}
-          <div className="w-[340px] shrink-0 border-r border-[#222] bg-[#0a0a0a] p-5 overflow-y-auto">
+        <div className="flex-1 flex flex-row-reverse overflow-hidden">
+          {/* Right: Stats + Verticals */}
+          <div className="w-[500px] shrink-0 border-l border-[#222] bg-[#0a0a0a] p-5 overflow-y-auto">
             {/* Top metrics */}
             <div className="grid grid-cols-2 gap-3 mb-6">
               <div className="bg-[#111] border border-[#222] rounded-xl p-3 text-center">
@@ -328,16 +347,23 @@ export default function DiscoveryTerminal({ manifest, intent, graphNodes, onComp
   return (
     <div className="flex flex-col w-full h-screen bg-[#050505] text-white overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-[#1a1a1a] bg-[#0a0a0a] shrink-0">
+      <div className="w-full px-6 py-4 border-b border-[#333] flex items-center justify-between z-20 bg-[#0a0a0a]/80 backdrop-blur-md shrink-0">
         <div className="flex items-center gap-3">
+          <button onClick={onBack} className="p-1.5 hover:bg-[#222] rounded-md text-gray-400 hover:text-white transition-colors border border-transparent hover:border-[#333]">
+            <ArrowLeft size={16} />
+          </button>
           <div className="flex items-center shrink-0">
-            <img src="/outtlyr-logo.png" alt="Outtlyr" className="h-8 w-auto object-contain mr-2 bg-transparent" onError={(e) => { e.currentTarget.style.display='none' }} />
+            <img src="/outtlyr-logo.png" alt="Outtlyr" className="h-10 w-auto object-contain mr-3 shrink-0 bg-transparent" onError={(e) => { e.currentTarget.style.display='none' }} />
+            <span className="hidden font-bold text-xl tracking-tight mr-1 text-white">Outtlyr</span>
           </div>
-          <div className="w-px h-4 bg-[#333]"></div>
-          <h1 className="text-sm font-medium tracking-wide text-gray-300">Discovery Complete</h1>
-          <CheckCircle2 size={14} className="text-emerald-400" />
+          <div className="w-px h-6 bg-[#333] mx-2"></div>
+          <div className="w-2 h-2 rounded-full bg-teal-500 shadow-[0_0_10px_rgba(20,184,166,0.8)] animate-pulse"></div>
+          <h1 className="text-lg font-medium tracking-wide text-gray-300">Discovery Terminal</h1>
+          <CheckCircle2 size={16} className="text-emerald-400" />
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
+          <span className="text-xs text-gray-500 uppercase tracking-widest font-mono">PHASE 3: SOURCING</span>
+          <div className="w-px h-6 bg-[#333] mx-2"></div>
           <a
             href={`http://localhost:8000/api/discovery/csv/${jobId}`}
             download
@@ -362,18 +388,12 @@ export default function DiscoveryTerminal({ manifest, intent, graphNodes, onComp
           >
             📄 Download Manifest
           </button>
-          <button
-            onClick={() => onComplete(results)}
-            className="flex items-center gap-2 px-5 py-2 bg-amber-500 hover:bg-amber-400 text-black text-xs font-semibold rounded-lg transition-colors shadow-[0_0_15px_rgba(245,158,11,0.3)]"
-          >
-            Proceed to Audit Dashboard →
-          </button>
         </div>
       </div>
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* Left: Summary stats */}
-        <div className="w-[340px] shrink-0 border-r border-[#222] bg-[#0a0a0a] p-5 overflow-y-auto">
+      <div className="flex-1 flex flex-row-reverse overflow-hidden">
+        {/* Right: Summary stats */}
+        <div className="w-[500px] shrink-0 border-l border-[#222] bg-[#0a0a0a] p-5 overflow-y-auto flex flex-col">
           <h3 className="text-sm font-medium text-white mb-4">Discovery Summary</h3>
 
           <div className="space-y-3 mb-6">
@@ -411,11 +431,56 @@ export default function DiscoveryTerminal({ manifest, intent, graphNodes, onComp
               <div className="text-xs text-gray-400 mb-4">{stats.paa_questions_found || 0} questions across {stats.paa_max_depth || 0} depth levels</div>
             </>
           )}
+
+          {/* Error warnings */}
+          {(stats.total_errors > 0 || (results.length === 0 && phase === 'complete')) && (
+            <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 space-y-2">
+              <div className="flex items-center gap-2">
+                <AlertTriangle size={14} className="text-amber-400 shrink-0" />
+                <span className="text-[10px] font-mono text-amber-400 uppercase tracking-widest">Engine Issues</span>
+              </div>
+              {stats.total_errors > 0 && (
+                <p className="text-[11px] text-amber-300 leading-relaxed">
+                  {stats.total_errors} request{stats.total_errors > 1 ? 's' : ''} failed. Google Direct may have been blocked by CAPTCHA.
+                </p>
+              )}
+              {results.length === 0 && (
+                <p className="text-[11px] text-gray-400 leading-relaxed">
+                  No results were retrieved. Try using <span className="text-teal-400 font-semibold">Brave Search</span> or <span className="text-emerald-400 font-semibold">SerpAPI</span> by adding the API keys to <code className="text-[10px] bg-[#222] px-1 py-0.5 rounded">backend/.env</code>.
+                </p>
+              )}
+              {(stats.errors || []).slice(0, 3).map((err: string, i: number) => (
+                <p key={i} className="text-[10px] text-gray-500 font-mono truncate">• {err}</p>
+              ))}
+            </div>
+          )}
+
+          {phase === 'complete' && results.length > 0 && (
+            <div className="mt-auto pt-8">
+              <button
+                onClick={() => onComplete(results)}
+                className="w-full py-3 bg-teal-500 hover:bg-teal-400 text-black font-semibold rounded-lg transition-colors shadow-[0_0_20px_rgba(20,184,166,0.3)] flex items-center justify-center gap-2"
+              >
+                <Database size={18} />
+                Commit to Extraction
+              </button>
+            </div>
+          )}
         </div>
 
-        {/* Right: Top results preview */}
+        {/* Left: Top results preview */}
         <div className="flex-1 overflow-y-auto p-6">
           <h3 className="text-sm font-medium text-gray-300 mb-4">Top Ranked Sources</h3>
+          {results.length === 0 ? (
+            <div className="flex flex-col items-center justify-center h-64 text-center">
+              <AlertTriangle size={32} className="text-amber-500/50 mb-4" />
+              <p className="text-sm text-gray-400 mb-2">No sources discovered</p>
+              <p className="text-xs text-gray-600 max-w-md leading-relaxed">
+                The search engine returned no usable results. This typically happens when Google Direct is blocked by CAPTCHA. 
+                Add a <span className="text-teal-400">BRAVE_API_KEY</span> or <span className="text-emerald-400">SERPAPI_KEY</span> to <code className="text-[10px] bg-[#222] px-1 py-0.5 rounded">backend/.env</code> and re-run discovery.
+              </p>
+            </div>
+          ) : null}
           <div className="space-y-2">
             {results.slice(0, 30).map((r, i) => (
               <motion.div

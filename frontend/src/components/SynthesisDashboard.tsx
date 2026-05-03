@@ -5,19 +5,19 @@ import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Zap, FileText, Activity, Network, CheckCircle2, XCircle, ArrowLeft, MessageSquare } from 'lucide-react';
 import EcosystemMap from './EcosystemMap';
-import LivingTruthMap from './LivingTruthMap';
+import IntelligenceMap from './IntelligenceMap';
 import type { InteractionPayload } from '@/app/page';
-import SynthesisReviewOriginal from './SynthesisReviewOriginal';
-import SynthesisReviewAlt3 from './SynthesisReviewAlt3';
+import SynthesisReview from './SynthesisReview';
 import DiscoveryTerminal from './DiscoveryTerminal';
+import ExtractionDashboard from './ExtractionDashboard';
 
-type SynthesisStep = 'generating' | 'review' | 'discovery' | 'truth_map';
+type SynthesisStep = 'generating' | 'review' | 'discovery' | 'extraction_dashboard' | 'intelligence_map';
 
 interface SynthesisDashboardProps {
   interactionPayload: InteractionPayload;
   onComplete: (manifest: Record<string, any>) => void;
   onRejected: (rejectionContext?: string) => void;
-  onBack: () => void;
+  onBack: (resolvedIntent?: string) => void;
 }
 
 export default function SynthesisDashboard({ interactionPayload, onComplete, onRejected, onBack }: SynthesisDashboardProps) {
@@ -27,7 +27,6 @@ export default function SynthesisDashboard({ interactionPayload, onComplete, onR
   const [graphNodes, setGraphNodes] = useState<string[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [genProgress, setGenProgress] = useState<string>('Initializing synthesis engine...');
-  const [uxMode, setUxMode] = useState<'original' | 'alt3'>('alt3');
   // When DEV_TEST_MOCK is used, we overwrite this with the real recorded intent
   const [resolvedIntent, setResolvedIntent] = useState<string>(interactionPayload.intent);
 
@@ -45,11 +44,11 @@ export default function SynthesisDashboard({ interactionPayload, onComplete, onR
           setGenProgress('DEV BYPASS: Fetching latest recorded run...');
           const bypassRes = await axios.get('http://localhost:8000/api/latest-run');
           const { intent, brief, manifest } = bypassRes.data;
-          
+
           setResolvedIntent(intent);
           setBriefText(brief);
           setManifestData(manifest);
-          
+
           setGenProgress('DEV BYPASS: Ready.');
           setTimeout(() => setStep('review'), 400);
           return;
@@ -90,7 +89,7 @@ export default function SynthesisDashboard({ interactionPayload, onComplete, onR
     };
 
     generate();
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleDownloadBrief = () => {
@@ -147,13 +146,13 @@ export default function SynthesisDashboard({ interactionPayload, onComplete, onR
     }
   };
 
-  // Discovery complete → move to Living Truth Map
-  const handleDiscoveryComplete = (discoveryResults: any[]) => {
-    // Store discovery results for the audit page
-    setStep('truth_map');
+  // Discovery complete → move to Intelligence Map
+  const handleDiscoveryComplete = (results: any[]) => {
+    // We now transition to the Extraction Dashboard instead of directly to Intelligence Map
+    setStep('extraction_dashboard');
   };
 
-  // Living Truth Map approved → pass manifest to Module 3
+  // Intelligence Map doesn't have an onComplete — it's the terminal step
   const handleTruthMapApproved = () => {
     if (manifestData) {
       onComplete(manifestData);
@@ -169,17 +168,21 @@ export default function SynthesisDashboard({ interactionPayload, onComplete, onR
     return (
       <div className="flex flex-col w-full h-screen bg-[#050505] text-white overflow-hidden">
         {/* Top Header (Persistent during load) */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-[#1a1a1a] bg-[#0a0a0a] shrink-0 z-20">
+        <div className="w-full px-6 py-4 border-b border-[#333] flex items-center justify-between z-20 bg-[#0a0a0a]/80 backdrop-blur-md shrink-0">
           <div className="flex items-center gap-3">
-            <button onClick={onBack} className="p-1.5 hover:bg-[#222] rounded-md text-gray-400 hover:text-white transition-colors border border-transparent hover:border-[#333]">
+            <button onClick={() => onBack(resolvedIntent)} className="p-1.5 hover:bg-[#222] rounded-md text-gray-400 hover:text-white transition-colors border border-transparent hover:border-[#333]">
               <ArrowLeft size={16} />
             </button>
             <div className="flex items-center shrink-0">
-               <img src="/outtlyr-logo.png" alt="Outtlyr" className="h-8 w-auto object-contain mr-2 bg-transparent" onError={(e) => { e.currentTarget.style.display='none'; (e.currentTarget.nextElementSibling as HTMLElement).classList.remove('hidden') }} />
-               <span className="hidden font-bold text-lg tracking-tight mr-1 text-white">Outtlyr</span>
+              <img src="/outtlyr-logo.png" alt="Outtlyr" className="h-10 w-auto object-contain mr-3 shrink-0 bg-transparent" onError={(e) => { e.currentTarget.style.display = 'none'; (e.currentTarget.nextElementSibling as HTMLElement).classList.remove('hidden') }} />
+              <span className="hidden font-bold text-xl tracking-tight mr-1 text-white">Outtlyr</span>
             </div>
-            <div className="w-px h-4 bg-[#333]"></div>
-            <h1 className="text-sm font-medium tracking-wide text-gray-300">Module 2: Synthesis Review</h1>
+            <div className="w-px h-6 bg-[#333] mx-2"></div>
+            <div className="w-2 h-2 rounded-full bg-teal-500 shadow-[0_0_10px_rgba(20,184,166,0.8)] animate-pulse"></div>
+            <h1 className="text-lg font-medium tracking-wide text-gray-300">Synthesis Terminal</h1>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-xs text-gray-500 uppercase tracking-widest font-mono">PHASE 2: METHODOLOGY</span>
           </div>
         </div>
 
@@ -191,7 +194,7 @@ export default function SynthesisDashboard({ interactionPayload, onComplete, onR
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="flex flex-col items-center gap-4 z-10">
               <XCircle size={48} className="text-red-500" />
               <h2 className="text-xl font-light text-red-200">{error}</h2>
-              <button onClick={onBack} className="mt-4 px-6 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-gray-300 transition-colors">
+              <button onClick={() => onBack(resolvedIntent)} className="mt-4 px-6 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg text-sm text-gray-300 transition-colors">
                 ← Back to Interaction Terminal
               </button>
             </motion.div>
@@ -225,71 +228,50 @@ export default function SynthesisDashboard({ interactionPayload, onComplete, onR
         intent={resolvedIntent}
         graphNodes={graphNodes}
         onComplete={handleDiscoveryComplete}
+        onSkip={() => setStep('intelligence_map')}
         onBack={() => setStep('review')}
       />
     );
   }
 
-  // ── Step 3: Living Truth Map ──
-  if (step === 'truth_map') {
+  // ── Step 2.6: Extraction Dashboard ──
+  if (step === 'extraction_dashboard') {
     return (
-      <LivingTruthMap
-        intent={interactionPayload.intent}
+      <ExtractionDashboard
+        onComplete={() => setStep('intelligence_map')}
+        onBack={() => setStep('discovery')}
+      />
+    );
+  }
+
+  // ── Step 3: Outtlyr Intelligence Map ──
+  if (step === 'intelligence_map') {
+    return (
+      <IntelligenceMap
+        intent={resolvedIntent}
         brief={briefText || undefined}
         manifest={manifestData || undefined}
         graphNodes={graphNodes}
-        onMapApproved={handleTruthMapApproved}
         onBack={() => setStep('review')}
       />
     );
   }
 
   // ── Step 2: Review & Approval Gate ──
-  
-  // Render chosen UX Mode
-  const renderReviewMode = () => {
-    const props = {
-      interactionPayload: { ...interactionPayload, intent: resolvedIntent },
-      briefText,
-      manifestData,
-      onBack: onBack,
-      onConfirm: handleMethodologyConfirmed,
-      onReject: onRejected,
-      onDownloadBrief: handleDownloadBrief,
-      onDownloadManifest: handleDownloadManifest,
-      onDevBypassDiscovery: handleDevBypassDiscovery,
-    };
-
-    switch (uxMode) {
-      case 'alt3':
-        return <SynthesisReviewAlt3 {...props} />;
-      case 'original':
-      default:
-        return <SynthesisReviewOriginal {...props} />;
-    }
-  };
 
   return (
     <div className="relative w-full h-full">
-      {renderReviewMode()}
-      
-      {/* ── DEV UX SWITCHER (Floating Bottom Left) ── */}
-      <div className="fixed bottom-4 left-4 z-50 bg-[#111] border border-[#333] rounded-xl p-2 shadow-2xl flex items-center gap-2 backdrop-blur-md">
-        <span className="text-[10px] text-gray-500 font-mono tracking-widest px-2 uppercase">UX Test:</span>
-        {['original', 'alt3'].map((mode) => (
-          <button
-            key={mode}
-            onClick={() => setUxMode(mode as any)}
-            className={`px-3 py-1.5 text-xs font-mono rounded-lg transition-colors ${
-              uxMode === mode 
-                ? 'bg-violet-600/30 text-violet-400 border border-violet-500/50' 
-                : 'bg-transparent text-gray-400 hover:text-white hover:bg-[#222]'
-            }`}
-          >
-            {mode}
-          </button>
-        ))}
-      </div>
+      <SynthesisReview
+        interactionPayload={{ ...interactionPayload, intent: resolvedIntent }}
+        briefText={briefText}
+        manifestData={manifestData}
+        onBack={() => onBack(resolvedIntent)}
+        onConfirm={handleMethodologyConfirmed}
+        onReject={onRejected}
+        onDownloadBrief={handleDownloadBrief}
+        onDownloadManifest={handleDownloadManifest}
+        onDevBypassDiscovery={handleDevBypassDiscovery}
+      />
     </div>
   );
 }

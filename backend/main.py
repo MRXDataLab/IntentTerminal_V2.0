@@ -14,6 +14,7 @@ from api import truth_map
 from api import dev_bypass
 from api import methodology
 from api import discovery
+from api import intelligence_map
 
 app.include_router(intake.router, prefix="/api")
 app.include_router(ecosystem.router, prefix="/api")
@@ -26,6 +27,7 @@ app.include_router(truth_map.router, prefix="/api")
 app.include_router(dev_bypass.router, prefix="/api")
 app.include_router(methodology.router, prefix="/api")
 app.include_router(discovery.router, prefix="/api")
+app.include_router(intelligence_map.router, prefix="/api")
 
 # Configure CORS for Next.js frontend
 app.add_middleware(

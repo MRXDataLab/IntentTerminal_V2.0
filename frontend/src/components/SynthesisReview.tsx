@@ -9,7 +9,7 @@ import EcosystemMapMethodology from './EcosystemMapMethodology';
 import EcosystemMap3D from './EcosystemMap3D';
 import { SynthesisReviewProps } from './SynthesisReviewProps';
 
-export default function SynthesisReviewAlt3({ 
+export default function SynthesisReview({ 
   interactionPayload, 
   briefText, 
   manifestData, 
@@ -17,14 +17,15 @@ export default function SynthesisReviewAlt3({
   onConfirm, 
   onReject, 
   onDownloadBrief, 
-  onDownloadManifest,
   onDevBypassDiscovery,
+  hasPlayed,
+  onPlay,
 }: SynthesisReviewProps) {
   
   const [showRejectionInput, setShowRejectionInput] = useState(false);
   const [rejectionText, setRejectionText] = useState('');
   const [isBriefExpanded, setIsBriefExpanded] = useState(false);
-  const [graphStyle, setGraphStyle] = useState<'knowledge' | 'knowledge3d' | 'flowchart' | 'methodology'>('flowchart');
+  const [graphStyle, setGraphStyle] = useState<'knowledge' | 'knowledge3d' | 'flowchart' | 'methodology'>('knowledge3d');
   
   // Graph State lifted from EcosystemMap
   const [graphMetrics, setGraphMetrics] = useState<any>(null);
@@ -47,20 +48,22 @@ export default function SynthesisReviewAlt3({
     <div className="flex flex-col h-screen w-full bg-[#050505] text-white overflow-hidden font-sans">
       
       {/* Top Header */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-[#1a1a1a] bg-[#0a0a0a] shrink-0 z-20">
+      <div className="w-full px-6 py-4 border-b border-[#333] flex items-center justify-between z-20 bg-[#0a0a0a]/80 backdrop-blur-md shrink-0">
         <div className="flex items-center gap-3">
           <button onClick={onBack} className="p-1.5 hover:bg-[#222] rounded-md text-gray-400 hover:text-white transition-colors border border-transparent hover:border-[#333]">
             <ArrowLeft size={16} />
           </button>
           <div className="flex items-center shrink-0">
-             <img src="/outtlyr-logo.png" alt="Outtlyr" className="h-8 w-auto object-contain mr-2 bg-transparent" onError={(e) => { e.currentTarget.style.display='none'; (e.currentTarget.nextElementSibling as HTMLElement).classList.remove('hidden') }} />
-             <span className="hidden font-bold text-lg tracking-tight mr-1 text-white">Outtlyr</span>
+             <img src="/outtlyr-logo.png" alt="Outtlyr" className="h-10 w-auto object-contain mr-3 shrink-0 bg-transparent" onError={(e) => { e.currentTarget.style.display='none'; (e.currentTarget.nextElementSibling as HTMLElement).classList.remove('hidden') }} />
+             <span className="hidden font-bold text-xl tracking-tight mr-1 text-white">Outtlyr</span>
           </div>
-          <div className="w-px h-4 bg-[#333]"></div>
-          <h1 className="text-sm font-medium tracking-wide text-gray-300">Module 2: Synthesis Review</h1>
+          <div className="w-px h-6 bg-[#333] mx-2"></div>
+          <div className="w-2 h-2 rounded-full bg-teal-500 shadow-[0_0_10px_rgba(20,184,166,0.8)] animate-pulse"></div>
+          <h1 className="text-lg font-medium tracking-wide text-gray-300">Synthesis Terminal</h1>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4">
+          <span className="text-xs text-gray-500 uppercase tracking-widest font-mono">PHASE 2: METHODOLOGY</span>
           {onDevBypassDiscovery && (
             <button
               onClick={onDevBypassDiscovery}
@@ -69,22 +72,14 @@ export default function SynthesisReviewAlt3({
               🧪 Skip to Discovery
             </button>
           )}
-          <button 
-            onClick={() => onConfirm(graphMetrics?.ecosystemNodeNames || [])} 
-            disabled={!graphMetrics || graphMetrics.loading}
-            className="flex items-center gap-2 px-5 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-blue-900/50 disabled:text-blue-300/50 text-white text-xs font-medium rounded-lg transition-colors shadow-[0_0_15px_rgba(59,130,246,0.2)]"
-          >
-            <CheckCircle2 size={14} />
-            Confirm Methodology
-          </button>
         </div>
       </div>
 
       {/* Main Content Area */}
-      <div className="flex-1 flex overflow-hidden w-full relative">
+      <div className="flex-1 flex flex-row-reverse overflow-hidden w-full relative">
         
-        {/* Left Sidebar (Controls & Manifest) - Full Height */}
-        <div className="w-[380px] shrink-0 h-full flex flex-col bg-[#0a0a0a] border-r border-[#222] overflow-y-auto custom-scrollbar z-10 shadow-[10px_0_30px_rgba(0,0,0,0.5)]">
+        {/* Right Sidebar (Controls & Manifest) - Full Height */}
+        <div className="w-[500px] shrink-0 h-full flex flex-col bg-[#0a0a0a] border-l border-[#222] overflow-y-auto custom-scrollbar z-10 shadow-[-10px_0_30px_rgba(0,0,0,0.5)]">
           <div className="p-5 flex-1 space-y-6">
             
             {/* Category Graph Header */}
@@ -100,6 +95,16 @@ export default function SynthesisReviewAlt3({
                  <p className="text-[11px] text-gray-300 italic leading-relaxed break-words">{interactionPayload.intent}</p>
               </div>
             </div>
+
+            {/* Core Problem Statement */}
+            {graphMetrics?.rootNodeLabel && (
+              <div>
+                <h4 className="text-[10px] text-gray-500 uppercase tracking-widest font-mono mb-2">Core Problem Statement</h4>
+                <div className="bg-[#111] p-3 rounded-lg border border-[#222]">
+                   <p className="text-[11px] text-gray-300 italic leading-relaxed break-words">{graphMetrics.rootNodeLabel}</p>
+                </div>
+              </div>
+            )}
 
             {/* Graph Metrics */}
             <div className="space-y-3">
@@ -133,7 +138,7 @@ export default function SynthesisReviewAlt3({
             {/* Dynamic Legend */}
             <div>
               <h4 className="text-[9px] text-gray-500 uppercase tracking-widest font-mono mb-2">
-                {showStrategicOverlay ? "Strategic Forces" : "Key Subjects"}
+                {showStrategicOverlay ? "Strategic Forces" : "Key Hypotheses"}
               </h4>
               <div className="space-y-1.5">
                 {showStrategicOverlay ? (
@@ -160,12 +165,21 @@ export default function SynthesisReviewAlt3({
               </div>
             </div>
 
-            {/* Request Refinement Action */}
-            <div className="pt-4 border-t border-[#222]">
+            {/* Actions */}
+            <div className="pt-4 border-t border-[#222] flex flex-col gap-3">
+              <button 
+                onClick={() => onConfirm(graphMetrics?.ecosystemNodeNames || [])} 
+                disabled={!graphMetrics || graphMetrics.loading}
+                className="w-full py-3 bg-teal-500 hover:bg-teal-400 disabled:bg-teal-900/50 disabled:text-teal-300/50 text-black text-sm font-semibold rounded-lg transition-colors shadow-[0_0_20px_rgba(20,184,166,0.3)] flex items-center justify-center gap-2"
+              >
+                <CheckCircle2 size={16} />
+                Confirm Methodology
+              </button>
+              
               <AnimatePresence>
                 {showRejectionInput && (
                   <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} exit={{ opacity: 0, height: 0 }}>
-                    <div className="flex gap-2 mb-3">
+                    <div className="flex gap-2 mb-1">
                       <input
                         value={rejectionText}
                         onChange={(e) => setRejectionText(e.target.value)}
@@ -191,23 +205,15 @@ export default function SynthesisReviewAlt3({
           </div>
         </div>
 
-        {/* Right Area (Graph + Brief) */}
+        {/* Left Area (Graph + Brief) */}
         <div className="flex-1 flex flex-col h-full relative overflow-hidden bg-black">
           
           {/* Graph Engine Tabs */}
           <div className="absolute top-4 right-4 z-50 flex items-center bg-[#111]/80 backdrop-blur-md p-1 rounded-lg border border-[#333] shadow-lg">
             <button 
-              onClick={() => setGraphStyle('knowledge')}
-              className={`px-4 py-1.5 text-xs font-mono tracking-widest uppercase rounded-md transition-all ${graphStyle === 'knowledge' ? 'bg-teal-500/20 text-teal-400 shadow-[0_0_10px_rgba(20,184,166,0.2)]' : 'text-gray-500 hover:text-gray-300'}`}
-            >Knowledge Graph</button>
-            <button 
               onClick={() => setGraphStyle('knowledge3d')}
               className={`px-4 py-1.5 text-xs font-mono tracking-widest uppercase rounded-md transition-all ${graphStyle === 'knowledge3d' ? 'bg-teal-500/20 text-teal-400 shadow-[0_0_10px_rgba(20,184,166,0.2)]' : 'text-gray-500 hover:text-gray-300'}`}
-            >3D Graph</button>
-            <button 
-              onClick={() => setGraphStyle('flowchart')}
-              className={`px-4 py-1.5 text-xs font-mono tracking-widest uppercase rounded-md transition-all ${graphStyle === 'flowchart' ? 'bg-teal-500/20 text-teal-400 shadow-[0_0_10px_rgba(20,184,166,0.2)]' : 'text-gray-500 hover:text-gray-300'}`}
-            >Flowchart</button>
+            >Knowledge Graph</button>
             <button 
               onClick={() => setGraphStyle('methodology')}
               className={`px-4 py-1.5 text-xs font-mono tracking-widest uppercase rounded-md transition-all ${graphStyle === 'methodology' ? 'bg-teal-500/20 text-teal-400 shadow-[0_0_10px_rgba(20,184,166,0.2)]' : 'text-gray-500 hover:text-gray-300'}`}
@@ -216,6 +222,17 @@ export default function SynthesisReviewAlt3({
 
           {/* Top Section - Graph Canvas */}
           <div className={`w-full relative transition-all duration-500 ease-in-out ${isBriefExpanded ? 'h-[40%]' : 'h-[calc(100%-56px)]'}`}>
+            {!hasPlayed && (
+              <div className="absolute bottom-6 left-6 z-50">
+                <button 
+                  onClick={onPlay} 
+                  className="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-black text-sm font-bold uppercase tracking-widest rounded-lg shadow-[0_0_20px_rgba(245,158,11,0.4)] flex items-center gap-2 transition-transform hover:scale-105"
+                >
+                  ▶ Play
+                </button>
+              </div>
+            )}
+            
             {graphStyle === 'knowledge' && (
               <EcosystemMap
                 intent={interactionPayload.intent}
@@ -225,6 +242,7 @@ export default function SynthesisReviewAlt3({
                 hideSidebar={true}
                 strategicOverlayEnabled={showStrategicOverlay}
                 onGraphMetrics={setGraphMetrics}
+                hasPlayed={hasPlayed}
               />
             )}
             {graphStyle === 'knowledge3d' && (
@@ -236,6 +254,7 @@ export default function SynthesisReviewAlt3({
                 hideSidebar={true}
                 strategicOverlayEnabled={showStrategicOverlay}
                 onGraphMetrics={setGraphMetrics}
+                hasPlayed={hasPlayed}
               />
             )}
             {graphStyle === 'flowchart' && (
@@ -247,6 +266,7 @@ export default function SynthesisReviewAlt3({
                 hideSidebar={true}
                 strategicOverlayEnabled={showStrategicOverlay}
                 onGraphMetrics={setGraphMetrics}
+                hasPlayed={hasPlayed}
               />
             )}
             {graphStyle === 'methodology' && (
@@ -260,6 +280,7 @@ export default function SynthesisReviewAlt3({
                 hideSidebar={true}
                 strategicOverlayEnabled={showStrategicOverlay}
                 onGraphMetrics={setGraphMetrics}
+                hasPlayed={hasPlayed}
               />
             )}
           </div>
@@ -283,7 +304,9 @@ export default function SynthesisReviewAlt3({
             
             <div className="flex-1 overflow-y-auto p-6 bg-black/40 custom-scrollbar">
               <div className="max-w-4xl">
-                <pre className="text-[13px] text-gray-300 leading-relaxed whitespace-pre-wrap font-sans">{briefText}</pre>
+                <pre className="text-[13px] text-gray-300 leading-relaxed whitespace-pre-wrap font-sans">
+                  {briefText ? briefText : (hasPlayed ? 'Generating strategic brief...' : 'Awaiting manual trigger...')}
+                </pre>
               </div>
             </div>
           </div>

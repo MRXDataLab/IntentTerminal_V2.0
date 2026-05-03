@@ -412,6 +412,7 @@ export default function IntakeTerminal({ onInteractionComplete, existingPayload 
           <h1 className="text-lg font-medium tracking-wide text-gray-300">Intake Terminal</h1>
         </div>
         <div className="flex items-center gap-4">
+          <span className="text-xs text-gray-500 uppercase tracking-widest font-mono">PHASE 1: ALIGNMENT</span>
           <button
             onClick={() => onInteractionComplete({
               intent: 'DEV_TEST_MOCK',
@@ -432,7 +433,6 @@ export default function IntakeTerminal({ onInteractionComplete, existingPayload 
           >
             🧪 Dev Bypass
           </button>
-          <span className="text-xs text-gray-500 uppercase tracking-widest font-mono">Phase_1: Alignment</span>
         </div>
       </div>
 

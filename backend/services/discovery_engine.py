@@ -347,12 +347,71 @@ def serpapi_search(query: str, vertical: str = "web", num_results: int = 10) -> 
 
     return results
 
+# ─── ENGINE 4: DuckDuckGo (duckduckgo-search) ────────────────────────────────────
+
+def duckduckgo_search(query: str, vertical: str = "web", num_results: int = 10) -> List[Dict[str, Any]]:
+    """
+    Uses the duckduckgo-search python package to query DuckDuckGo.
+    Supports web, news, images, and videos.
+    """
+    from duckduckgo_search import DDGS
+    results = []
+
+    try:
+        # DDGS supports text, news, images, videos, maps
+        with DDGS() as ddgs:
+            if vertical == "news":
+                responses = ddgs.news(query, max_results=num_results)
+                for r in responses:
+                    results.append({
+                        "url": r.get("url", ""),
+                        "title": r.get("title", ""),
+                        "snippet": r.get("body", ""),
+                        "source": "DuckDuckGo News",
+                        "vertical": "news"
+                    })
+            elif vertical == "images":
+                responses = ddgs.images(query, max_results=num_results)
+                for r in responses:
+                    results.append({
+                        "url": r.get("url", ""),
+                        "title": r.get("title", ""),
+                        "snippet": r.get("image", ""),
+                        "source": "DuckDuckGo Images",
+                        "vertical": "images"
+                    })
+            elif vertical == "videos":
+                responses = ddgs.videos(query, max_results=num_results)
+                for r in responses:
+                    results.append({
+                        "url": r.get("content", ""),
+                        "title": r.get("title", ""),
+                        "snippet": r.get("description", ""),
+                        "source": "DuckDuckGo Videos",
+                        "vertical": "videos"
+                    })
+            else:
+                responses = ddgs.text(query, max_results=num_results)
+                for r in responses:
+                    results.append({
+                        "url": r.get("href", ""),
+                        "title": r.get("title", ""),
+                        "snippet": r.get("body", ""),
+                        "source": "DuckDuckGo Web",
+                        "vertical": "web"
+                    })
+    except Exception as e:
+        results.append({"error": str(e), "url": "", "title": "", "snippet": "", "source": "DuckDuckGo", "vertical": vertical})
+
+    return results
+
 # ─── Unified Discovery Orchestrator ──────────────────────────────────────────
 
 ENGINE_MAP = {
     "google_direct": google_direct_search,
     "brave": brave_search,
     "serpapi": serpapi_search,
+    "duckduckgo": duckduckgo_search,
 }
 
 VERTICALS = ["web", "forums", "videos", "news"]
@@ -419,6 +478,8 @@ def run_discovery(
         "total_raw": 0,
         "total_unique": 0,
         "total_blacklisted": 0,
+        "total_errors": 0,
+        "errors": [],
         "paa_questions_found": 0,
         "paa_max_depth": paa_depth,
         "verticals": {v: 0 for v in VERTICALS},
@@ -454,6 +515,12 @@ def run_discovery(
 
                 for r in results:
                     if r.get("error"):
+                        stats["total_errors"] += 1
+                        err_msg = r["error"][:120]
+                        if err_msg not in [e[:120] for e in stats["errors"]]:
+                            stats["errors"].append(err_msg)
+                        if progress_callback:
+                            progress_callback({"phase": "vertical_scan", "message": f"⚠ Engine error: {err_msg[:60]}..."})
                         continue
                     url = r.get("url", "")
                     url_hash = _hash_url(url) if url else ""

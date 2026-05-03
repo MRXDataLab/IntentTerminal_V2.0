@@ -71,6 +71,15 @@ def list_engines():
                 "rate": "~1s per query",
                 "features": ["Web", "Forums", "Videos", "News", "Shopping", "PAA", "Related Searches"],
             },
+            {
+                "id": "duckduckgo",
+                "name": "DuckDuckGo",
+                "description": "Privacy-focused web search. Supports multiple data modalities (Web, News, Images, Videos). No API key required via duckduckgo-search package.",
+                "available": True,
+                "cost": "Free",
+                "rate": "~1s per query",
+                "features": ["Web", "Images", "Videos", "News"],
+            },
         ]
     }
 
