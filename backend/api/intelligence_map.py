@@ -110,11 +110,11 @@ def generate_intelligence_map(request: IntelligenceMapRequest):
 
         # Reset session state
         _map_state = topology
-        _convergence_stage = 0
+        _convergence_stage = 1  # Start at 25% — don't show full map
         _insights_log = []
         reset_intel_manager(5000)
 
-        return {"status": "success", "topology": topology, "intel_balance": get_intel_manager().get_balance()}
+        return {"status": "success", "topology": topology, "intel_balance": get_intel_manager().get_balance(), "convergence": CONVERGENCE_STAGES[1], "node_states": DEMO_NODE_STATES[1]}
 
     except Exception as e:
         fallback = {
@@ -218,33 +218,176 @@ def double_down(request: DoubleDownRequest):
 
 CONVERGENCE_STAGES = {
     0: {"pct": 0, "label": "Not Started", "description": "Awaiting signal ingestion."},
-    1: {"pct": 25, "label": "Signal Scan", "description": "Initial signal scan complete. Hypotheses seeded."},
-    2: {"pct": 50, "label": "Force Vectors", "description": "Signal density stabilizing. Force vectors emerging."},
-    3: {"pct": 75, "label": "Hypothesis Resolution", "description": "Confirming/debunking hypotheses. Suggested hypotheses surfacing."},
-    4: {"pct": 100, "label": "Final Report", "description": "All hypotheses resolved. Intelligence Map complete. Export ready."},
+    1: {"pct": 25, "label": "25% Timeline", "description": "Early signal scan. Some hypotheses may already be confirmed while others are still collecting data."},
+    2: {"pct": 50, "label": "50% Timeline", "description": "Midpoint. Multiple hypotheses resolved. Suggested hypotheses beginning to emerge from the data."},
+    3: {"pct": 75, "label": "75% Timeline", "description": "Most hypotheses resolved. All suggested hypotheses visible. Signal density stabilized for majority of nodes."},
+    4: {"pct": 100, "label": "Complete", "description": "Study complete. All hypotheses resolved. Final report ready for export."},
+}
+
+# Per-node state at each convergence point (for demo)
+# A hypothesis is ONLY "confirmed/filled" when ALL its child insight branches + signal clusters are visible.
+# Suggested hypotheses pop up WITH all their children at once — they don't appear partially.
+DEMO_NODE_STATES = {
+    0: {
+        "explicit_hypothesis": {"visible": True, "states": {0: "pending", 1: "pending", 2: "pending", 3: "pending", 4: "pending"}},
+        "suggested_hypothesis": {"visible": False, "max_visible": 0},
+        "insight_branch": {"visible_pct": 0.0},
+        "signal_cluster": {"visible_pct": 0.0},
+    },
+    1: {
+        # 25%: H1 fully confirmed (all its children visible), H2 verifying (some children), H3 pending (no children)
+        "explicit_hypothesis": {"visible": True, "states": {0: "confirmed", 1: "verifying", 2: "pending", 3: "pending", 4: "pending"}},
+        "suggested_hypothesis": {"visible": False, "max_visible": 0},
+        "insight_branch": {"visible_pct": 0.3},
+        "signal_cluster": {"visible_pct": 0.2},
+        # H1's children are all in the first 30% of insight branches
+    },
+    2: {
+        # 50%: H1+H2 confirmed (all their children visible), H3 verifying. S1 pops up WITH all its children.
+        "explicit_hypothesis": {"visible": True, "states": {0: "confirmed", 1: "confirmed", 2: "verifying", 3: "pending", 4: "pending"}},
+        "suggested_hypothesis": {"visible": True, "max_visible": 2, "pop_with_children": True},
+        "insight_branch": {"visible_pct": 0.6},
+        "signal_cluster": {"visible_pct": 0.5},
+    },
+    3: {
+        # 75%: All explicit resolved (H3 debunked). 4 suggested visible with all children.
+        "explicit_hypothesis": {"visible": True, "states": {0: "confirmed", 1: "confirmed", 2: "debunked", 3: "confirmed", 4: "inconclusive"}},
+        "suggested_hypothesis": {"visible": True, "max_visible": 4, "pop_with_children": True},
+        "insight_branch": {"visible_pct": 0.9},
+        "signal_cluster": {"visible_pct": 0.8},
+    },
+    4: {
+        # 100%: Everything visible and resolved.
+        "explicit_hypothesis": {"visible": True, "states": {0: "confirmed", 1: "confirmed", 2: "debunked", 3: "confirmed", 4: "confirmed"}},
+        "suggested_hypothesis": {"visible": True, "max_visible": 5, "pop_with_children": True},
+        "insight_branch": {"visible_pct": 1.0},
+        "signal_cluster": {"visible_pct": 1.0},
+    },
+}
+
+# Notifications triggered at each stage transition
+DEMO_NOTIFICATIONS = {
+    1: [
+        {"type": "hypothesis_confirmed", "message": "✅ H1 hypothesis confirmed — strong signal convergence detected", "timestamp": None},
+        {"type": "signals_batch", "message": "📡 127 new signals captured across Reddit and YouTube", "timestamp": None},
+    ],
+    2: [
+        {"type": "hypothesis_confirmed", "message": "✅ H2 hypothesis confirmed — 78% signal alignment", "timestamp": None},
+        {"type": "new_hypothesis", "message": "🔮 New hypothesis discovered: emerging pattern in competitor data", "timestamp": None},
+        {"type": "signals_batch", "message": "📡 284 total signals captured. Force vectors stabilizing.", "timestamp": None},
+    ],
+    3: [
+        {"type": "hypothesis_debunked", "message": "❌ H3 hypothesis debunked — signals contradict initial theory", "timestamp": None},
+        {"type": "new_hypothesis", "message": "🔮 2 more suggested hypotheses emerged from signal analysis", "timestamp": None},
+        {"type": "signals_batch", "message": "📡 412 total signals. Insight branches fully populated.", "timestamp": None},
+    ],
+    4: [
+        {"type": "study_complete", "message": "🎯 Study complete. All hypotheses resolved. Final report ready.", "timestamp": None},
+        {"type": "signals_batch", "message": "📡 Final count: 523 signals across 5 forces.", "timestamp": None},
+    ],
 }
 
 
 @router.get("/intelligence/convergence")
 def get_convergence():
     stage_data = CONVERGENCE_STAGES.get(_convergence_stage, CONVERGENCE_STAGES[0])
-    return {"status": "success", "stage": _convergence_stage, **stage_data}
+    node_states = DEMO_NODE_STATES.get(_convergence_stage, {})
+    return {"status": "success", "stage": _convergence_stage, **stage_data, "node_states": node_states}
 
 
 @router.post("/intelligence/convergence/set")
 def set_convergence(request: ConvergenceSetRequest):
-    """Demo button: manually set convergence stage."""
+    """Demo button: manually set convergence timeline position."""
     global _convergence_stage
     if request.stage not in CONVERGENCE_STAGES:
         raise HTTPException(status_code=400, detail=f"Invalid stage. Use 0-4.")
     _convergence_stage = request.stage
     stage_data = CONVERGENCE_STAGES[_convergence_stage]
-    return {"status": "success", "stage": _convergence_stage, **stage_data}
+    node_states = DEMO_NODE_STATES.get(_convergence_stage, {})
+    notifications = DEMO_NOTIFICATIONS.get(_convergence_stage, [])
+    # Add timestamps to notifications
+    now = datetime.now(timezone.utc).isoformat()
+    for n in notifications:
+        n["timestamp"] = now
+    return {"status": "success", "stage": _convergence_stage, **stage_data, "node_states": node_states, "notifications": notifications}
 
 
 @router.get("/intelligence/intel-balance")
 def get_intel_balance():
     return {"status": "success", **get_intel_manager().get_balance()}
+
+
+@router.get("/intelligence/report")
+def generate_final_report():
+    """Generate the final intelligence report as a downloadable HTML file."""
+    if _convergence_stage < 4:
+        raise HTTPException(status_code=400, detail="Study not complete. Set convergence to 100% first.")
+
+    try:
+        # Build context from all logged insights
+        insights_summary = json.dumps(_insights_log[:20], indent=1) if _insights_log else "No insights logged yet."
+
+        # Build hypothesis summary from topology
+        hypotheses = [n for n in _map_state.get("nodes", []) if "hypothesis" in (n.get("type") or "")]
+        hyp_summary = json.dumps([{"id": h.get("id"), "label": h.get("label"), "type": h.get("type"), "force": h.get("force"), "description": h.get("description")} for h in hypotheses], indent=1)
+
+        # Build topology context for flowchart
+        nodes_summary = json.dumps([{"id": n.get("id"), "label": n.get("label"), "type": n.get("type")} for n in _map_state.get("nodes", [])], indent=1)
+        edges_summary = json.dumps([{"source": e.get("source"), "target": e.get("target")} for e in _map_state.get("edges", [])], indent=1)
+
+        report_prompt = f"""Generate a comprehensive, premium Final Intelligence Report as a standalone HTML5 document.
+
+Study Context:
+- Hypotheses analyzed: {len(hypotheses)}
+- Insights generated: {len(_insights_log)}
+
+Topology Data (for the flowchart):
+Nodes: {nodes_summary}
+Edges: {edges_summary}
+
+Hypothesis Data:
+{hyp_summary}
+
+Insights Log:
+{insights_summary}
+
+You MUST follow these strict HTML formatting rules:
+1. Provide valid, complete HTML5. DO NOT wrap the output in markdown code blocks like ```html ... ```. Output raw HTML only.
+2. Use Tailwind CSS via CDN: `<script src="https://cdn.tailwindcss.com"></script>` inside the `<head>`.
+3. Use a sleek, modern dark mode design with glassmorphism effects, gradient text highlights, and premium typography (e.g., `<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">`). Use `font-family: 'Inter', sans-serif;` for the body.
+4. Include Mermaid.js via CDN at the end of the body to render the flowchart:
+   `<script type="module">import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.esm.min.mjs'; mermaid.initialize({{ startOnLoad: true, theme: 'dark' }});</script>`
+
+The report MUST include these sections:
+1. **Executive Summary**: A beautifully styled hero section (3-4 sentences).
+2. **Hypothesis Topology**: Include a `<div class="mermaid">` element containing a Mermaid flowchart (e.g., `graph TD`) that accurately reflects the topology data provided (nodes and edges). Make it visual and structured. Use valid mermaid syntax, wrapping node labels in quotes if they contain special characters. Use node IDs internally and labels for display.
+3. **Hypothesis Verdicts**: A styled table or CSS grid (hypothesis | status | force | key finding).
+4. **Strategic Force Scorecard**: Use Tailwind to create progress bars or visual indicators showing which forces are strongest/weakest.
+5. **Key Insights**: A beautifully styled grid of cards highlighting the top 5 findings, including their specific signal counts, demography stats, and top sources.
+6. **Recommended Actions**: A prioritized list of actionable recommendations in styled boxes.
+
+Write in a clinical, strategic tone for a CMO/VP audience. Use specific numbers from the insights. Return ONLY valid HTML."""
+
+        report_text = call_openrouter(
+            system_prompt="You are a senior strategic intelligence analyst and expert frontend web developer. You write beautiful HTML reports.",
+            user_prompt=report_prompt,
+            expect_json=False,
+        )
+
+        # Strip markdown code blocks if the LLM still returns them
+        if report_text.startswith("```html"):
+            report_text = report_text.replace("```html\n", "").replace("\n```", "")
+        if report_text.startswith("```"):
+            report_text = report_text.replace("```\n", "").replace("\n```", "")
+
+        return StreamingResponse(
+            io.StringIO(report_text),
+            media_type="text/html",
+            headers={"Content-Disposition": "attachment; filename=Outtlyr_Intelligence_Report.html"},
+        )
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/intelligence/export")

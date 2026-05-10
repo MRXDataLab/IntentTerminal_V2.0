@@ -18,8 +18,6 @@ export default function SynthesisReview({
   onReject, 
   onDownloadBrief, 
   onDevBypassDiscovery,
-  hasPlayed,
-  onPlay,
 }: SynthesisReviewProps) {
   
   const [showRejectionInput, setShowRejectionInput] = useState(false);
@@ -222,16 +220,6 @@ export default function SynthesisReview({
 
           {/* Top Section - Graph Canvas */}
           <div className={`w-full relative transition-all duration-500 ease-in-out ${isBriefExpanded ? 'h-[40%]' : 'h-[calc(100%-56px)]'}`}>
-            {!hasPlayed && (
-              <div className="absolute bottom-6 left-6 z-50">
-                <button 
-                  onClick={onPlay} 
-                  className="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-black text-sm font-bold uppercase tracking-widest rounded-lg shadow-[0_0_20px_rgba(245,158,11,0.4)] flex items-center gap-2 transition-transform hover:scale-105"
-                >
-                  ▶ Play
-                </button>
-              </div>
-            )}
             
             {graphStyle === 'knowledge' && (
               <EcosystemMap
@@ -242,7 +230,6 @@ export default function SynthesisReview({
                 hideSidebar={true}
                 strategicOverlayEnabled={showStrategicOverlay}
                 onGraphMetrics={setGraphMetrics}
-                hasPlayed={hasPlayed}
               />
             )}
             {graphStyle === 'knowledge3d' && (
@@ -254,7 +241,6 @@ export default function SynthesisReview({
                 hideSidebar={true}
                 strategicOverlayEnabled={showStrategicOverlay}
                 onGraphMetrics={setGraphMetrics}
-                hasPlayed={hasPlayed}
               />
             )}
             {graphStyle === 'flowchart' && (
@@ -266,7 +252,6 @@ export default function SynthesisReview({
                 hideSidebar={true}
                 strategicOverlayEnabled={showStrategicOverlay}
                 onGraphMetrics={setGraphMetrics}
-                hasPlayed={hasPlayed}
               />
             )}
             {graphStyle === 'methodology' && (
@@ -280,7 +265,6 @@ export default function SynthesisReview({
                 hideSidebar={true}
                 strategicOverlayEnabled={showStrategicOverlay}
                 onGraphMetrics={setGraphMetrics}
-                hasPlayed={hasPlayed}
               />
             )}
           </div>
@@ -305,7 +289,7 @@ export default function SynthesisReview({
             <div className="flex-1 overflow-y-auto p-6 bg-black/40 custom-scrollbar">
               <div className="max-w-4xl">
                 <pre className="text-[13px] text-gray-300 leading-relaxed whitespace-pre-wrap font-sans">
-                  {briefText ? briefText : (hasPlayed ? 'Generating strategic brief...' : 'Awaiting manual trigger...')}
+                  {briefText ? briefText : 'Generating strategic brief...'}
                 </pre>
               </div>
             </div>

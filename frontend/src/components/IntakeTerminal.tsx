@@ -431,7 +431,7 @@ export default function IntakeTerminal({ onInteractionComplete, existingPayload 
             })}
             className="text-[10px] font-mono tracking-widest uppercase bg-amber-500/20 text-amber-400 hover:bg-amber-500/30 border border-amber-500/50 px-3 py-1.5 rounded transition-colors"
           >
-            🧪 Dev Bypass
+            🧪 Skip to Synthesis
           </button>
         </div>
       </div>

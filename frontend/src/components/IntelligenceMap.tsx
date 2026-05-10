@@ -92,7 +92,10 @@ export default function IntelligenceMap({ intent, brief, manifest, graphNodes, o
   const [showStrategicOverlay, setShowStrategicOverlay] = useState(false);
   const [focusedId, setFocusedId] = useState<string | null>(null);
   const [convergence, setConvergence] = useState<any>({ stage: 0, pct: 0, label: 'Not Started' });
+  const [nodeStates, setNodeStates] = useState<any>({});
   const [intelBalance, setIntelBalance] = useState<any>({ balance: 5000, starting_balance: 5000 });
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [assignTo, setAssignTo] = useState('');
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 });
   const containerRef = useRef<HTMLDivElement>(null);
   const fgRef = useRef<any>(null);
@@ -124,6 +127,8 @@ export default function IntelligenceMap({ intent, brief, manifest, graphNodes, o
         });
         setTopology(res.data.topology);
         setIntelBalance(res.data.intel_balance || { balance: 5000, starting_balance: 5000 });
+        if (res.data.convergence) setConvergence(res.data.convergence);
+        if (res.data.node_states) setNodeStates(res.data.node_states);
         setLoading(false);
         setTimeout(() => { if (fgRef.current) fgRef.current.zoomToFit(1000, 150); }, 2000);
       } catch (e) {
@@ -142,6 +147,15 @@ export default function IntelligenceMap({ intent, brief, manifest, graphNodes, o
   const setConvergenceStage = async (stage: number) => {
     const res = await axios.post('http://localhost:8000/api/intelligence/convergence/set', { stage });
     setConvergence(res.data);
+    if (res.data.node_states) setNodeStates(res.data.node_states);
+    // Add notifications
+    if (res.data.notifications) {
+      setNotifications(prev => [...prev, ...res.data.notifications]);
+      // Auto-dismiss after 6 seconds
+      setTimeout(() => {
+        setNotifications(prev => prev.slice(res.data.notifications.length));
+      }, 6000);
+    }
   };
 
   const fetchInsight = async (node: any) => {
@@ -194,7 +208,7 @@ export default function IntelligenceMap({ intent, brief, manifest, graphNodes, o
     }
   }, [focusedId, topology]);
 
-  // 3D node objects
+  // 3D node objects — evolving based on convergence
   const nodeThreeObject = useCallback((node: any) => {
     if (typeof window === 'undefined') return undefined;
     const THREE = require('three');
@@ -205,27 +219,168 @@ export default function IntelligenceMap({ intent, brief, manifest, graphNodes, o
     const baseColor = forceColor || config.color;
     const group = new THREE.Group();
 
-    const geo = new THREE.SphereGeometry(config.size, 24, 24);
-    const mat = new THREE.MeshPhongMaterial({
-      color: baseColor, emissive: forceColor || config.emissive,
-      emissiveIntensity: type === 'root' ? 0.5 : type.includes('hypothesis') ? 0.35 : 0.15,
-      transparent: true, opacity: isFocused ? 1.0 : 0.06, shininess: 60,
-    });
+    const stage = convergence.stage || 0;
 
-    // Dashed ring for suggested hypotheses
+    // Determine if this node should be visible at current convergence
+    let isVisible = true;
+    let fillPct = 1.0; // 0=hollow, 1=fully filled
+    let nodeStatus = node.confirmation_status || 'pending';
+
+    if (type === 'suggested_hypothesis') {
+      const sugStates = nodeStates?.suggested_hypothesis;
+      if (sugStates && !sugStates.visible) { isVisible = false; }
+      else if (sugStates?.max_visible !== undefined) {
+        const sugNodes = (topology?.nodes || []).filter((n: any) => n.type === 'suggested_hypothesis');
+        const idx = sugNodes.findIndex((n: any) => n.id === node.id);
+        if (idx >= sugStates.max_visible) isVisible = false;
+      }
+    }
+
+    if (type === 'explicit_hypothesis') {
+      const expStates = nodeStates?.explicit_hypothesis;
+      if (expStates?.states) {
+        const expNodes = (topology?.nodes || []).filter((n: any) => n.type === 'explicit_hypothesis');
+        const idx = expNodes.findIndex((n: any) => n.id === node.id);
+        const stateVal = expStates.states[idx];
+        if (stateVal) nodeStatus = stateVal;
+        // Fill percentage based on status
+        if (nodeStatus === 'pending') fillPct = 0.0;
+        else if (nodeStatus === 'verifying') fillPct = 0.5;
+        else fillPct = 1.0;
+      }
+    }
+
+    if (type === 'insight_branch') {
+      const ibStates = nodeStates?.insight_branch;
+      if (ibStates?.visible_pct !== undefined) {
+        const ibNodes = (topology?.nodes || []).filter((n: any) => n.type === 'insight_branch');
+        const idx = ibNodes.findIndex((n: any) => n.id === node.id);
+        const baseVisible = idx / Math.max(ibNodes.length, 1) <= ibStates.visible_pct;
+        // Also check: if parent is a visible suggested hypothesis with pop_with_children, force visible
+        if (!baseVisible) {
+          const parentEdge = topology?.links?.find((l: any) => {
+            const tgtId = typeof l.target === 'object' ? l.target.id : l.target;
+            return tgtId === node.id;
+          });
+          if (parentEdge) {
+            const srcId = typeof parentEdge.source === 'object' ? parentEdge.source.id : parentEdge.source;
+            const parentNode = topology?.nodes?.find((n: any) => n.id === srcId);
+            if (parentNode?.type === 'suggested_hypothesis' && nodeStates?.suggested_hypothesis?.pop_with_children) {
+              const sugNodes = (topology?.nodes || []).filter((n: any) => n.type === 'suggested_hypothesis');
+              const sugIdx = sugNodes.findIndex((n: any) => n.id === parentNode.id);
+              if (sugIdx < (nodeStates?.suggested_hypothesis?.max_visible || 0)) {
+                isVisible = true;
+              } else { isVisible = false; }
+            } else { isVisible = false; }
+          } else { isVisible = false; }
+        }
+      }
+    }
+
+    if (type === 'signal_cluster') {
+      const scStates = nodeStates?.signal_cluster;
+      if (scStates?.visible_pct !== undefined) {
+        const scNodes = (topology?.nodes || []).filter((n: any) => n.type === 'signal_cluster');
+        const idx = scNodes.findIndex((n: any) => n.id === node.id);
+        const baseVisible = idx / Math.max(scNodes.length, 1) <= scStates.visible_pct;
+        if (!baseVisible) {
+          // Check if parent chain leads to a visible suggested hypothesis
+          const parentEdge = topology?.links?.find((l: any) => {
+            const tgtId = typeof l.target === 'object' ? l.target.id : l.target;
+            return tgtId === node.id;
+          });
+          if (parentEdge) {
+            const srcId = typeof parentEdge.source === 'object' ? parentEdge.source.id : parentEdge.source;
+            const parentNode = topology?.nodes?.find((n: any) => n.id === srcId);
+            // Check if grandparent is a visible suggested hypothesis
+            if (parentNode) {
+              const gpEdge = topology?.links?.find((l: any) => {
+                const tgtId = typeof l.target === 'object' ? l.target.id : l.target;
+                return tgtId === parentNode.id;
+              });
+              if (gpEdge) {
+                const gpId = typeof gpEdge.source === 'object' ? gpEdge.source.id : gpEdge.source;
+                const gpNode = topology?.nodes?.find((n: any) => n.id === gpId);
+                if (gpNode?.type === 'suggested_hypothesis' && nodeStates?.suggested_hypothesis?.pop_with_children) {
+                  const sugNodes = (topology?.nodes || []).filter((n: any) => n.type === 'suggested_hypothesis');
+                  const sugIdx = sugNodes.findIndex((n: any) => n.id === gpNode.id);
+                  if (sugIdx < (nodeStates?.suggested_hypothesis?.max_visible || 0)) {
+                    isVisible = true;
+                  } else { isVisible = false; }
+                } else { isVisible = false; }
+              } else { isVisible = false; }
+            } else { isVisible = false; }
+          } else { isVisible = false; }
+        }
+      }
+    }
+
+    if (!isVisible) {
+      // Invisible node — tiny transparent sphere
+      const tinyGeo = new THREE.SphereGeometry(0.1, 4, 4);
+      const tinyMat = new THREE.MeshBasicMaterial({ transparent: true, opacity: 0 });
+      group.add(new THREE.Mesh(tinyGeo, tinyMat));
+      return group;
+    }
+
+    // Status-based color for hypotheses
+    let statusColor = baseColor;
+    if (type === 'explicit_hypothesis' || type === 'suggested_hypothesis') {
+      if (nodeStatus === 'confirmed') statusColor = '#10b981';
+      else if (nodeStatus === 'debunked') statusColor = '#ef4444';
+      else if (nodeStatus === 'inconclusive') statusColor = '#f59e0b';
+      else if (nodeStatus === 'verifying') statusColor = forceColor || config.color;
+    }
+
+    const geo = new THREE.SphereGeometry(config.size, 24, 24);
+
+    if (fillPct < 1.0 && type.includes('hypothesis')) {
+      // Hollow/dotted appearance — wireframe for unverified
+      const wireMat = new THREE.MeshBasicMaterial({
+        color: statusColor,
+        wireframe: true,
+        transparent: true,
+        opacity: isFocused ? (0.3 + fillPct * 0.5) : 0.04,
+      });
+      group.add(new THREE.Mesh(geo, wireMat));
+
+      // Partial fill sphere inside (smaller, solid)
+      if (fillPct > 0) {
+        const innerGeo = new THREE.SphereGeometry(config.size * fillPct, 24, 24);
+        const innerMat = new THREE.MeshPhongMaterial({
+          color: statusColor,
+          emissive: statusColor,
+          emissiveIntensity: 0.3,
+          transparent: true,
+          opacity: isFocused ? 0.7 : 0.04,
+        });
+        group.add(new THREE.Mesh(innerGeo, innerMat));
+      }
+    } else {
+      // Fully filled solid sphere
+      const mat = new THREE.MeshPhongMaterial({
+        color: statusColor,
+        emissive: forceColor || config.emissive,
+        emissiveIntensity: type === 'root' ? 0.5 : type.includes('hypothesis') ? 0.35 : 0.15,
+        transparent: true,
+        opacity: isFocused ? 1.0 : 0.06,
+        shininess: 60,
+      });
+      group.add(new THREE.Mesh(geo, mat));
+    }
+
+    // Rings
     if (type === 'suggested_hypothesis') {
       const ringGeo = new THREE.RingGeometry(config.size * 1.4, config.size * 1.6, 32);
       const ringMat = new THREE.MeshBasicMaterial({ color: '#fbbf24', transparent: true, opacity: isFocused ? 0.4 : 0.03, side: THREE.DoubleSide });
       group.add(new THREE.Mesh(ringGeo, ringMat));
     }
-    // Solid ring for explicit
-    if (type === 'explicit_hypothesis') {
+    if (type === 'explicit_hypothesis' && fillPct >= 1.0) {
       const ringGeo = new THREE.RingGeometry(config.size * 1.3, config.size * 1.5, 32);
-      const ringMat = new THREE.MeshBasicMaterial({ color: '#5eead4', transparent: true, opacity: isFocused ? 0.3 : 0.03, side: THREE.DoubleSide });
+      const ringColor = nodeStatus === 'confirmed' ? '#10b981' : nodeStatus === 'debunked' ? '#ef4444' : '#5eead4';
+      const ringMat = new THREE.MeshBasicMaterial({ color: ringColor, transparent: true, opacity: isFocused ? 0.3 : 0.03, side: THREE.DoubleSide });
       group.add(new THREE.Mesh(ringGeo, ringMat));
     }
-
-    group.add(new THREE.Mesh(geo, mat));
 
     // Label
     const showLabel = isFocused && (type === 'root' || type.includes('hypothesis') || type === 'insight_branch');
@@ -236,7 +391,7 @@ export default function IntelligenceMap({ intent, brief, manifest, graphNodes, o
       if (sprite) { sprite.position.set(0, config.size + labelSize * 0.8, 0); group.add(sprite); }
     }
     return group;
-  }, [focusedNodeIds]);
+  }, [focusedNodeIds, nodeStates, convergence, topology, showStrategicOverlay]);
 
   const getLinkColor = useCallback((link: any) => {
     const srcId = typeof link.source === 'object' ? link.source.id : link.source;
@@ -269,6 +424,11 @@ export default function IntelligenceMap({ intent, brief, manifest, graphNodes, o
           <a href="http://localhost:8000/api/intelligence/export" download className="flex items-center gap-1.5 px-3 py-1.5 bg-[#222] hover:bg-[#333] text-gray-300 text-[10px] font-mono rounded-lg border border-[#333] transition-colors">
             <Download size={12} /> Export Timeline
           </a>
+          {convergence.stage >= 4 && (
+            <a href="http://localhost:8000/api/intelligence/report" download className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-[10px] font-mono rounded-lg border border-emerald-500/40 transition-colors">
+              <Download size={12} /> Final Report
+            </a>
+          )}
         </div>
       </div>
 
@@ -413,6 +573,30 @@ export default function IntelligenceMap({ intent, brief, manifest, graphNodes, o
             <div>Right-drag: Pan</div>
             <div>Click hypothesis: Focus + Insight</div>
           </div>
+
+          {/* Notification Toasts */}
+          <div className="absolute top-4 right-4 z-30 space-y-2 max-w-xs">
+            <AnimatePresence>
+              {notifications.map((notif, i) => (
+                <motion.div
+                  key={`${notif.type}-${i}`}
+                  initial={{ opacity: 0, x: 50, scale: 0.9 }}
+                  animate={{ opacity: 1, x: 0, scale: 1 }}
+                  exit={{ opacity: 0, x: 50, scale: 0.9 }}
+                  transition={{ type: 'spring', stiffness: 300, damping: 25 }}
+                  className={`px-4 py-3 rounded-xl border backdrop-blur-md shadow-2xl ${
+                    notif.type === 'hypothesis_confirmed' ? 'bg-emerald-500/10 border-emerald-500/30' :
+                    notif.type === 'hypothesis_debunked' ? 'bg-rose-500/10 border-rose-500/30' :
+                    notif.type === 'new_hypothesis' ? 'bg-amber-500/10 border-amber-500/30' :
+                    notif.type === 'study_complete' ? 'bg-teal-500/10 border-teal-500/30' :
+                    'bg-[#111]/90 border-[#333]'
+                  }`}
+                >
+                  <p className="text-[11px] text-gray-200 leading-relaxed">{notif.message}</p>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </div>
         </div>
       </div>
 
@@ -453,7 +637,8 @@ export default function IntelligenceMap({ intent, brief, manifest, graphNodes, o
                   <p className="text-[12px] text-gray-400 leading-relaxed">{insight.insight_text}</p>
                 </div>
 
-                <div className="flex gap-4 text-[10px]">
+                {/* Metrics row */}
+                <div className="flex gap-3 text-[10px] flex-wrap">
                   <div className="bg-[#111] border border-[#222] rounded-lg px-3 py-2">
                     <span className="text-gray-500">Signals:</span> <span className="text-teal-400 font-mono">{insight.signal_count}</span>
                   </div>
@@ -465,15 +650,79 @@ export default function IntelligenceMap({ intent, brief, manifest, graphNodes, o
                   </div>
                 </div>
 
-                {/* Suggested Action */}
-                {insight.suggested_action && (
-                  <div className="bg-teal-500/5 border border-teal-500/20 rounded-lg p-3">
-                    <div className="flex items-center gap-1.5 mb-1"><Target size={12} className="text-teal-400" /><span className="text-[10px] text-teal-400 font-mono uppercase">Suggested Action</span></div>
-                    <p className="text-[11px] text-teal-200">{insight.suggested_action}</p>
+                {/* Demography */}
+                {insight.demography && (
+                  <div className="bg-[#111] border border-[#222] rounded-lg p-3">
+                    <h5 className="text-[10px] text-gray-500 font-mono uppercase mb-2">Predicted Demography</h5>
+                    <div className="grid grid-cols-3 gap-3 text-[11px]">
+                      <div>
+                        <span className="text-gray-500">Age:</span> <span className="text-gray-300">{insight.demography.age_range}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Cohort:</span> <span className="text-gray-300">{insight.demography.cohort_label}</span>
+                      </div>
+                      <div>
+                        <span className="text-gray-500">Types:</span> <span className="text-gray-300">{insight.demography.user_types?.join(', ')}</span>
+                      </div>
+                    </div>
+                    {insight.demography.top_locations && (
+                      <div className="flex gap-2 mt-2">
+                        {insight.demography.top_locations.map((loc: any, i: number) => (
+                          <span key={i} className="text-[10px] px-2 py-0.5 rounded bg-[#1a1a1a] text-gray-400 font-mono">{loc.city} ({loc.pct}%)</span>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
 
-                {/* Top Signals */}
+                {/* Top Sources */}
+                {insight.top_sources && (
+                  <div>
+                    <h5 className="text-[10px] text-gray-500 font-mono uppercase mb-2">Top Sources</h5>
+                    <div className="flex gap-2">
+                      {insight.top_sources.map((src: any, i: number) => (
+                        <div key={i} className="bg-[#111] border border-[#222] rounded-lg px-3 py-2 text-center flex-1">
+                          <div className="text-[11px] text-gray-300 font-medium">{src.platform}</div>
+                          <div className="text-lg font-light text-teal-400">{src.signal_count}</div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Top 5 Signal Tags */}
+                {insight.top_signal_tags && (
+                  <div>
+                    <h5 className="text-[10px] text-gray-500 font-mono uppercase mb-2">Top Signal Tags</h5>
+                    <div className="flex gap-1.5 flex-wrap">
+                      {insight.top_signal_tags.map((tag: string, i: number) => (
+                        <span key={i} className="text-[10px] px-2.5 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-300 font-mono">{tag}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Suggested Action + Assign To */}
+                {insight.suggested_action && (
+                  <div className="bg-teal-500/5 border border-teal-500/20 rounded-lg p-3">
+                    <div className="flex items-center gap-1.5 mb-1"><Target size={12} className="text-teal-400" /><span className="text-[10px] text-teal-400 font-mono uppercase">Suggested Action</span></div>
+                    <p className="text-[11px] text-teal-200 mb-3">{insight.suggested_action}</p>
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-gray-500">Assign to:</span>
+                      <input
+                        value={assignTo}
+                        onChange={(e) => setAssignTo(e.target.value)}
+                        placeholder="Team member name or email"
+                        className="flex-1 bg-[#0a0a0a] border border-[#333] rounded-md px-2.5 py-1.5 text-[11px] text-white placeholder-gray-600 outline-none focus:border-teal-500/50"
+                      />
+                      <button className="px-3 py-1.5 bg-teal-500/20 hover:bg-teal-500/30 border border-teal-500/40 text-teal-400 text-[10px] font-medium rounded-md transition-colors">
+                        Send →
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* Signal Evidence */}
                 {insight.top_signals?.length > 0 && (
                   <div>
                     <h5 className="text-[10px] text-gray-500 font-mono uppercase mb-2">Signal Evidence</h5>
