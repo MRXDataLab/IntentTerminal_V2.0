@@ -7,6 +7,8 @@ Quick-Start Questions:
 2. "What decision depends on diagnosing this root cause (defensive pricing, re-launch)?"
 3. "Who is churning and who is benefiting from the erosion?"
 
+PILLAR 3 RULE (Target Lens & Decision Goal): Do not ask the client what their hypothesis is. The hypothesis space is generated downstream by a dedicated engine. Instead, probe for what decision the erosion data must inform (defend, pivot, or exit), what stabilization or recovery looks like, and the client's risk tolerance for aggressive counter-measures.
+
 CORE SIGNALS TO MAP (downstream activation):
 - Regret Clusters: Groupings of post-purchase dissonance, "buyer's remorse," or update-related regret.
 - Resale Velocity & Retainment: The volume and price-drop percentage of the product on secondary markets (e.g., OLX, Cashify).

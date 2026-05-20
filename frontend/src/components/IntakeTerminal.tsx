@@ -45,10 +45,16 @@ function getReadinessLabel(score: number) {
 
 interface IntakeTerminalProps {
   onInteractionComplete: (payload: InteractionPayload) => void;
+  /**
+   * Dev-only bypass: jumps straight to the Hypothesis Review screen by
+   * hydrating from `/api/latest-run`. Lives on the page-level component so
+   * IntakeTerminal stays UI-only.
+   */
+  onSkipToHypothesisReview?: () => void;
   existingPayload?: InteractionPayload | null;
 }
 
-export default function IntakeTerminal({ onInteractionComplete, existingPayload }: IntakeTerminalProps) {
+export default function IntakeTerminal({ onInteractionComplete, onSkipToHypothesisReview, existingPayload }: IntakeTerminalProps) {
   const defaultMessages: Message[] = [
     { role: 'agent', content: 'Welcome to Outtlyr. Let us refine your research intent. What overarching topic or business anxiety would you like to explore?' }
   ];
@@ -413,6 +419,14 @@ export default function IntakeTerminal({ onInteractionComplete, existingPayload 
         </div>
         <div className="flex items-center gap-4">
           <span className="text-xs text-gray-500 uppercase tracking-widest font-mono">PHASE 1: ALIGNMENT</span>
+          {onSkipToHypothesisReview && (
+            <button
+              onClick={onSkipToHypothesisReview}
+              className="text-[10px] font-mono tracking-widest uppercase bg-indigo-500/20 text-indigo-400 hover:bg-indigo-500/30 border border-indigo-500/50 px-3 py-1.5 rounded transition-colors"
+            >
+              🧪 Skip to Hypothesis Review
+            </button>
+          )}
           <button
             onClick={() => onInteractionComplete({
               intent: 'DEV_TEST_MOCK',
@@ -678,7 +692,7 @@ export default function IntakeTerminal({ onInteractionComplete, existingPayload 
                   className="w-full py-3 bg-teal-500 hover:bg-teal-400 text-black font-semibold rounded-xl transition-colors shadow-[0_0_20px_rgba(20,184,166,0.4)] flex items-center justify-center gap-2"
                 >
                   <Zap size={16} />
-                  Proceed to Synthesis
+                  Proceed to Hypothesis Review
                 </button>
               </motion.div>
             </motion.div>

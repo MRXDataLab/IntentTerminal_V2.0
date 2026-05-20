@@ -90,3 +90,33 @@ def get_force_for_signal(tag: str) -> str | None:
         if tag in force_data["signal_groups"]:
             return force_name
     return None
+
+
+# ---------------------------------------------------------------------------
+# Force slug mapping
+# ---------------------------------------------------------------------------
+# The five Strategic Forces use Title Case keys throughout the codebase
+# (e.g. "Value Elasticity Field"), but downstream JSON artifacts (notably the
+# Hypothesis Manifest) use snake_case slugs as stable identifiers. The mapping
+# below provides bidirectional conversion. Keep `FORCE_SLUGS` in sync with the
+# `FORCES` dict above.
+
+FORCE_SLUGS: dict[str, str] = {
+    "Demand Gravity":               "demand_gravity",
+    "Choice Architecture Pressure": "choice_architecture_pressure",
+    "Value Elasticity Field":       "value_elasticity_field",
+    "Reinforcement Stability":      "reinforcement_stability",
+    "Competitive Energy Field":     "competitive_energy_field",
+}
+
+SLUG_TO_FORCE: dict[str, str] = {slug: label for label, slug in FORCE_SLUGS.items()}
+
+
+def force_label(slug: str) -> str:
+    """Return the Title Case force label for a snake_case slug.
+
+    Falls back to returning the slug unchanged when it is not a known force,
+    so callers using this for human-readable display never crash on unexpected
+    input. Use `SLUG_TO_FORCE` directly when strict lookup is required.
+    """
+    return SLUG_TO_FORCE.get(slug, slug)

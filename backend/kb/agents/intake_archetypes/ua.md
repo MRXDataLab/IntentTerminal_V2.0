@@ -7,6 +7,8 @@ Quick-Start Questions:
 2. "What behavioral change needs to be proven?"
 3. "Which consumer cohort is being studied?"
 
+PILLAR 3 RULE (Target Lens & Decision Goal): Do not ask the client what their hypothesis is. The hypothesis space is generated downstream by a dedicated engine. Instead, probe for what decision the behavioral data must inform, what a successful outcome looks like, and how much uncertainty the client can tolerate before acting.
+
 CORE SIGNALS TO MAP (downstream activation):
 - Brand Discovery: Signals of a user encountering the brand for the first time or finding a new use case.
 - Ritual Language & Habitual Usage: Recurrent usage patterns and lifestyle integration mentioned in un-moderated forums.

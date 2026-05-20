@@ -10,6 +10,7 @@ const ForceGraph3D = dynamic(() => import('react-force-graph-3d'), { ssr: false 
 interface EcosystemMap3DProps {
   intent: string;
   brief?: string;
+  hypothesisManifest?: any;
   onMapComplete: (graphNodes: string[]) => void;
   onBack: () => void;
   hideSidebar?: boolean;
@@ -27,19 +28,23 @@ const FORCE_COLORS: Record<string, string> = {
 };
 
 const NODE_CONFIG: Record<string, { color: string; emissive: string; size: number }> = {
-  root:      { color: '#8b5cf6', emissive: '#a78bfa', size: 8  },
-  subject:   { color: '#0d9488', emissive: '#5eead4', size: 5  },
-  component: { color: '#1e40af', emissive: '#60a5fa', size: 3  },
-  signal:    { color: '#4b5563', emissive: '#6b7280', size: 1.5 },
+  root:              { color: '#8b5cf6', emissive: '#a78bfa', size: 8  },
+  core_problem:      { color: '#a855f7', emissive: '#c084fc', size: 7  },
+  hypothesis_anchor: { color: '#6366f1', emissive: '#818cf8', size: 6  },
+  subject:           { color: '#0d9488', emissive: '#5eead4', size: 5  },
+  component:         { color: '#1e40af', emissive: '#60a5fa', size: 3  },
+  signal:            { color: '#4b5563', emissive: '#6b7280', size: 1.5 },
   context:   { color: '#b45309', emissive: '#fbbf24', size: 3  },
   scope:     { color: '#1e3a5f', emissive: '#38bdf8', size: 2  },
   category:  { color: '#0d9488', emissive: '#5eead4', size: 5  },
 };
 
 const LINK_COLORS: Record<string, string> = {
-  root:      '#a78bfa',
-  subject:   '#5eead4',
-  component: '#60a5fa',
+  root:              '#a78bfa',
+  core_problem:      '#c084fc',
+  hypothesis_anchor: '#818cf8',
+  subject:           '#5eead4',
+  component:         '#60a5fa',
   signal:    '#6b7280',
   context:   '#fbbf24',
   scope:     '#38bdf8',
@@ -101,7 +106,7 @@ function createTextSprite(text: string, color: string, fontSize: number): any {
   return sprite;
 }
 
-export default function EcosystemMap3D({ intent, brief, onMapComplete, onBack, hideSidebar = false, onGraphMetrics, strategicOverlayEnabled, hasPlayed }: EcosystemMap3DProps) {
+export default function EcosystemMap3D({ intent, brief, hypothesisManifest, onMapComplete, onBack, hideSidebar = false, onGraphMetrics, strategicOverlayEnabled, hasPlayed }: EcosystemMap3DProps) {
   const [graphData, setGraphData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [hoveredNode, setHoveredNode] = useState<any>(null);
@@ -161,7 +166,11 @@ export default function EcosystemMap3D({ intent, brief, onMapComplete, onBack, h
         } else if (cached) {
           graphDataObj = JSON.parse(cached);
         } else {
-          const res = await axios.post('http://localhost:8000/api/generate-ecosystem', { intent, brief: brief || undefined });
+          const res = await axios.post('http://localhost:8000/api/generate-ecosystem', { 
+            intent, 
+            brief: brief || undefined,
+            hypothesis_manifest: hypothesisManifest || undefined
+          });
           graphDataObj = res.data.graph;
           sessionStorage.setItem(cacheKey, JSON.stringify(graphDataObj));
         }

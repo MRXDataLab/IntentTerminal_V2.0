@@ -5,7 +5,9 @@ DIAGNOSTIC MODE: SHORT-CIRCUIT. Bypass generic context.
 Quick-Start Questions:
 1. "Which new market or category is being evaluated, and what catalytic signal triggered this?"
 2. "What specific go/no-go decision does this research need to enable?"
-3. "Who is the hypothesized target consumer and what are their unmet needs?"
+3. "Who is the target consumer and what are their unmet needs?"
+
+PILLAR 3 RULE (Target Lens & Decision Goal): Do not ask the client what their hypothesis is. The hypothesis space is generated downstream by a dedicated engine. Instead, probe for what entry decision this scan must inform (go/no-go, timing, positioning), what a successful market entry looks like, and the client's risk tolerance for committing resources.
 
 CORE SIGNALS TO MAP (downstream activation):
 - Information Gaps: High-volume search clusters where users are asking questions but only finding poor-quality forum answers.

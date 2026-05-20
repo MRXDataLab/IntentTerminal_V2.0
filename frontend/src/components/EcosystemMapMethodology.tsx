@@ -14,6 +14,7 @@ interface EcosystemMapMethodologyProps {
   brief?: string;
   pillarExtractions?: Record<string, any> | null;
   template?: string | null;
+  hypothesisManifest?: any;
   onMapComplete: (graphNodes: string[]) => void;
   onBack: () => void;
   hideSidebar?: boolean;
@@ -345,7 +346,7 @@ function RenderingPhase({ phase, confidenceTarget, delay }: { phase: any; confid
 // ─── Main Component ───
 
 export default function EcosystemMapMethodology({
-  intent, brief, pillarExtractions, template,
+  intent, brief, pillarExtractions, template, hypothesisManifest,
   hideSidebar = false, onGraphMetrics
 }: EcosystemMapMethodologyProps) {
   const [loading, setLoading] = useState(true);
@@ -366,6 +367,7 @@ export default function EcosystemMapMethodology({
             brief_text: brief || undefined,
             pillar_extractions: pillarExtractions || undefined,
             template: template && template !== 'none' ? template : undefined,
+            hypothesis_manifest: hypothesisManifest || undefined,
           });
           const data = res.data.methodology;
           sessionStorage.setItem(cacheKey, JSON.stringify(data));

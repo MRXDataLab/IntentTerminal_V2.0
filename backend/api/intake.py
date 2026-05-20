@@ -36,7 +36,7 @@ class ChatResponse(BaseModel):
 DEFAULT_PARAMETERS = [
     "Market Context & Trigger",
     "Strategic Decision & Goal",
-    "Target Lens & Hypothesis",
+    "Target Lens & Decision Goal",
     "Scope & Assets",
     "Competitive Landscape & Constraints"
 ]

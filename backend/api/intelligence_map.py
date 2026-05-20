@@ -9,6 +9,14 @@ Endpoints:
   POST /api/intelligence/convergence/set — Set convergence stage (demo)
   GET  /api/intelligence/intel-balance   — Current Intel Unit balance
   GET  /api/intelligence/export          — Export timeline CSV
+
+Note on node types:
+  ``explicit_hypothesis`` nodes — when a Hypothesis Manifest is supplied via
+  the ``hypothesis_manifest`` request field — are sourced 1:1 from the manifest
+  and preserve hypothesis IDs verbatim (Property 17 cross-stage ID propagation).
+  ``suggested_hypothesis`` nodes are reserved for emergent hypotheses surfaced
+  mid-study from signal anomalies; the full implementation is deferred per
+  Section 18 of UPDATE_HYPOTHESIS_GENERATION.md.
 """
 
 import json
@@ -22,7 +30,7 @@ from pydantic import BaseModel
 from typing import List, Optional, Dict, Any
 
 from services.llm_client import call_openrouter
-from services.force_taxonomy import FORCES, FORCE_COLORS, FORCE_NAMES
+from services.force_taxonomy import FORCES, FORCE_COLORS, FORCE_NAMES, SLUG_TO_FORCE
 from core.intel_manager import get_intel_manager, reset_intel_manager
 from kb.kb_loader import load_kb
 
@@ -45,7 +53,8 @@ def _get_intelligence_insight_prompt() -> str:
 class IntelligenceMapRequest(BaseModel):
     intent: str
     brief: Optional[str] = None
-    manifest: Optional[Dict[str, Any]] = None
+    manifest: Optional[Dict[str, Any]] = None  # Link Farming manifest (existing semantics)
+    hypothesis_manifest: Optional[Dict[str, Any]] = None  # Hypothesis Manifest from the Hypothesis Engine
     graph_nodes: Optional[List[str]] = None
 
 
@@ -65,6 +74,102 @@ class ConvergenceSetRequest(BaseModel):
     stage: int  # 1=25%, 2=50%, 3=75%, 4=100%
 
 
+def _build_explicit_hypothesis_nodes(hypothesis_manifest: Dict[str, Any]) -> List[Dict[str, Any]]:
+    """Pre-compute explicit_hypothesis nodes from the Hypothesis Manifest.
+
+    Builds one Intelligence Map node per hypothesis in the manifest while
+    preserving the manifest hypothesis ID verbatim — this preservation enables
+    the cross-stage ID propagation invariant (Property 17). Force assignment
+    is converted from snake_case slug to the Title Case label used in the rest
+    of the Intelligence Map UI via ``SLUG_TO_FORCE``.
+
+    Note: ``suggested_hypothesis`` nodes are intentionally NOT generated here.
+    They are reserved for emergent hypotheses surfaced from signal anomalies
+    mid-study; the full implementation is deferred per Section 18 of
+    ``UPDATE_HYPOTHESIS_GENERATION.md``.
+    """
+    explicit_nodes: List[Dict[str, Any]] = []
+    core_problems = hypothesis_manifest.get("core_problems") or []
+    for cp in core_problems:
+        for h in cp.get("hypotheses", []) or []:
+            statement = h.get("statement", "") or ""
+            expected_signals = list(h.get("expected_signals") or [])
+            slug = h.get("force_assignment")
+            force_label = SLUG_TO_FORCE.get(slug, slug) if slug else None
+
+            explicit_nodes.append({
+                "id": h["id"],                       # preserved verbatim — Property 17
+                "label": statement[:80],
+                "type": "explicit_hypothesis",
+                "description": h.get("rationale", "") or "",
+                "force": force_label,
+                "dimension": h.get("dimension"),
+                "contrarian_pair_id": h.get("contrarian_pair_id"),
+                "signal_tags": expected_signals,
+                "signal_count": len(expected_signals),
+                "source_hypothesis_id": h["id"],     # explicit traceability field
+            })
+    return explicit_nodes
+
+
+def _force_explicit_hypotheses(
+    topology: Dict[str, Any],
+    explicit_nodes: List[Dict[str, Any]],
+    explicit_ids: Optional[set] = None,
+) -> Dict[str, Any]:
+    """Enforce a 1:1 mapping between manifest hypotheses and topology nodes.
+
+    Pure function — returns a new topology dict without mutating the input.
+
+    Behavior:
+      * Drop any LLM-emitted ``explicit_hypothesis`` node whose ``id`` is NOT
+        present in the manifest's pre-built explicit set (the LLM hallucinated
+        a hypothesis instead of preserving the supplied one).
+      * For any manifest hypothesis ID missing from the LLM topology, force-add
+        the pre-built node from ``explicit_nodes``.
+      * Preserve every other node and every edge intact — including edges that
+        attach to preserved manifest hypotheses.
+
+    ``explicit_ids`` may be passed in for clarity (it is the set of manifest
+    hypothesis IDs); when omitted, it is derived from ``explicit_nodes``.
+    """
+    if explicit_ids is None:
+        explicit_ids = {n["id"] for n in explicit_nodes}
+    incoming_nodes: List[Dict[str, Any]] = list(topology.get("nodes", []) or [])
+
+    # Filter: keep all non-explicit nodes; for explicit_hypothesis, keep only
+    # those whose id matches the manifest set.
+    filtered_nodes: List[Dict[str, Any]] = []
+    seen_explicit_ids: set = set()
+    dropped_ids: List[str] = []
+    for node in incoming_nodes:
+        if node.get("type") == "explicit_hypothesis":
+            node_id = node.get("id")
+            if node_id in explicit_ids:
+                filtered_nodes.append(node)
+                seen_explicit_ids.add(node_id)
+            else:
+                dropped_ids.append(node_id or "<no-id>")
+        else:
+            filtered_nodes.append(node)
+
+    # Force-add any manifest hypothesis the LLM dropped or never emitted.
+    forced_ids: List[str] = []
+    for pre_built in explicit_nodes:
+        if pre_built["id"] not in seen_explicit_ids:
+            filtered_nodes.append(pre_built)
+            forced_ids.append(pre_built["id"])
+
+    if dropped_ids:
+        print(f"[intelligence_map] LLM emitted explicit_hypothesis nodes outside the manifest; dropped: {dropped_ids}")
+    if forced_ids:
+        print(f"[intelligence_map] LLM omitted manifest hypotheses; force-added: {forced_ids}")
+
+    new_topology = dict(topology)
+    new_topology["nodes"] = filtered_nodes
+    return new_topology
+
+
 @router.post("/intelligence/generate")
 def generate_intelligence_map(request: IntelligenceMapRequest):
     global _map_state, _convergence_stage, _insights_log
@@ -82,6 +187,32 @@ def generate_intelligence_map(request: IntelligenceMapRequest):
             f"\n\nGenerate the Intelligence Map topology. Include 3-5 explicit hypotheses from the brief "
             f"and exactly 5 suggested hypotheses the AI discovers. Each hypothesis needs insight branches and signal clusters."
         )
+
+        # ----------------------------------------------------------------
+        # Hypothesis Manifest consumption (Requirements 16.1 – 16.6)
+        # ----------------------------------------------------------------
+        # When a Hypothesis Manifest is supplied, pre-compute the
+        # explicit_hypothesis nodes from it and inject them into the LLM
+        # prompt with an explicit "DO NOT REGENERATE" sentinel so the LLM
+        # preserves them verbatim. After the LLM returns we post-process
+        # the topology to enforce a strict 1:1 mapping between manifest
+        # hypotheses and explicit_hypothesis nodes.
+        explicit_hypothesis_nodes: List[Dict[str, Any]] = []
+        explicit_hypothesis_ids: set = set()
+        if request.hypothesis_manifest and (request.hypothesis_manifest.get("core_problems")):
+            explicit_hypothesis_nodes = _build_explicit_hypothesis_nodes(request.hypothesis_manifest)
+            explicit_hypothesis_ids = {n["id"] for n in explicit_hypothesis_nodes}
+
+            user_prompt += (
+                "\n\n=== PRE-LOADED EXPLICIT HYPOTHESES (DO NOT REGENERATE) ===\n"
+                "CRITICAL: The hypotheses listed below come from a pre-generated Hypothesis Manifest.\n"
+                "You MUST preserve them in the topology with their exact IDs (h_001, h_002, ...).\n"
+                "Do NOT generate alternative explicit_hypothesis nodes. You MAY generate suggested_hypothesis nodes\n"
+                "for emergent patterns, but every explicit_hypothesis MUST come from this list verbatim.\n"
+                "\n```json\n"
+                + json.dumps(explicit_hypothesis_nodes, indent=1)[:5000]
+                + "\n```\n=== END PRE-LOADED HYPOTHESES ==="
+            )
 
         topology = call_openrouter(
             system_prompt=_get_intelligence_map_prompt(),
@@ -104,6 +235,24 @@ def generate_intelligence_map(request: IntelligenceMapRequest):
             node.setdefault("sample_quote", None)
             node.setdefault("suggested_action", None)
             node.setdefault("label", node.get("id", "Unknown"))
+
+        # When a Hypothesis Manifest was supplied, enforce 1:1 mapping
+        # between manifest hypotheses and explicit_hypothesis nodes.
+        if explicit_hypothesis_nodes:
+            topology = _force_explicit_hypotheses(topology, explicit_hypothesis_nodes)
+            # Re-normalize any newly force-added nodes (defaults for fields
+            # the manifest builder doesn't populate).
+            for node in topology.get("nodes", []):
+                node.setdefault("description", "")
+                node.setdefault("force", None)
+                node.setdefault("confirmation_status", None)
+                node.setdefault("intel_cost", None)
+                node.setdefault("signal_tags", [])
+                node.setdefault("signal_count", 0)
+                node.setdefault("platform", None)
+                node.setdefault("sample_quote", None)
+                node.setdefault("suggested_action", None)
+                node.setdefault("label", node.get("id", "Unknown"))
 
         # Build links for force-graph compatibility
         topology["links"] = topology.get("edges", [])

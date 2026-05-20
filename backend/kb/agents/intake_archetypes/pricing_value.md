@@ -7,6 +7,8 @@ Quick-Start Questions:
 2. "Which competitor is perceived as overpriced or underpriced relative to yours?"
 3. "What specific feature or benefit do customers debate most when justifying the price?"
 
+PILLAR 3 RULE (Target Lens & Decision Goal): Do not ask the client what their hypothesis is. The hypothesis space is generated downstream by a dedicated engine. Instead, probe for what pricing decision this study must inform (raise, hold, restructure tiers), what value-justified pricing looks like for the client, and the client's risk tolerance for price-driven churn.
+
 CORE SIGNALS TO MAP (downstream activation):
 - Competitor Value Criticism: Asserting the rival is overpriced (e.g., "The competitor is charging double for basically the same features.").
 - Price Sensitivity Sentiment: The outrage velocity related to price hikes or hidden fees.

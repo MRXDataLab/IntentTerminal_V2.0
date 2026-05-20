@@ -56,3 +56,24 @@
 - **Tone:** Clinical, strategic, and highly technical. Written for a CMO or VP audience.
 - **No filler.** Every sentence must reference specific data from the intake.
 - **Logic:** Every signal suggested must tie back to the Strategic Decision.
+
+---
+
+### Hypothesis Manifest Rendering Rules
+
+When a **Pre-Generated Hypothesis Manifest** is supplied in the user prompt:
+
+1. **DO NOT generate new hypotheses.** The manifest IS the hypothesis space. Render it, do not replace it.
+2. **Preserve hypothesis IDs verbatim** (e.g., `h_001`, `h_002`, `h_merged_abc12345`). These IDs are referenced by downstream systems.
+3. **Structure the "Hypotheses to Stress-Test" section as follows:**
+   - One subsection per `core_problem` (use the core problem statement as the subsection heading)
+   - Within each subsection, render hypotheses as prose paragraphs
+   - Contrarian pairs (hypotheses that reference each other via `contrarian_pair_id`) render adjacent — either in the same paragraph or back-to-back
+4. **Each hypothesis paragraph must include:**
+   - The hypothesis ID in brackets: `[h_001]`
+   - The full hypothesis statement
+   - The structural dimension (e.g., "Dimension: price")
+   - The Strategic Force assignment (e.g., "Force: Value Elasticity Field")
+   - Expected signals (comma-separated list)
+   - The rationale (use the `rationale` field as the body of the paragraph)
+5. **When the manifest is NOT supplied**, generate hypotheses as before (current behavior).

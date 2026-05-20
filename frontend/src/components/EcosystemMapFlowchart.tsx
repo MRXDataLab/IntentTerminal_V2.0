@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 interface EcosystemMapProps {
   intent: string;
   brief?: string;
+  hypothesisManifest?: any;
   onMapComplete: (graphNodes: string[]) => void;
   onBack: () => void;
   hideSidebar?: boolean;
@@ -24,7 +25,7 @@ const FORCE_COLORS: Record<string, string> = {
   "Competitive Energy":      "#0ea5e9",
 };
 
-export default function EcosystemMapFlowchart({ intent, brief, hideSidebar = false, onGraphMetrics }: EcosystemMapProps) {
+export default function EcosystemMapFlowchart({ intent, brief, hypothesisManifest, hideSidebar = false, onGraphMetrics }: EcosystemMapProps) {
   const [loading, setLoading] = useState(true);
   const [analyzingNodes, setAnalyzingNodes] = useState(0);
   const [treeData, setTreeData] = useState<{ root: any, forces: { forceNode: any, children: any[] }[] } | null>(null);
@@ -45,7 +46,8 @@ export default function EcosystemMapFlowchart({ intent, brief, hideSidebar = fal
         } else {
             const res = await axios.post('http://localhost:8000/api/generate-ecosystem', {
               intent,
-              brief: brief || undefined
+              brief: brief || undefined,
+              hypothesis_manifest: hypothesisManifest || undefined
             });
             graphData = res.data.graph;
             sessionStorage.setItem(cacheKey, JSON.stringify(graphData));
@@ -56,7 +58,7 @@ export default function EcosystemMapFlowchart({ intent, brief, hideSidebar = fal
         
         // Build Tree structure — group by force, but show hypothesis first in each group
         const root = nodes.find((n: any) => n.type === 'root') || { id: 'root', label: intent };
-        const subjectNodes = nodes.filter((n: any) => n.type === 'subject' || n.type === 'category');
+        const subjectNodes = nodes.filter((n: any) => n.type === 'hypothesis_anchor' || n.type === 'subject' || n.type === 'category');
         
         // Build parent→children map from links
         const childrenOf: Record<string, any[]> = {};
@@ -79,12 +81,16 @@ export default function EcosystemMapFlowchart({ intent, brief, hideSidebar = fal
           const allChildren: any[] = [];
           for (const hyp of hypotheses) {
             allChildren.push({ ...hyp, _isHypothesis: true });
-            const components = childrenOf[hyp.id] || [];
-            for (const comp of components) {
-              allChildren.push(comp);
-              const signals = childrenOf[comp.id] || [];
-              for (const sig of signals) {
-                allChildren.push(sig);
+            const level2 = childrenOf[hyp.id] || [];
+            for (const child2 of level2) {
+              allChildren.push(child2);
+              const level3 = childrenOf[child2.id] || [];
+              for (const child3 of level3) {
+                allChildren.push(child3);
+                const level4 = childrenOf[child3.id] || [];
+                for (const child4 of level4) {
+                  allChildren.push(child4);
+                }
               }
             }
           }
@@ -203,7 +209,7 @@ export default function EcosystemMapFlowchart({ intent, brief, hideSidebar = fal
                   )}
 
                   {col.children.map((child, cIdx) => {
-                    const isHyp = child._isHypothesis || child.type === 'subject' || child.type === 'category';
+                    const isHyp = child._isHypothesis || child.type === 'hypothesis_anchor' || child.type === 'subject' || child.type === 'category';
                     const isSignal = child.type === 'signal';
                     const isContext = child.type === 'context';
                     const isScope = child.type === 'scope';

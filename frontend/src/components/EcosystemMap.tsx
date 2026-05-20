@@ -11,6 +11,7 @@ const ForceGraph2D = dynamic(() => import('react-force-graph-2d'), { ssr: false 
 interface EcosystemMapProps {
   intent: string;
   brief?: string;
+  hypothesisManifest?: any;
   onMapComplete: (graphNodes: string[]) => void;
   onBack: () => void;
   hideSidebar?: boolean;
@@ -28,19 +29,23 @@ const FORCE_COLORS: Record<string, string> = {
 };
 
 const NODE_STYLES: Record<string, { fill: string; border: string; size: number; shape: string; fontWeight: number; fontSize: number; opacity: number }> = {
-  root:      { fill: '#6d28d9', border: '#a78bfa', size: 20, shape: 'circle',   fontWeight: 700, fontSize: 12, opacity: 1.0 },
-  subject:   { fill: '#0d9488', border: '#5eead4', size: 14, shape: 'circle',   fontWeight: 600, fontSize: 10, opacity: 1.0 },
-  component: { fill: '#1e40af', border: '#60a5fa', size: 8,  shape: 'circle',   fontWeight: 500, fontSize: 8,  opacity: 0.85 },
-  signal:    { fill: '#374151', border: '#6b7280', size: 4,  shape: 'circle',   fontWeight: 400, fontSize: 7,  opacity: 0.45 },
+  root:              { fill: '#6d28d9', border: '#a78bfa', size: 20, shape: 'circle',   fontWeight: 700, fontSize: 12, opacity: 1.0 },
+  core_problem:      { fill: '#a855f7', border: '#c084fc', size: 18, shape: 'circle',   fontWeight: 600, fontSize: 11, opacity: 1.0 },
+  hypothesis_anchor: { fill: '#6366f1', border: '#818cf8', size: 16, shape: 'circle',   fontWeight: 600, fontSize: 10, opacity: 1.0 },
+  subject:           { fill: '#0d9488', border: '#5eead4', size: 12, shape: 'circle',   fontWeight: 600, fontSize: 10, opacity: 1.0 },
+  component:         { fill: '#1e40af', border: '#60a5fa', size: 8,  shape: 'circle',   fontWeight: 500, fontSize: 8,  opacity: 0.85 },
+  signal:            { fill: '#374151', border: '#6b7280', size: 4,  shape: 'circle',   fontWeight: 400, fontSize: 7,  opacity: 0.45 },
   context:   { fill: '#b45309', border: '#fbbf24', size: 8,  shape: 'diamond',  fontWeight: 500, fontSize: 8,  opacity: 0.9 },
   scope:     { fill: '#1e3a5f', border: '#38bdf8', size: 6,  shape: 'square',   fontWeight: 400, fontSize: 7,  opacity: 0.55 },
   category:  { fill: '#0d9488', border: '#5eead4', size: 14, shape: 'circle',   fontWeight: 600, fontSize: 10, opacity: 1.0 },
 };
 
 const EDGE_COLORS: Record<string, string> = {
-  root:      '#a78bfa40',
-  subject:   '#5eead450',
-  component: '#60a5fa40',
+  root:              '#a78bfa40',
+  core_problem:      '#c084fc40',
+  hypothesis_anchor: '#818cf840',
+  subject:           '#5eead450',
+  component:         '#60a5fa40',
   signal:    '#9ca3af30',
   context:   '#fbbf2440',
   scope:     '#38bdf840',
@@ -70,7 +75,7 @@ function getDescendantIds(subjectId: string, links: any[]): Set<string> {
   return ids;
 }
 
-export default function EcosystemMap({ intent, brief, onMapComplete, onBack, hideSidebar = false, onGraphMetrics, strategicOverlayEnabled }: EcosystemMapProps) {
+export default function EcosystemMap({ intent, brief, hypothesisManifest, onMapComplete, onBack, hideSidebar = false, onGraphMetrics, strategicOverlayEnabled }: EcosystemMapProps) {
   const [graphData, setGraphData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [ecosystemNodeNames, setEcosystemNodeNames] = useState<string[]>([]);
@@ -135,7 +140,11 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack, hid
         } else if (cached) {
           graphDataObj = JSON.parse(cached);
         } else {
-          const res = await axios.post('http://localhost:8000/api/generate-ecosystem', { intent, brief: brief || undefined });
+          const res = await axios.post('http://localhost:8000/api/generate-ecosystem', { 
+            intent, 
+            brief: brief || undefined,
+            hypothesis_manifest: hypothesisManifest || undefined
+          });
           graphDataObj = res.data.graph;
           sessionStorage.setItem(cacheKey, JSON.stringify(graphDataObj));
         }
@@ -409,9 +418,10 @@ export default function EcosystemMap({ intent, brief, onMapComplete, onBack, hid
                   <h4 className="text-[9px] text-gray-500 uppercase tracking-widest font-mono mb-2">Node Types</h4>
                   <div className="space-y-1.5">
                     {[
-                      { type: 'root', label: 'Core Problem' },
-                      { type: 'subject', label: 'Hypothesis' },
-                      { type: 'component', label: 'Sub-topic' },
+                      { type: 'root', label: 'Research Intent' },
+                      { type: 'core_problem', label: 'Core Problem' },
+                      { type: 'hypothesis_anchor', label: 'Hypothesis' },
+                      { type: 'subject', label: 'Sub-topic Cluster' },
                       { type: 'signal', label: 'Signal / Keyword' },
                       { type: 'context', label: 'Rival / Trigger' },
                       { type: 'scope', label: 'Scope Boundary' },

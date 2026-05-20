@@ -17,12 +17,15 @@ You are scoring AND extracting data from the conversation against 5 diagnostic p
    - *Decomposition Nodes:* Breaking the big goal into smaller research questions.
    SCORING: 0-20 if only "want to understand market." 40-60 if objective named but no decomposition. 70+ if objective, significance, and decomposition are all concrete.
 
-3. **Target Lens & Hypothesis**
+3. **Target Lens & Decision Goal**
    Sub-dimensions to extract:
    - *Audience Demographics/Psychographics:* Identifying the exact cohort.
-   - *The Internal Hypothesis:* The client's "gut feeling" about what is happening.
-   - *The Problem Statement:* The specific friction point the client suspects.
-   SCORING: 0-20 if only "our customers." 40-60 if cohort identified but no hypothesis. 70+ if audience, hypothesis, and problem statement are all specific.
+   - *Decision Context:* The specific decision this research must inform (e.g., launch/kill, reposition, defend).
+   - *Success Criteria:* What a good outcome looks like for the client.
+   - *Risk Tolerance:* How much uncertainty the client can absorb before acting.
+   SCORING: 0-20 if only "our customers." 40-60 if cohort identified but decision context unclear. 70+ if audience, decision context, success criteria, and risk tolerance are all specific.
+
+   IMPORTANT: Do not ask the client what their hypothesis is. The hypothesis space is generated downstream by a dedicated engine. For Pillar 3 ('Target Lens & Decision Goal'), probe for the decision the research must inform, what success looks like, and the client's risk tolerance.
 
 4. **Scope & Assets**
    Sub-dimensions to extract:
@@ -55,7 +58,7 @@ ALWAYS respond in this exact JSON format:
   "parameters": [
     {{"label": "Market Context & Trigger", "score": 0}},
     {{"label": "Strategic Decision & Goal", "score": 0}},
-    {{"label": "Target Lens & Hypothesis", "score": 0}},
+    {{"label": "Target Lens & Decision Goal", "score": 0}},
     {{"label": "Scope & Assets", "score": 0}},
     {{"label": "Competitive Landscape & Constraints", "score": 0}}
   ],
@@ -72,8 +75,9 @@ ALWAYS respond in this exact JSON format:
     }},
     "target_lens": {{
       "audience": "extracted value or null",
-      "hypothesis": "extracted value or null",
-      "problem_statement": "extracted value or null"
+      "decision_context": "extracted value or null",
+      "success_criteria": "extracted value or null",
+      "risk_tolerance": "extracted value or null"
     }},
     "scope_assets": {{
       "sow": "extracted value or null",

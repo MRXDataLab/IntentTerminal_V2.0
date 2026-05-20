@@ -25,6 +25,62 @@ class ManifestRequest(BaseModel):
     brief_text: str
     pillar_extractions: Optional[Dict[str, Any]] = None
     template: Optional[str] = None
+    hypothesis_manifest: Optional[Dict[str, Any]] = None
+
+
+# ──────────────────────────────────────────────────────────────────────────────
+# DIMENSION → PLATFORM ROUTING
+# Maps each of the 10 structural dimensions to target platform lists for
+# hypothesis-driven search-net seeding.
+# ──────────────────────────────────────────────────────────────────────────────
+
+DIMENSION_PLATFORMS: Dict[str, List[str]] = {
+    "price": ["Amazon reviews", "deal forums", "PriceSpy", "price comparison sites"],
+    "product": ["product review sites", "YouTube reviews", "Reddit r/BuyItForLife"],
+    "brand_perception": ["Twitter/X brand mentions", "Trustpilot", "Reddit brand subs"],
+    "distribution": ["Glassdoor", "trade publications", "logistics forums"],
+    "cultural_identity": ["TikTok", "Reddit cultural subs", "Instagram"],
+    "regulatory": ["government portals", "industry compliance blogs", "legal forums"],
+    "demographic_shift": ["census data portals", "generational research blogs", "Reddit demographics"],
+    "competitive_shift": ["competitor blog feeds", "press releases", "Crunchbase"],
+    "situational_context": ["Google Trends", "seasonal forums", "event-based communities"],
+    "identity_expression": ["fashion forums", "lifestyle blogs", "Pinterest", "TikTok"],
+}
+
+
+def _build_hypothesis_block(manifest: Dict[str, Any]) -> str:
+    """
+    Translate hypothesis manifest into a prompt-ready block of search nets.
+
+    Iterates through core_problems → hypotheses, building a search-net entry
+    for each hypothesis containing:
+      - source_hypothesis_id (for cross-stage ID propagation)
+      - search_signals (from expected_signals)
+      - target_platforms (from DIMENSION_PLATFORMS lookup)
+      - dimension
+      - statement (for LLM context)
+    """
+    search_nets = []
+    for cp in manifest.get("core_problems", []):
+        for hypothesis in cp.get("hypotheses", []):
+            dimension = hypothesis.get("dimension", "")
+            search_net = {
+                "source_hypothesis_id": hypothesis.get("id", ""),
+                "search_signals": hypothesis.get("expected_signals", []),
+                "target_platforms": DIMENSION_PLATFORMS.get(dimension, []),
+                "dimension": dimension,
+                "statement": hypothesis.get("statement", ""),
+            }
+            search_nets.append(search_net)
+
+    block = (
+        "\n\n### Hypothesis-Driven Search Nets (from Hypothesis Manifest)\n"
+        "CRITICAL: Use these hypothesis-derived search nets to seed the Link Farming Manifest.\n"
+        "Each search net carries a `source_hypothesis_id` — preserve this ID in the output manifest\n"
+        "so downstream systems can trace which hypothesis generated which search net.\n"
+        f"\n```json\n{json.dumps(search_nets, indent=2)}\n```"
+    )
+    return block
 
 
 class ManifestResponse(BaseModel):
@@ -57,6 +113,10 @@ def generate_link_farming_manifest(request: ManifestRequest):
 Now generate the Link Farming Manifest JSON payload based on the above context.
 Extract all specific entity names, geographic data, timelines, competitors, and hypotheses from the data provided.
 """
+
+        # Append hypothesis-driven search nets if manifest is provided
+        if request.hypothesis_manifest:
+            user_prompt += _build_hypothesis_block(request.hypothesis_manifest)
 
         manifest_data = call_openrouter(
             system_prompt=_get_manifest_system_prompt(),

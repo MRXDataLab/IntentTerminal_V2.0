@@ -13,6 +13,7 @@ export default function SynthesisReview({
   interactionPayload, 
   briefText, 
   manifestData, 
+  hypothesisManifest,
   onBack, 
   onConfirm, 
   onReject, 
@@ -225,6 +226,7 @@ export default function SynthesisReview({
               <EcosystemMap
                 intent={interactionPayload.intent}
                 brief={briefText || undefined}
+                hypothesisManifest={hypothesisManifest}
                 onMapComplete={() => {}} 
                 onBack={() => {}} 
                 hideSidebar={true}
@@ -236,6 +238,7 @@ export default function SynthesisReview({
               <EcosystemMap3D
                 intent={interactionPayload.intent}
                 brief={briefText || undefined}
+                hypothesisManifest={hypothesisManifest}
                 onMapComplete={() => {}}
                 onBack={() => {}}
                 hideSidebar={true}
@@ -247,6 +250,7 @@ export default function SynthesisReview({
               <EcosystemMapFlowchart
                 intent={interactionPayload.intent}
                 brief={briefText || undefined}
+                hypothesisManifest={hypothesisManifest}
                 onMapComplete={() => {}} 
                 onBack={() => {}} 
                 hideSidebar={true}
@@ -258,6 +262,7 @@ export default function SynthesisReview({
               <EcosystemMapMethodology
                 intent={interactionPayload.intent}
                 brief={briefText || undefined}
+                hypothesisManifest={hypothesisManifest}
                 pillarExtractions={interactionPayload.pillarExtractions}
                 template={interactionPayload.template}
                 onMapComplete={() => {}}

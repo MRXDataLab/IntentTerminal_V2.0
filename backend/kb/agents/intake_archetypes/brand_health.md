@@ -7,6 +7,8 @@ Quick-Start Questions:
 2. "What was the specific 'Moment of Doubt' or sales data point that triggered this?"
 3. "Which region or product SKU is under the most pressure?"
 
+PILLAR 3 RULE (Target Lens & Decision Goal): Do not ask the client what their hypothesis is. The hypothesis space is generated downstream by a dedicated engine. Instead, probe for what brand decision this health audit must inform, what recovery or growth looks like, and the client's appetite for risk in responding.
+
 CORE SIGNALS TO MAP (downstream activation):
 - Brand Salience & Recall Language: Frequency and ease of unprompted brand recall (e.g., "Which one was the one with the blue logo? Oh right, [Brand].").
 - Category Salience: The strength of the brand-category association (e.g., "If you want an EV, you naturally think of this brand first.").

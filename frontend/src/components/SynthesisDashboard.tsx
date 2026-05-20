@@ -7,6 +7,7 @@ import { Zap, FileText, Activity, Network, CheckCircle2, XCircle, ArrowLeft, Mes
 import EcosystemMap from './EcosystemMap';
 import IntelligenceMap from './IntelligenceMap';
 import type { InteractionPayload } from '@/app/page';
+import type { HypothesisManifest } from '@/types/hypothesis';
 import SynthesisReview from './SynthesisReview';
 import DiscoveryTerminal from './DiscoveryTerminal';
 import ExtractionDashboard from './ExtractionDashboard';
@@ -15,12 +16,19 @@ type SynthesisStep = 'generating' | 'review' | 'discovery' | 'extraction_dashboa
 
 interface SynthesisDashboardProps {
   interactionPayload: InteractionPayload;
+  /**
+   * Hypothesis Manifest produced by the Hypothesis Engine. Optional today —
+   * downstream API-call wiring is completed in Sprint 3 task 10.1. Accepting
+   * the prop now keeps `page.tsx` type-safe while the wiring lands.
+   */
+  hypothesisManifest?: HypothesisManifest | null;
   onComplete: (manifest: Record<string, any>) => void;
   onRejected: (rejectionContext?: string) => void;
   onBack: (resolvedIntent?: string) => void;
 }
 
-export default function SynthesisDashboard({ interactionPayload, onComplete, onRejected, onBack }: SynthesisDashboardProps) {
+export default function SynthesisDashboard({ interactionPayload, hypothesisManifest, onComplete, onRejected, onBack }: SynthesisDashboardProps) {
+
   const [step, setStep] = useState<SynthesisStep>('generating');
   const [briefText, setBriefText] = useState<string | null>(null);
   const [manifestData, setManifestData] = useState<Record<string, any> | null>(null);
@@ -40,28 +48,19 @@ export default function SynthesisDashboard({ interactionPayload, onComplete, onR
 
     const generate = async () => {
       try {
-        if (interactionPayload.intent === 'DEV_TEST_MOCK') {
-          setGenProgress('DEV BYPASS: Fetching latest recorded run...');
-          const bypassRes = await axios.get('http://localhost:8000/api/latest-run');
-          const { intent, brief, manifest } = bypassRes.data;
-
-          setResolvedIntent(intent);
-          setBriefText(brief);
-          setManifestData(manifest);
-
-          setGenProgress('DEV BYPASS: Ready.');
-          setTimeout(() => setStep('review'), 400);
-          return;
-        }
+        // Resolve real intent from manifest if we used the dev bypass earlier
+        const realIntent = hypothesisManifest?.intent || interactionPayload.intent;
+        setResolvedIntent(realIntent);
 
         // Step 1: Generate Strategic Brief
         setGenProgress('Generating Strategic Research Brief...');
         const briefRes = await axios.post('http://localhost:8000/api/generate-brief', {
-          research_intent: interactionPayload.intent,
+          research_intent: realIntent,
           parameters: interactionPayload.parameters,
           pillar_extractions: interactionPayload.pillarExtractions || undefined,
           context_document: interactionPayload.contextDocument || undefined,
           template: interactionPayload.template && interactionPayload.template !== 'none' ? interactionPayload.template : undefined,
+          hypothesis_manifest: hypothesisManifest || undefined,
         });
         setBriefText(briefRes.data.brief);
 
@@ -69,10 +68,11 @@ export default function SynthesisDashboard({ interactionPayload, onComplete, onR
         setGenProgress('Building Link Farming Manifest...');
         try {
           const manifestRes = await axios.post('http://localhost:8000/api/generate-manifest', {
-            research_intent: interactionPayload.intent,
+            research_intent: realIntent,
             brief_text: briefRes.data.brief,
             pillar_extractions: interactionPayload.pillarExtractions || undefined,
             template: interactionPayload.template && interactionPayload.template !== 'none' ? interactionPayload.template : undefined,
+            hypothesis_manifest: hypothesisManifest || undefined,
           });
           setManifestData(manifestRes.data.manifest);
         } catch (manifestErr: any) {
@@ -265,6 +265,7 @@ export default function SynthesisDashboard({ interactionPayload, onComplete, onR
         interactionPayload={{ ...interactionPayload, intent: resolvedIntent }}
         briefText={briefText}
         manifestData={manifestData}
+        hypothesisManifest={hypothesisManifest}
         onBack={() => onBack(resolvedIntent)}
         onConfirm={handleMethodologyConfirmed}
         onReject={onRejected}
