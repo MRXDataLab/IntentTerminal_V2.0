@@ -120,10 +120,12 @@ def _run_job(job_id: str, engine: str, manifest: Dict, intent: str, graph_nodes:
                 })
 
             try:
-                triage_prompt = f"""You are the Outllyr Triage Assistant. Score these {len(triage_batch)} search results for a study on: "{intent}"
+                from concurrent.futures import ThreadPoolExecutor, as_completed
+                
+                triage_prompt_template = """You are the Outllyr Triage Assistant. Score these search results for a study on: "{intent}"
 
 For each result, output a JSON array with:
-- "index": the position (0-based)
+- "index": the exact position provided
 - "relevance_score": 0-100 (how relevant to the research intent)
 - "summary": 1-sentence summary
 - "signal_tags": top 2 predicted signal tags
@@ -131,14 +133,26 @@ For each result, output a JSON array with:
 
 Return ONLY the JSON array."""
 
-                triage_result = call_openrouter(
-                    system_prompt="You are a search result relevance scorer for market research.",
-                    user_prompt=triage_prompt + "\n\nResults:\n" + json.dumps(triage_batch[:50], indent=1),
-                    expect_json=True,
-                )
+                def _score_chunk(chunk):
+                    chunk_result = call_openrouter(
+                        system_prompt="You are a search result relevance scorer for market research.",
+                        user_prompt=triage_prompt_template + "\n\nResults:\n" + json.dumps(chunk, indent=1),
+                        expect_json=True,
+                    )
+                    return chunk_result if isinstance(chunk_result, list) else chunk_result.get("results", [])
+
+                chunks = [triage_batch[i:i + 10] for i in range(0, min(100, len(triage_batch)), 10)]
+                scored_items = []
+
+                with ThreadPoolExecutor(max_workers=5) as executor:
+                    futures = [executor.submit(_score_chunk, chunk) for chunk in chunks]
+                    for future in as_completed(futures):
+                        try:
+                            scored_items.extend(future.result())
+                        except Exception as e:
+                            print(f"[Discovery] Error scoring chunk: {e}")
 
                 # Merge scores back
-                scored_items = triage_result if isinstance(triage_result, list) else triage_result.get("results", [])
                 for item in scored_items:
                     idx = item.get("index", -1)
                     if 0 <= idx < len(raw_results):

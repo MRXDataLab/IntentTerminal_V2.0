@@ -66,6 +66,39 @@ VALID_FORCES: set[str] = {
 VALID_PRIORITIES: set[str] = {"high", "medium", "low"}
 VALID_GEN_SOURCES: set[str] = {"context_aware", "naive", "contrarian_pair"}
 
+HYPOTHESIS_SCHEMA = {
+    "type": "OBJECT",
+    "properties": {
+        "dimensions_covered": {
+            "type": "ARRAY",
+            "items": {"type": "STRING"}
+        },
+        "hypotheses": {
+            "type": "ARRAY",
+            "items": {
+                "type": "OBJECT",
+                "properties": {
+                    "statement": {"type": "STRING"},
+                    "dimension": {"type": "STRING"},
+                    "force_assignment": {"type": "STRING"},
+                    "mece_cluster_id": {"type": "STRING"},
+                    "expected_signals": {"type": "ARRAY", "items": {"type": "STRING"}},
+                    "expected_counter_signals": {"type": "ARRAY", "items": {"type": "STRING"}},
+                    "contrarian_pair_id": {"type": "STRING", "nullable": True},
+                    "investigation_priority": {"type": "STRING"},
+                    "generation_source": {"type": "STRING"},
+                    "rationale": {"type": "STRING"}
+                },
+                "required": [
+                    "statement", "dimension", "force_assignment", "mece_cluster_id", 
+                    "expected_signals", "expected_counter_signals", "investigation_priority", 
+                    "generation_source", "rationale"
+                ]
+            }
+        }
+    },
+    "required": ["dimensions_covered", "hypotheses"]
+}
 
 # ─── Literal type aliases ───────────────────────────────────────────────────
 
@@ -239,6 +272,7 @@ def _safe_call_llm(
     user_prompt: str,
     *,
     expect_json: bool = True,
+    response_schema: Optional[Dict[str, Any]] = None,
     chat_history: Optional[List[Dict[str, str]]] = None,
 ) -> Any:
     """Call ``call_openrouter`` and convert exhausted rate limits into
@@ -255,6 +289,7 @@ def _safe_call_llm(
             user_prompt=user_prompt,
             chat_history=chat_history,
             expect_json=expect_json,
+            response_schema=response_schema,
         )
     except Exception as exc:  # noqa: BLE001 — provider-level errors are opaque
         msg = str(exc)
@@ -413,9 +448,22 @@ def _generate_for_problem(
                 "..." if len(context_document) > 3000 else ""
             )
             context_block = f"\n\n### Uploaded Context\n```\n{truncated}\n```"
+        grounding_instruction = ""
+        if pillar_extractions:
+            grounding_instruction = (
+                "\n\nCRITICAL GROUNDING RULE: The Pillar Extractions above contain "
+                "specific business facts gathered during the intake conversation — "
+                "competitor names, product lines, audience segments, timelines, "
+                "metrics, and constraints. You MUST ground your hypotheses in this "
+                "specific data. For example, if the extractions mention 'Mohan Cornflakes' "
+                "as a visible rival, your competitive hypotheses must reference Mohan Cornflakes "
+                "by name, not 'local competitors.' If the extractions specify 'Gen-Z urban consumers,' "
+                "your demographic hypotheses must target Gen-Z urban consumers, not 'younger audiences.' "
+                "Generic hypotheses that ignore the extraction data will be rejected."
+            )
         user_prompt += (
             f"\n## Research Intent\n{intent}"
-            f"{template_block}{extractions_block}{context_block}"
+            f"{template_block}{extractions_block}{context_block}{grounding_instruction}"
         )
     else:
         user_prompt += (
@@ -431,6 +479,7 @@ def _generate_for_problem(
         system_prompt=system_prompt,
         user_prompt=user_prompt,
         expect_json=True,
+        response_schema=HYPOTHESIS_SCHEMA,
         chat_history=chat_history,
     )
 
@@ -1035,33 +1084,19 @@ def generate_hypothesis_manifest(
 
         def _process_single_problem(cp: Dict[str, Any]) -> Dict[str, Any]:
             """Generate hypotheses for one core problem (runs in a thread)."""
-            ctx_result = _generate_for_problem(
-                core_problem=cp,
-                mode="context_aware",
-                intent=intent,
-                pillar_extractions=pillar_extractions,
-                context_document=context_document,
-                template=template,
-                chat_history=chat_history,
-            )
-
-            ctx_hyp_count = len(ctx_result.get("hypotheses", []) or [])
-            did_naive = False
-            if ctx_hyp_count < 6:
-                naive_result = _generate_for_problem(
-                    core_problem=cp,
-                    mode="naive",
-                    intent=intent,
-                    pillar_extractions=None,
-                    context_document=None,
-                    template=None,
-                    chat_history=None,
+            with ThreadPoolExecutor(max_workers=2) as inner_exec:
+                fut_ctx = inner_exec.submit(
+                    _generate_for_problem, cp, "context_aware", intent, pillar_extractions, context_document, template, chat_history
                 )
-                did_naive = True
-                merged = _merge_passes(ctx_result, naive_result)
-            else:
-                merged = ctx_result
-                merged.setdefault("dimensions_covered", [])
+                fut_naive = inner_exec.submit(
+                    _generate_for_problem, cp, "naive", intent, None, None, None, None
+                )
+                
+                ctx_result = fut_ctx.result()
+                naive_result = fut_naive.result()
+
+            merged = _merge_passes(ctx_result, naive_result)
+            merged.setdefault("dimensions_covered", [])
 
             for h in merged.get("hypotheses", []):
                 h["_cp_id"] = cp["id"]
@@ -1069,7 +1104,7 @@ def generate_hypothesis_manifest(
             return {
                 "hypotheses": merged.get("hypotheses", []),
                 "dimensions": merged.get("dimensions_covered", []),
-                "did_naive": did_naive,
+                "did_naive": True,
             }
 
         # Fire all core problems in parallel (max 4 threads to respect API limits)

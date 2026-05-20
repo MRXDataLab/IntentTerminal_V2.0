@@ -82,14 +82,18 @@ def build_system_prompt(template: str | None = None, current_scores: List[Parame
     context_block = ""
     if context_document:
         truncated_context = context_document[:4000] + ("...\n[TRUNCATED FOR LENGTH]" if len(context_document) > 4000 else "")
-        context_block = f"""\n\n### UPLOADED RESEARCH CONTEXT
-The user has supplied the following background document/brief:
-```
-{truncated_context}
-```
-CRITICAL: You MUST parse this document immediately. Extract all relevant sub-dimension data into pillar_extractions.
-Respond in this style: "I've ingested your brief. It's X% complete. I need to clarify [specific sub-dimensions like 'the exact geographic scope' or 'the visible rivals'] before we build the graph. Shall we proceed with these specific questions?"
-Score pillars HIGH immediately if the document answers them. ONLY ask about remaining gaps."""
+        if not current_extractions:
+            instructions = (
+                "CRITICAL: You MUST parse this document immediately. Extract all relevant sub-dimension data into pillar_extractions.\n"
+                "Respond in this style: \"I've ingested your brief. It's X% complete. I need to clarify [specific sub-dimensions like 'the exact geographic scope' or 'the visible rivals'] before we build the graph. Shall we proceed with these specific questions?\"\n"
+                "Score pillars HIGH immediately if the document answers them. ONLY ask about remaining gaps."
+            )
+        else:
+            instructions = (
+                "CRITICAL: Reference this document context to answer user questions or fill remaining pillar gaps. You have already extracted initial data from it."
+            )
+
+        context_block = f"""\n\n### UPLOADED RESEARCH CONTEXT\nThe user has supplied the following background document/brief:\n```\n{truncated_context}\n```\n{instructions}"""
 
     scores_block = ""
     if current_scores:
@@ -100,7 +104,7 @@ Score pillars HIGH immediately if the document answers them. ONLY ask about rema
     extractions_block = ""
     if current_extractions:
         extractions_block = f"""\n\n### KNOWN PILLAR EXTRACTIONS (DATA MEMORY)
-You have ALREADY extracted the following data from previous turns. You MUST preserve all existing values and only ADD new information. NEVER erase or overwrite previously extracted data:
+You have already extracted the following data. Do NOT repeat these values in your response unless you are updating them. Your `pillar_extractions` output should ONLY contain new or changed fields (a delta). We will merge them automatically:
 ```json
 {json.dumps(current_extractions, indent=2)}
 ```"""
@@ -132,12 +136,43 @@ def process_intake_chat(messages: List[Message], fast_track: bool, template: Opt
     chat_history = [{"role": m.role if m.role == "user" else "assistant", "content": m.content} for m in messages[-6:]]
     
     system_prompt = build_system_prompt(template, current_scores, current_extractions, context_document)
+    INTAKE_SCHEMA = {
+        "type": "OBJECT",
+        "properties": {
+            "response": {"type": "STRING"},
+            "parameters": {
+                "type": "ARRAY",
+                "items": {
+                    "type": "OBJECT",
+                    "properties": {
+                        "label": {"type": "STRING"},
+                        "score": {"type": "INTEGER"}
+                    },
+                    "required": ["label", "score"]
+                }
+            },
+            "pillar_extractions": {
+                "type": "OBJECT",
+                "properties": {
+                    "market_context": {"type": "OBJECT"},
+                    "strategic_decision": {"type": "OBJECT"},
+                    "target_lens": {"type": "OBJECT"},
+                    "scope_assets": {"type": "OBJECT"},
+                    "competitive_landscape": {"type": "OBJECT"}
+                }
+            },
+            "is_finalized": {"type": "BOOLEAN"},
+            "research_intent": {"type": "STRING", "nullable": True}
+        },
+        "required": ["response", "parameters", "pillar_extractions", "is_finalized"]
+    }
+    
     llm_result = call_openrouter(
         system_prompt=system_prompt, 
         user_prompt="", 
         chat_history=chat_history, 
         expect_json=True,
-        model="google/gemini-2.0-flash-lite-preview:free"
+        response_schema=INTAKE_SCHEMA
     )
     
     print(f"LLM RESULT: {json.dumps(llm_result)}")
@@ -146,7 +181,20 @@ def process_intake_chat(messages: List[Message], fast_track: bool, template: Opt
     response_text = llm_result.get("response", "Thank you, could you elaborate?")
     is_finalized = llm_result.get("is_finalized", False)
     research_intent = llm_result.get("research_intent")
-    pillar_extractions = llm_result.get("pillar_extractions")
+    
+    # Merge delta extractions with current
+    new_extractions = llm_result.get("pillar_extractions") or {}
+    merged_extractions = current_extractions or {}
+    
+    def _deep_merge(target, source):
+        for k, v in source.items():
+            if isinstance(v, dict) and k in target and isinstance(target[k], dict):
+                _deep_merge(target[k], v)
+            elif v is not None:
+                target[k] = v
+                
+    _deep_merge(merged_extractions, new_extractions)
+    pillar_extractions = merged_extractions if merged_extractions else None
     
     # Calculate overall readiness
     params: List[ParameterScore] = []

@@ -9,6 +9,7 @@ import {
   Check,
   ChevronDown,
   ChevronUp,
+  Download,
   Edit,
   Plus,
   RefreshCw,
@@ -597,6 +598,69 @@ export default function HypothesisReview({
     onReject(rejectionReason.trim());
   };
 
+  const handleDownloadCSV = () => {
+    if (!persistedManifest) return;
+
+    const escapeCSV = (val: string): string => {
+      if (val.includes(',') || val.includes('"') || val.includes('\n')) {
+        return `"${val.replace(/"/g, '""')}"`;
+      }
+      return val;
+    };
+
+    const headers = [
+      'Hypothesis ID',
+      'Core Problem ID',
+      'Core Problem Statement',
+      'Hypothesis Statement',
+      'Dimension',
+      'Force Assignment',
+      'MECE Cluster',
+      'Investigation Priority',
+      'Expected Signals',
+      'Expected Counter Signals',
+      'Contrarian Pair ID',
+      'Generation Source',
+      'Rationale',
+    ];
+
+    const rows: string[][] = [];
+    for (const cp of persistedManifest.core_problems) {
+      for (const h of cp.hypotheses) {
+        rows.push([
+          h.id,
+          cp.id,
+          escapeCSV(cp.statement),
+          escapeCSV(h.statement),
+          h.dimension,
+          FORCE_LABELS[h.force_assignment] || h.force_assignment,
+          h.mece_cluster_id,
+          h.investigation_priority,
+          escapeCSV(h.expected_signals.join('; ')),
+          escapeCSV(h.expected_counter_signals.join('; ')),
+          h.contrarian_pair_id || '',
+          h.generation_source,
+          escapeCSV(h.rationale),
+        ]);
+      }
+    }
+
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    const slug = persistedManifest.intent
+      .replace(/[^a-zA-Z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '')
+      .slice(0, 40);
+    link.href = url;
+    link.download = `Hypothesis_Manifest_${slug}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
   const handleEditClick = () => {
     if (selectedCardId) setEditingId(selectedCardId);
   };
@@ -925,6 +989,14 @@ export default function HypothesisReview({
         >
           <RefreshCw size={14} className={loading ? 'animate-spin' : ''} />
           Regen
+        </button>
+        <button
+          onClick={handleDownloadCSV}
+          disabled={!persistedManifest}
+          className="px-3 py-2 bg-[#111] hover:bg-[#1a1a1a] border border-[#333] hover:border-teal-500/40 text-gray-300 hover:text-teal-200 disabled:opacity-40 text-sm rounded-lg transition-colors flex items-center gap-2"
+        >
+          <Download size={14} />
+          Download CSV
         </button>
         <button
           onClick={() => setRejectionPromptOpen(true)}

@@ -19,9 +19,15 @@ import os
 import json
 import time
 import requests
+import hashlib
+import threading
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# Global LLM cache
+_llm_cache = {}
+_llm_cache_lock = threading.Lock()
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY")
@@ -108,6 +114,7 @@ def _call_gemini(
     user_prompt: str,
     chat_history: list | None = None,
     expect_json: bool = False,
+    response_schema: dict | None = None,
 ):
     """Call a specific Gemini model. Single attempt with one short retry on
     soft (per-minute) rate limits. Hard caps (monthly spend / RESOURCE_EXHAUSTED)
@@ -124,8 +131,10 @@ def _call_gemini(
             "maxOutputTokens": MAX_OUTPUT_TOKENS_JSON if expect_json else MAX_OUTPUT_TOKENS_DEFAULT,
         },
     }
-    if expect_json:
+    if expect_json or response_schema:
         payload["generationConfig"]["responseMimeType"] = "application/json"
+    if response_schema:
+        payload["generationConfig"]["responseSchema"] = response_schema
 
     # Retry with extended backoff for rate limits
     max_retries = 5
@@ -139,18 +148,21 @@ def _call_gemini(
 
         body = response.text[:500]
 
-        if response.status_code in [429, 503]:
-            if response.status_code == 429 and _is_monthly_cap_error(body):
+        if response.status_code == 503:
+            raise Exception(f"Gemini API Error ({model}): 503 Service Unavailable - {body[:200]}")
+
+        if response.status_code == 429:
+            if _is_monthly_cap_error(body):
                 # Project-level cap. All Gemini models share this quota —
                 # skip the cascade entirely.
                 raise Exception(f"GEMINI_CAPPED: {model}: {body[:200]}")
             if attempt < max_retries - 1:
-                wait = 8 * (attempt + 1)
-                print(f"[Gemini {model}] Error {response.status_code}. Waiting {wait}s...")
+                wait = 2 * (attempt + 1)
+                print(f"[Gemini {model}] Error 429. Waiting {wait}s...")
                 time.sleep(wait)
                 continue
             
-            raise Exception(f"Gemini API Error ({model}): {response.status_code} - {body[:200]}")
+            raise Exception(f"Gemini API Error ({model}): 429 - {body[:200]}")
 
         # Non-429 hard failure — no retry.
         raise Exception(f"Gemini API Error ({model}): {response.status_code} - {body[:200]}")
@@ -172,6 +184,7 @@ def _call_openrouter_api(
     user_prompt: str,
     chat_history: list | None = None,
     expect_json: bool = False,
+    response_schema: dict | None = None,
 ):
     """Call OpenRouter API as a fallback when Gemini is unavailable."""
     url = "https://openrouter.ai/api/v1/chat/completions"
@@ -195,7 +208,7 @@ def _call_openrouter_api(
         "messages": messages,
         "max_tokens": MAX_OUTPUT_TOKENS_JSON if expect_json else MAX_OUTPUT_TOKENS_DEFAULT,
     }
-    if expect_json:
+    if expect_json or response_schema:
         payload["response_format"] = {"type": "json_object"}
 
     response = requests.post(url, json=payload, headers=headers, timeout=60)
@@ -219,6 +232,7 @@ def call_openrouter(
     chat_history: list | None = None,
     expect_json: bool = False,
     model: str | None = None,
+    response_schema: dict | None = None,
 ):
     """
     Main LLM entry point. Tries Gemini first (cheaper-first cascade), then
@@ -232,15 +246,32 @@ def call_openrouter(
             "Add at least one to backend/.env"
         )
 
+    # ── Phase 0: Caching ──
+    cache_key_data = json.dumps({
+        "sys": system_prompt,
+        "usr": user_prompt,
+        "hist": chat_history,
+        "json": expect_json,
+        "schema": response_schema
+    }, sort_keys=True)
+    cache_key = hashlib.sha256(cache_key_data.encode("utf-8")).hexdigest()
+    
+    with _llm_cache_lock:
+        if cache_key in _llm_cache:
+            print("[LLM Cache Hit]")
+            return _llm_cache[cache_key]
+
     last_error: str | None = None
+    result_content = None
 
     # ── Phase 1: Gemini cascade (always try first) ──
     if GEMINI_API_KEY:
         for gemini_model in GEMINI_MODELS:
             try:
-                return _call_gemini(
-                    gemini_model, system_prompt, user_prompt, chat_history, expect_json
+                result_content = _call_gemini(
+                    gemini_model, system_prompt, user_prompt, chat_history, expect_json, response_schema
                 )
+                break
             except Exception as e:
                 last_error = str(e)
                 if last_error.startswith("GEMINI_CAPPED:"):
@@ -251,6 +282,12 @@ def call_openrouter(
                 print(f"[LLM] {gemini_model} failed: {last_error[:120]}. Trying next Gemini model...")
                 continue
 
-    # ── Fallback: OpenRouter free models ──
-    # User requested to disable OpenRouter
-    raise Exception(f"All Gemini models exhausted. OpenRouter fallback is disabled. Last error: {last_error}")
+    if result_content is None:
+        # ── Fallback: OpenRouter free models ──
+        # User requested to disable OpenRouter
+        raise Exception(f"All Gemini models exhausted. OpenRouter fallback is disabled. Last error: {last_error}")
+
+    with _llm_cache_lock:
+        _llm_cache[cache_key] = result_content
+        
+    return result_content
