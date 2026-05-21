@@ -5,908 +5,838 @@
   "nodes": [
     {
       "type": "root",
-      "label": "Drivers behind the consistent Year-over-Year decline of Kellogg's Corn Portfolio in India",
+      "label": "Consistent Year-over-Year decline of Kellogg's Corn Portfolio in India and failure to convert robust distribution into sustained off-takes and repeat purchases within Modern Trade and E-commerce channels.",
       "force": "root",
       "description": "The central business problem driving this research study.",
-      "id": "Drivers behind the consistent Year-over-Year decline of Kellogg's Corn Portfolio in India"
+      "id": "Consistent Year-over-Year decline of Kellogg's Corn Portfolio in India and failure to convert robust distribution into sustained off-takes and repeat purchases within Modern Trade and E-commerce channels."
     },
     {
       "type": "core_problem",
-      "label": "Understanding the drivers behind the declining relevance of Kellogg's traditiona",
+      "label": "Why are modern consumers (including HNI, school-going kids, health-conscious, an",
       "color": "#a855f7",
       "size": 5,
       "priority": "primary",
       "force": "root",
-      "description": "Understanding the drivers behind the declining relevance of Kellogg's traditional Cornflakes category and the specific factors causing consumers to migrate towards alternative breakfast formats like Muesli and Granola in India.",
+      "description": "Why are modern consumers (including HNI, school-going kids, health-conscious, and weight-loss-focused individuals) shifting their preference from Kellogg's Corn Portfolio towards Muesli and Granola?",
       "id": "core_problem_cp_001"
     },
     {
       "type": "hypothesis_anchor",
-      "label": "Consumers perceive Kellogg's Cornflakes as a dated breakfast option compared to ",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_023",
-      "dimension": "brand_perception",
-      "force": "Demand Gravity",
-      "contrarian_pair_id": null,
-      "description": "The uploaded context highlights consumer migration to Muesli and Granola, suggesting a decline in the relevance of traditional Cornflakes. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_023"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "Local low-priced competitors like Mohan Cornflakes are eroding Kellogg's market ",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_024",
-      "dimension": "price",
-      "force": "Value Elasticity Field",
-      "contrarian_pair_id": null,
-      "description": "The context explicitly mentions local players offering similar products at lower prices, creating a 'value squeeze' and challenging Kellogg's premium positioning. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_024"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "The 'Multigrain' proposition on Kellogg's Cornflakes does not align with the spe",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_025",
-      "dimension": "product",
-      "force": "Demand Gravity",
-      "contrarian_pair_id": null,
-      "description": "The context notes that the 'Multigrain' innovation has not achieved anticipated growth, suggesting a disconnect with consumer health perceptions. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_025"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "Kellogg's Cornflakes' taste profile or functional benefits do not meet the post-",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_026",
-      "dimension": "product",
-      "force": "Reinforcement Stability",
-      "contrarian_pair_id": null,
-      "description": "The context highlights a 'Trial vs. Retention Paradox' with satisfactory trial but poor repeat purchases, indicating issues with taste or functional proposition. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_026"
-    },
-    {
-      "type": "core_problem",
-      "label": "Assessing the precise impact of local, low-priced competitors on Kellogg's premi",
-      "color": "#a855f7",
-      "size": 5,
-      "priority": "primary",
-      "force": "root",
-      "description": "Assessing the precise impact of local, low-priced competitors on Kellogg's premium positioning, perceived value, and overall market share within the Corn Portfolio in India.",
-      "id": "core_problem_cp_002"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "Kellogg's premium pricing for its Corn Portfolio is perceived as unjustified giv",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_001",
-      "dimension": "price",
-      "force": "Value Elasticity Field",
-      "contrarian_pair_id": null,
-      "description": "The core problem explicitly mentions the 'impact of local, low-priced competitors on Kellogg's premium positioning and perceived value,' and pillar extractions highlight 'local players offering lower price points' leading to a 'value squeeze'. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_001"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "The taste profile of Kellogg's Corn Portfolio (including Multigrain) no longer a",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_002",
-      "dimension": "product",
-      "force": "Choice Architecture Pressure",
-      "contrarian_pair_id": null,
-      "description": "The context document highlights a 'Trial vs. Retention Paradox' and questions if the 'product\u2019s taste profile does not meet expectations of traditional Cornflakes buyers'. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_002"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "The 'Multigrain' proposition's health benefits are not clearly understood or val",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_003",
-      "dimension": "product",
-      "force": "Choice Architecture Pressure",
-      "contrarian_pair_id": null,
-      "description": "The Pillar Extractions state 'Multigrain Cornflakes not achieving anticipated growth' and question if 'Multigrain' is 'not resonating with health-focused consumers' or if there's a 'functional proposition misunderstanding'. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_003"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "The 'masterbrand' premium aura of Kellogg's is eroding within the cornflakes cat",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_004",
-      "dimension": "brand_perception",
-      "force": "Demand Gravity",
-      "contrarian_pair_id": null,
-      "description": "The core problem focuses on the 'impact of local, low-priced competitors on Kellogg's premium positioning,' implying a potential erosion of brand perception, also noted in the context document. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_004"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "Traditional Cornflakes, as a category, has lost its aspirational appeal and cult",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_005",
-      "dimension": "cultural_identity",
-      "force": "Demand Gravity",
-      "contrarian_pair_id": null,
-      "description": "Pillar Extractions and Context state 'the traditional Cornflakes category appears to be losing its perceived relevance' and mentions a 'migration of the consumer base toward Muesli and Granola'. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_005"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "The aggressive market entry and sustained low-price strategy of local competitor",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_006",
-      "dimension": "competitive_shift",
-      "force": "Competitive Energy Field",
-      "contrarian_pair_id": null,
-      "description": "The core problem directly addresses the 'precise impact of local, low-priced competitors,' and pillar extractions identify 'Mohan Cornflakes' as a 'visible rival' offering 'lower price points, commoditizing the category'. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_006"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "A demographic shift among younger Indian consumers shows a stronger preference f",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_013",
-      "dimension": "demographic_shift",
-      "force": "Demand Gravity",
-      "contrarian_pair_id": "h_012",
-      "description": "The research intent highlights 'consumer shifts towards alternative breakfast formats' and mentions 'modern Indian consumers,' implying a demographic-driven evolution in preferences.",
-      "id": "hypothesis_anchor_h_013"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "Kellogg's premium pricing is largely accepted by its target consumers, but they ",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_027",
-      "dimension": "price",
-      "force": "Value Elasticity Field",
-      "contrarian_pair_id": null,
-      "description": "This contrarian hypothesis explores if pricing itself isn't the issue, but rather consumer's analytical comparison of perceived value against competing offers, as suggested by the 'value squeeze' narrative. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_027"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "The taste profile of Kellogg's Corn Portfolio remains appealing, but its perceiv",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_028",
-      "dimension": "product",
-      "force": "Choice Architecture Pressure",
-      "contrarian_pair_id": null,
-      "description": "This offers an alternative explanation for poor repeat, suggesting taste isn't the issue but a perceived lack of competitive functional innovation against alternatives like Muesli and Granola. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_028"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "The 'Multigrain' proposition's health benefits are clearly understood and valued",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_029",
-      "dimension": "product",
-      "force": "Choice Architecture Pressure",
-      "contrarian_pair_id": null,
-      "description": "This alternative suggests that the issue isn't comprehension, but rather a perceived lack of value for these benefits specifically within the cornflakes category, impacting premium positioning. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_029"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "Kellogg's masterbrand premium aura remains strong, but specific category associa",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_030",
-      "dimension": "brand_perception",
-      "force": "Demand Gravity",
-      "contrarian_pair_id": null,
-      "description": "This explores whether the brand itself is strong but is being negatively affected by a generic perception of the entire cornflakes category, rather than direct erosion of Kellogg's premium standing. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_030"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "Traditional Cornflakes retains its cultural relevance, but Muesli and Granola ar",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_031",
-      "dimension": "cultural_identity",
-      "force": "Demand Gravity",
-      "contrarian_pair_id": null,
-      "description": "This alternative suggests that cultural relevance is stable, but practical factors like convenience or routine fit drive the shift to Muesli/Granola, not a loss of aspirational appeal for cornflakes. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_031"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "Local competitors primarily capture a distinct, highly price-sensitive segment, ",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_032",
-      "dimension": "competitive_shift",
-      "force": "Competitive Energy Field",
-      "contrarian_pair_id": null,
-      "description": "This provides a contrarian view, suggesting that local competitors serve a different market segment, thus limiting their direct impact on Kellogg's premium positioning and market share within its target segment. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_032"
-    },
-    {
-      "type": "core_problem",
-      "label": "Determining the specific reasons why recent innovations, particularly Multigrain",
-      "color": "#a855f7",
-      "size": 5,
-      "priority": "primary",
-      "force": "root",
-      "description": "Determining the specific reasons why recent innovations, particularly Multigrain Cornflakes, have underperformed and not achieved anticipated growth, including whether the 'Multigrain' proposition effectively resonates with health-focused consumers.",
-      "id": "core_problem_cp_003"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "Multigrain Cornflakes' price point is perceived as too high relative to its perc",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_016",
-      "dimension": "price",
-      "force": "Value Elasticity Field",
-      "contrarian_pair_id": null,
-      "description": "The context highlights local players offering lower price points and challenges to Kellogg's premium positioning, making price a key factor in Multigrain Cornflakes' underperformance. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_016"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "The taste profile of Multigrain Cornflakes is a significant deterrent for repeat",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_017",
-      "dimension": "product",
-      "force": "Demand Gravity",
-      "contrarian_pair_id": null,
-      "description": "The core problem explicitly mentions 'satisfactory trial but poor repeat purchases' and asks if it's the 'taste profile,' directly addressing this hypothesis. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_017"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "The 'Multigrain' functional proposition is not clearly understood or valued by h",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_018",
-      "dimension": "product",
-      "force": "Choice Architecture Pressure",
-      "contrarian_pair_id": null,
-      "description": "The core problem explicitly questions 'whether the 'Multigrain' proposition effectively resonates with health-focused consumers' and 'functional proposition misunderstanding'. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_018"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "The Kellogg's Cornflakes brand is strongly associated with traditional, less 'he",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_019",
-      "dimension": "brand_perception",
-      "force": "Reinforcement Stability",
-      "contrarian_pair_id": null,
-      "description": "The context notes the 'traditional Cornflakes category appears to be losing its perceived relevance,' suggesting a fixed brand perception might hinder innovation adoption. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_019"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "Modern Indian breakfast rituals are increasingly shifting away from cereal-in-mi",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_020",
-      "dimension": "cultural_identity",
-      "force": "Demand Gravity",
-      "contrarian_pair_id": null,
-      "description": "The context highlights 'consumer migration toward Muesli and Granola' and 'traditional Cornflakes category appears to be losing its perceived relevance,' strongly suggesting a shift in cultural practices. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_020"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "The rise of Muesli and Granola brands as directly substitutable breakfast option",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_021",
-      "dimension": "competitive_shift",
-      "force": "Competitive Energy Field",
-      "contrarian_pair_id": null,
-      "description": "The context explicitly states 'migration of consumer base toward Muesli and Granola' and mentions 'high competitive intensity,' making this a central issue. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_021"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "Consuming Muesli or Granola has become a status symbol or an expression of a 'mo",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_022",
-      "dimension": "identity_expression",
-      "force": "Demand Gravity",
-      "contrarian_pair_id": null,
-      "description": "The 'modern Indian consumers' and 'migration' suggest that breakfast choices might be tied to lifestyle and self-perception, rather than purely functional needs. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_022"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "Multigrain Cornflakes' price point is considered fair or premium justified given",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_039",
-      "dimension": "price",
-      "force": "Value Elasticity Field",
-      "contrarian_pair_id": null,
-      "description": "This contrarian hypothesis tests whether consumers acknowledge and accept the price point, suggesting other factors like product experience or brand messaging are at play. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_039"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "The taste profile of Multigrain Cornflakes is generally acceptable or preferred ",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_040",
-      "dimension": "product",
-      "force": "Demand Gravity",
-      "contrarian_pair_id": null,
-      "description": "This hypothesis explores the possibility that taste is not the primary barrier, redirecting focus to other aspects like value perception or brand fit. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_040"
-    },
-    {
-      "type": "core_problem",
-      "label": "Investigating the disconnect between satisfactory initial trial and subsequent p",
-      "color": "#a855f7",
-      "size": 5,
-      "priority": "primary",
-      "force": "root",
-      "description": "Investigating the disconnect between satisfactory initial trial and subsequent poor repeat purchases across the Kellogg's Corn Portfolio, to understand if the issue stems from taste profile, misunderstanding of functional proposition, or other post-trial experiences.",
-      "id": "core_problem_cp_004"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "Consumers perceive Kellogg's Corn Portfolio pricing as too high for its perceive",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_007",
-      "dimension": "price",
-      "force": "Value Elasticity Field",
-      "contrarian_pair_id": "h_008",
-      "description": "Pillar 1 and the context document highlight local players like Mohan Cornflakes offering significantly lower price points, challenging Kellogg's premium positioning and leading to a 'value squeeze'.",
-      "id": "hypothesis_anchor_h_007"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "Consumers perceive Kellogg's Corn Portfolio pricing as appropriate for its premi",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_008",
-      "dimension": "price",
-      "force": "Value Elasticity Field",
-      "contrarian_pair_id": "h_007",
-      "description": "This hypothesis explores the alternative that price is not the primary barrier to repeat, suggesting consumers might still justify the premium after trial.",
-      "id": "hypothesis_anchor_h_008"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "The taste profile of Kellogg's Corn Portfolio is initially acceptable but become",
+      "label": "Kellogg's Corn Portfolio maintains a strong and positive brand perception for qu",
       "color": "#6366f1",
       "size": 6,
       "hypothesis_id": "h_009",
-      "dimension": "product",
-      "force": "Choice Architecture Pressure",
+      "dimension": "brand_perception",
+      "force": "Reinforcement Stability",
       "contrarian_pair_id": null,
-      "description": "The core problem statement explicitly flags 'taste profile' as a potential cause for the disconnect between satisfactory trial and poor repeat purchases. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "description": "This explores whether the Kellogg's masterbrand strength is intact, but the specific corn portfolio is simply not meeting new functional demands, rather than being generally perceived as outdated. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
       "id": "hypothesis_anchor_h_009"
     },
     {
       "type": "hypothesis_anchor",
-      "label": "Consumers do not perceive the functional benefits (e.g., health, 'Multigrain') o",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_010",
-      "dimension": "product",
-      "force": "Demand Gravity",
-      "contrarian_pair_id": null,
-      "description": "Pillar 1 and the context document note that 'Multigrain Cornflakes' failed to achieve anticipated growth, suggesting 'Multigrain' as a proposition isn't resonating with health-focused consumers, as also flagged in the core problem statement. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_010"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "Traditional cornflakes consumption rituals no longer align with the evolving cul",
+      "label": "Traditional Cornflakes, particularly Kellogg's, still hold a strong association ",
       "color": "#6366f1",
       "size": 6,
       "hypothesis_id": "h_011",
       "dimension": "cultural_identity",
-      "force": "Demand Gravity",
-      "contrarian_pair_id": null,
-      "description": "Pillar 1 and the context document highlight that the 'traditional Cornflakes category appears to be losing its perceived relevance' as consumers migrate towards alternative breakfast formats. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "force": "Reinforcement Stability",
+      "contrarian_pair_id": "h_024",
+      "description": "This counter-hypothesis tests the strength of traditional cultural associations for Kellogg's Cornflakes, positing that its cultural standing might be robust, but functional needs are driving the shift.",
       "id": "hypothesis_anchor_h_011"
     },
     {
       "type": "hypothesis_anchor",
-      "label": "A demographic shift towards younger, health-conscious consumers with evolving ta",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_012",
-      "dimension": "demographic_shift",
-      "force": "Demand Gravity",
-      "contrarian_pair_id": "h_013",
-      "description": "Pillar 1 notes the 'migration of consumer base toward Muesli and Granola' and targets 'modern Indian consumers', indicating evolving preferences tied to demographic changes.",
-      "id": "hypothesis_anchor_h_012"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "The increased availability and perceived value of alternative breakfast formats ",
+      "label": "Aggressive marketing, product innovation, and expanded availability by Muesli an",
       "color": "#6366f1",
       "size": 6,
       "hypothesis_id": "h_014",
       "dimension": "competitive_shift",
       "force": "Competitive Energy Field",
       "contrarian_pair_id": null,
-      "description": "Pillar 1 and the context document extensively mention 'consumer migration toward Muesli and Granola' and 'local players...offering similar products at significantly lower price points'. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "description": "The context explicitly mentions 'high competitive intensity in the digital and physical marketplace' and refers to 'local players (such as Mohan Cornflakes) offering similar products at significantly lower price points'. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
       "id": "hypothesis_anchor_h_014"
     },
     {
       "type": "hypothesis_anchor",
-      "label": "The post-trial experience with Kellogg's Corn Portfolio (e.g., preparation effor",
+      "label": "Kellogg's Corn Portfolio is perceived as offering insufficient value to justify ",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_018",
+      "dimension": "price",
+      "force": "Value Elasticity Field",
+      "contrarian_pair_id": "h_019",
+      "description": "The context highlights that 'local players (such as Mohan Cornflakes) are offering similar products at significantly lower price points, commoditizing the category and challenging Kellogg's premium positioning'.",
+      "id": "hypothesis_anchor_h_018"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "The taste profile and texture of Kellogg's Corn Portfolio, including the Multigr",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_020",
+      "dimension": "product",
+      "force": "Choice Architecture Pressure",
+      "contrarian_pair_id": "h_021",
+      "description": "The context states 'the lack of repeat purchases indicates a potential disconnect. This suggests that either the product\u2019s taste profile does not meet the expectations of traditional Cornflakes buyers'.",
+      "id": "hypothesis_anchor_h_020"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "Kellogg's Corn Portfolio is perceived as an outdated or less 'modern' breakfast ",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_022",
+      "dimension": "brand_perception",
+      "force": "Demand Gravity",
+      "contrarian_pair_id": null,
+      "description": "The context mentions 'The traditional Cornflakes category appears to be losing its perceived relevance as modern consumers seek alternative breakfast formats'. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_022"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "Modern Indian consumers, especially school-going kids and health-conscious indiv",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_023",
+      "dimension": "cultural_identity",
+      "force": "Demand Gravity",
+      "contrarian_pair_id": "h_024",
+      "description": "The problem asks why 'modern consumers' are shifting, suggesting a link between product choice and evolving cultural values, especially for health-conscious users and school-going kids.",
+      "id": "hypothesis_anchor_h_023"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "The increasing emphasis on health, wellness, and specific dietary goals (like we",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_025",
+      "dimension": "demographic_shift",
+      "force": "Demand Gravity",
+      "contrarian_pair_id": "h_026",
+      "description": "The problem statement explicitly identifies 'HNI, School going kids, Health conscious users, weight loss goals' as key consumer segments driving the shift, and the context notes 'Multigrain' not resonating with the 'health-focused mindset'.",
+      "id": "hypothesis_anchor_h_025"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "Kellogg's Corn Portfolio is perceived as less nutritionally dense or offering fe",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_027",
+      "dimension": "product",
+      "force": "Demand Gravity",
+      "contrarian_pair_id": "h_028",
+      "description": "The problem indicates a shift away from cornflakes towards products like Muesli and Granola, often associated with enhanced nutritional profiles and functional benefits, which suggests a potential product-level perception gap.",
+      "id": "hypothesis_anchor_h_027"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "Kellogg's Corn Portfolio is perceived as equally or more nutritionally dense and",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_029",
+      "dimension": "product",
+      "force": "Demand Gravity",
+      "contrarian_pair_id": "h_030",
+      "description": "This contrarian hypothesis posits that consumers do not perceive a nutritional deficit in Kellogg's Corn Portfolio, suggesting the preference shift is driven by other factors beyond health benefits.",
+      "id": "hypothesis_anchor_h_029"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "The Kellogg's Corn Portfolio brand identity is perceived by modern consumers as ",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_031",
+      "dimension": "brand_perception",
+      "force": "Demand Gravity",
+      "contrarian_pair_id": null,
+      "description": "The intent mentions 'repositioning' and 'commoditization,' which suggests current brand perception may be failing to resonate with modern consumer aspirations, prompting a shift to competitors. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_031"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "The Kellogg's Corn Portfolio brand identity is perceived by modern consumers as ",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_032",
+      "dimension": "brand_perception",
+      "force": "Demand Gravity",
+      "contrarian_pair_id": null,
+      "description": "This contrarian hypothesis suggests brand perception is not the issue, implying the problem lies elsewhere, even if prior repositioning efforts were ineffective. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_032"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "Modern consumers perceive Kellogg's Corn Portfolio as offering poor value for mo",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_033",
+      "dimension": "price",
+      "force": "Value Elasticity Field",
+      "contrarian_pair_id": null,
+      "description": "The mention of 'commoditization by local players' and a shift to other categories suggests a potential mismatch in perceived value for money at current price points. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_033"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "Modern consumers perceive Kellogg's Corn Portfolio as offering good value for mo",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_034",
+      "dimension": "price",
+      "force": "Value Elasticity Field",
+      "contrarian_pair_id": null,
+      "description": "This hypothesis explores the possibility that price and value perception are not the primary drivers of the shift, directing focus to other dimensions. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_034"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "The evolving dietary preferences and lifestyle choices of HNI, school-going kids",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_035",
+      "dimension": "demographic_shift",
+      "force": "Demand Gravity",
+      "contrarian_pair_id": null,
+      "description": "The problem explicitly calls out specific 'modern consumer' segments, suggesting their evolving preferences are a key driver for shifting away from the corn portfolio. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_035"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "The dietary preferences and lifestyle choices of HNI, school-going kids, health-",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_036",
+      "dimension": "demographic_shift",
+      "force": "Demand Gravity",
+      "contrarian_pair_id": null,
+      "description": "This contrarian hypothesis would imply that demographic shifts are not the root cause of the preference change, and consumer needs remain consistent with the corn portfolio. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_036"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "In India, Muesli and Granola have gained cultural cachet as 'modern,' 'global,' ",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_037",
+      "dimension": "cultural_identity",
+      "force": "Reinforcement Stability",
+      "contrarian_pair_id": null,
+      "description": "The shift away from cornflakes towards other cereals in the Indian market may be influenced by evolving cultural perceptions of what constitutes a 'modern' or 'desirable' breakfast choice. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_037"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "Cornflakes retain a strong cultural cachet as a 'modern' or 'appropriate' breakf",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_038",
+      "dimension": "cultural_identity",
+      "force": "Reinforcement Stability",
+      "contrarian_pair_id": null,
+      "description": "This hypothesis explores whether the cultural perception of cornflakes as a modern breakfast remains strong, suggesting other factors are driving the preference shift. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_038"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "Local players like Mohan Cornflakes have commoditized the cornflakes category, e",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_039",
+      "dimension": "competitive_shift",
+      "force": "Competitive Energy Field",
+      "contrarian_pair_id": null,
+      "description": "The intent directly mentions 'commoditization by local players' as a factor, suggesting competitive pressures are pushing consumers away from traditional cornflakes to perceived premium alternatives. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_039"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "Local players have not significantly commoditized the cornflakes category, and c",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_040",
+      "dimension": "competitive_shift",
+      "force": "Competitive Energy Field",
+      "contrarian_pair_id": null,
+      "description": "This contrarian explores if Kellogg's still maintains competitive differentiation, implying the shift is due to internal brand or product factors rather than direct competitive pressure. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_040"
+    },
+    {
+      "type": "core_problem",
+      "label": "What are the specific barriers preventing sustained off-takes and repeat purchas",
+      "color": "#a855f7",
+      "size": 5,
+      "priority": "primary",
+      "force": "root",
+      "description": "What are the specific barriers preventing sustained off-takes and repeat purchases of Kellogg's Corn Portfolio in Modern Trade and E-commerce channels, despite robust distribution?",
+      "id": "core_problem_cp_002"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "Kellogg's Corn Portfolio's premium pricing is perceived as unjustified by modern",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_001",
+      "dimension": "price",
+      "force": "Value Elasticity Field",
+      "contrarian_pair_id": null,
+      "description": "The uploaded context explicitly highlights the 'Value Squeeze' from local players like Mohan Cornflakes offering similar products at significantly lower price points, challenging Kellogg's premium positioning. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_001"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "The functional proposition of Kellogg's Corn Portfolio, including Multigrain Cor",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_002",
+      "dimension": "product",
+      "force": "Demand Gravity",
+      "contrarian_pair_id": null,
+      "description": "The context mentions the 'Innovation Gap' where Multigrain Cornflakes failed to resonate with the health-focused mindset, and consumers are migrating towards Muesli and Granola for perceived alternative breakfast formats. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_002"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "The overall brand perception of Kellogg's Cornflakes is that of a 'traditional' ",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_003",
+      "dimension": "brand_perception",
+      "force": "Reinforcement Stability",
+      "contrarian_pair_id": null,
+      "description": "The context indicates 'traditional Cornflakes category appears to be losing its perceived relevance' and modern consumers are shifting preferences, implying a disconnect with brand perception and modern aspirations. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_003"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "For HNI, health-conscious users, and school-going kids, choosing Muesli or Grano",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_004",
+      "dimension": "identity_expression",
+      "force": "Reinforcement Stability",
+      "contrarian_pair_id": null,
+      "description": "The research intent highlights 'modern consumers' including HNI and health-conscious users, and their shift to Muesli/Granola, suggesting these choices may reflect their evolving self-perception and social signaling. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_004"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "The aggressive pricing strategies and category commoditization by local players ",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_005",
+      "dimension": "competitive_shift",
+      "force": "Competitive Energy Field",
+      "contrarian_pair_id": null,
+      "description": "The context explicitly cites 'The Value Squeeze' from Mohan Cornflakes and the 'high competitive intensity,' alongside the consumer migration to Muesli and Granola, indicating strong competitive pressure. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_005"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "The traditional taste profile of Kellogg's Cornflakes is perceived as bland or l",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_006",
+      "dimension": "product",
+      "force": "Demand Gravity",
+      "contrarian_pair_id": "h_007",
+      "description": "The 'Trial vs. Retention Paradox' in the context suggests a disconnect after trial, partly attributing it to 'product\u2019s taste profile does not meet the expectations of traditional Cornflakes buyers.'",
+      "id": "hypothesis_anchor_h_006"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "Choosing Kellogg's Corn Portfolio positively contributes to the self-expression ",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_007",
+      "dimension": "identity_expression",
+      "force": "Reinforcement Stability",
+      "contrarian_pair_id": null,
+      "description": "This hypothesis explores whether cornflakes still play a role in consumer identity expression, serving as a counterpoint to the hypothesis of misalignment. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_007"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "Modern consumers perceive Kellogg's Corn Portfolio as inherently less healthy or",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_008",
+      "dimension": "product",
+      "force": "Demand Gravity",
+      "contrarian_pair_id": "h_009",
+      "description": "The intent highlights consumers shifting preferences to Muesli and Granola due to health consciousness and weight loss goals, suggesting a product perception issue.",
+      "id": "hypothesis_anchor_h_008"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "Kellogg's Corn Portfolio is perceived as an outdated or traditional brand that d",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_010",
+      "dimension": "brand_perception",
+      "force": "Choice Architecture Pressure",
+      "contrarian_pair_id": "h_011",
+      "description": "The intent mentions 'modern consumers' and 'repositioning,' suggesting the brand's current image might be a barrier against emerging preferences.",
+      "id": "hypothesis_anchor_h_010"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "The aggressive growth and perceived superior innovation of Muesli and Granola br",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_012",
+      "dimension": "competitive_shift",
+      "force": "Competitive Energy Field",
+      "contrarian_pair_id": null,
+      "description": "The intent explicitly mentions 'shifting preferences towards Muesli and Granola' and 'commoditization by local players like Mohan Cornflakes'. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_012"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "The evolving dietary preferences and lifestyle requirements of key demographic c",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_013",
+      "dimension": "demographic_shift",
+      "force": "Demand Gravity",
+      "contrarian_pair_id": "h_014",
+      "description": "The intent specifically mentions the preferences of 'modern consumers' shifting, implying a demographic-driven change in demand.",
+      "id": "hypothesis_anchor_h_013"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "The traditional usage occasions for breakfast cereal are shrinking or evolving i",
       "color": "#6366f1",
       "size": 6,
       "hypothesis_id": "h_015",
       "dimension": "situational_context",
       "force": "Choice Architecture Pressure",
       "contrarian_pair_id": null,
-      "description": "The core problem explicitly asks about 'other post-trial experiences' beyond taste and functional proposition, suggesting friction in integrating the product into daily life. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "description": "The problem is about repeat purchases and off-takes; changes in how and when people eat breakfast directly impact this. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
       "id": "hypothesis_anchor_h_015"
     },
     {
       "type": "hypothesis_anchor",
-      "label": "The taste profile of Kellogg's Corn Portfolio maintains its appeal and satisfact",
+      "label": "The perceived value-for-money of Kellogg's Corn Portfolio in Modern Trade and E-",
       "color": "#6366f1",
       "size": 6,
-      "hypothesis_id": "h_033",
+      "hypothesis_id": "h_016",
+      "dimension": "price",
+      "force": "Value Elasticity Field",
+      "contrarian_pair_id": "h_017",
+      "description": "The intent mentions 'commoditization by local players' and the shift towards Muesli/Granola, implying price and perceived value might be barriers to repeat purchase.",
+      "id": "hypothesis_anchor_h_016"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "Kellogg's Corn Portfolio's premium pricing is perceived as justified by modern c",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_019",
+      "dimension": "price",
+      "force": "Value Elasticity Field",
+      "contrarian_pair_id": null,
+      "description": "This hypothesis serves as the contrarian opposite to investigate if pricing is truly the deterrent or if perceived value aligns with the cost despite market competition. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_019"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "The functional proposition of Kellogg's Corn Portfolio, including Multigrain Cor",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_021",
       "dimension": "product",
       "force": "Choice Architecture Pressure",
       "contrarian_pair_id": null,
-      "description": "This hypothesis explores the alternative that taste is not the issue, directing focus to other 'post-trial experiences' as per the core problem statement. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_033"
+      "description": "This contrarian hypothesis explores whether the issue is with the product's actual functional benefits or with the effectiveness of its communication in a competitive market. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_021"
     },
     {
       "type": "hypothesis_anchor",
-      "label": "Consumers clearly understand and value the functional benefits of Kellogg's Corn",
+      "label": "The overall brand perception of Kellogg's Cornflakes as a trusted and reliable m",
       "color": "#6366f1",
       "size": 6,
-      "hypothesis_id": "h_034",
-      "dimension": "product",
-      "force": "Demand Gravity",
+      "hypothesis_id": "h_024",
+      "dimension": "brand_perception",
+      "force": "Reinforcement Stability",
       "contrarian_pair_id": null,
-      "description": "This hypothesis posits that the functional proposition is clear and valued, suggesting the problem lies elsewhere in the post-trial experience. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_034"
+      "description": "This contrarian tests whether Kellogg's strong masterbrand position in India still holds positive emotional capital, or if it has eroded in the context of cornflakes. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_024"
     },
     {
       "type": "hypothesis_anchor",
-      "label": "Traditional cornflakes consumption rituals continue to align strongly with the c",
+      "label": "Despite robust distribution, the in-store merchandising, shelf placement, and di",
       "color": "#6366f1",
       "size": 6,
-      "hypothesis_id": "h_035",
+      "hypothesis_id": "h_026",
+      "dimension": "distribution",
+      "force": "Choice Architecture Pressure",
+      "contrarian_pair_id": null,
+      "description": "The problem states 'despite robust distribution,' implying that a deeper issue within the sales channels (e.g., merchandising) could be a barrier to conversion and repeat purchases. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_026"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "Kellogg's Corn Portfolio still allows for positive identity expression, particul",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_028",
+      "dimension": "identity_expression",
+      "force": "Choice Architecture Pressure",
+      "contrarian_pair_id": null,
+      "description": "This contrarian hypothesis explores whether Kellogg's Corn Portfolio can still cater to identity expression for these segments if communication around its benefits were improved. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_028"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "The competitive landscape, including local players and Muesli/Granola brands, is",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_030",
+      "dimension": "competitive_shift",
+      "force": "Competitive Energy Field",
+      "contrarian_pair_id": null,
+      "description": "This contrarian hypothesis aims to determine if the issue is externally driven by competitors or if Kellogg's internal product and brand challenges are more fundamentally at fault. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_030"
+    },
+    {
+      "type": "core_problem",
+      "label": "Why have past strategic interventions, including product innovations (e.g., Mult",
+      "color": "#a855f7",
+      "size": 5,
+      "priority": "primary",
+      "force": "root",
+      "description": "Why have past strategic interventions, including product innovations (e.g., Multigrain Cornflakes), packaging refreshes, and varied pack sizes, been ineffective in reversing the Corn Portfolio's decline?",
+      "id": "core_problem_cp_004"
+    },
+    {
+      "type": "hypothesis_anchor",
+      "label": "Corn Flakes maintains positive cultural relevance and association for modern Ind",
+      "color": "#6366f1",
+      "size": 6,
+      "hypothesis_id": "h_017",
       "dimension": "cultural_identity",
       "force": "Demand Gravity",
       "contrarian_pair_id": null,
-      "description": "This hypothesis suggests that cultural alignment is not the primary issue, implying that poor repeat purchase stems from more immediate post-trial factors. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_035"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "Current demographic shifts do not significantly impact the repeat purchase behav",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_036",
-      "dimension": "demographic_shift",
-      "force": "Reinforcement Stability",
-      "contrarian_pair_id": null,
-      "description": "This hypothesis suggests that consumer preferences are not fundamentally changing due to demographics, directing investigation towards other factors impacting repeat purchases. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_036"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "The competitive landscape does not significantly deter repeat purchases of Kello",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_037",
-      "dimension": "competitive_shift",
-      "force": "Reinforcement Stability",
-      "contrarian_pair_id": null,
-      "description": "This hypothesis explores the possibility that competitive intensity is not the primary cause for the lack of repeat purchases, suggesting intrinsic product or post-trial experience issues are more central. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_037"
-    },
-    {
-      "type": "hypothesis_anchor",
-      "label": "The post-trial experience with Kellogg's Corn Portfolio is convenient, versatile",
-      "color": "#6366f1",
-      "size": 6,
-      "hypothesis_id": "h_038",
-      "dimension": "situational_context",
-      "force": "Reinforcement Stability",
-      "contrarian_pair_id": null,
-      "description": "This hypothesis suggests that the practical aspects of post-trial usage are not the cause of poor repeat, thereby pointing to taste, value, or competitive factors. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
-      "id": "hypothesis_anchor_h_038"
+      "description": "This hypothesis posits that cultural relevance isn't the primary issue, but rather other forces are negating the impact of past interventions, even if corn flakes align with cultural identity. No meaningful opposite exists for this hypothesis \u2014 it stands alone.",
+      "id": "hypothesis_anchor_h_017"
     },
     {
       "type": "subject",
-      "label": "Consumers perceive Kellogg's Cornflakes as a dated breakfast option compared to the perceived modernity and health benefits of Muesli and Granola.",
-      "force": "Demand Gravity",
-      "subject": "Consumers perceive Kellogg's Cornflakes as a dated breakfast option compared to the perceived modernity and health benefits of Muesli and Granola.",
+      "label": "Kellogg's Corn Portfolio maintains a strong and positive brand perception for quality and trust among its target consumers, with shifts to Muesli and Granola driven by specific functional needs not currently met by cornflakes.",
+      "force": "Reinforcement Stability",
+      "subject": "Kellogg's Corn Portfolio maintains a strong and positive brand perception for quality and trust among its target consumers, with shifts to Muesli and Granola driven by specific functional needs not currently met by cornflakes.",
       "description": "",
-      "id": "Consumers perceive Kellogg's Cornflakes as a dated breakfast option compared to the perceived modernity and health benefits of Muesli and Granola."
+      "id": "Kellogg's Corn Portfolio maintains a strong and positive brand perception for quality and trust among its target consumers, with shifts to Muesli and Granola driven by specific functional needs not currently met by cornflakes."
     },
     {
       "type": "component",
-      "label": "Kellogg's Cornflakes (dated perception)",
-      "force": "Demand Gravity",
-      "subject": "Consumers perceive Kellogg's Cornflakes as a dated breakfast option compared to the perceived modernity and health benefits of Muesli and Granola.",
+      "label": "brand_perception",
+      "force": "Reinforcement Stability",
+      "subject": "Kellogg's Corn Portfolio maintains a strong and positive brand perception for quality and trust among its target consumers, with shifts to Muesli and Granola driven by specific functional needs not currently met by cornflakes.",
       "description": "",
-      "id": "Kellogg's Cornflakes (dated perception)"
+      "id": "brand_perception"
     },
     {
       "type": "signal",
-      "label": "brand_associations",
-      "force": "Demand Gravity",
-      "subject": "Consumers perceive Kellogg's Cornflakes as a dated breakfast option compared to the perceived modernity and health benefits of Muesli and Granola.",
+      "label": "brand_trust_scores_high",
+      "force": "Reinforcement Stability",
+      "subject": "Kellogg's Corn Portfolio maintains a strong and positive brand perception for quality and trust among its target consumers, with shifts to Muesli and Granola driven by specific functional needs not currently met by cornflakes.",
       "description": "",
-      "id": "brand_associations"
+      "id": "brand_trust_scores_high"
     },
     {
       "type": "signal",
-      "label": "category_usage_trends",
-      "force": "Demand Gravity",
-      "subject": "Consumers perceive Kellogg's Cornflakes as a dated breakfast option compared to the perceived modernity and health benefits of Muesli and Granola.",
+      "label": "brand_quality_perception_high",
+      "force": "Reinforcement Stability",
+      "subject": "Kellogg's Corn Portfolio maintains a strong and positive brand perception for quality and trust among its target consumers, with shifts to Muesli and Granola driven by specific functional needs not currently met by cornflakes.",
       "description": "",
-      "id": "category_usage_trends"
+      "id": "brand_quality_perception_high"
     },
     {
       "type": "signal",
-      "label": "consumer_sentiment_analysis",
-      "force": "Demand Gravity",
-      "subject": "Consumers perceive Kellogg's Cornflakes as a dated breakfast option compared to the perceived modernity and health benefits of Muesli and Granola.",
+      "label": "functional_benefit_gap_perception",
+      "force": "Reinforcement Stability",
+      "subject": "Kellogg's Corn Portfolio maintains a strong and positive brand perception for quality and trust among its target consumers, with shifts to Muesli and Granola driven by specific functional needs not currently met by cornflakes.",
       "description": "",
-      "id": "consumer_sentiment_analysis"
+      "id": "functional_benefit_gap_perception"
     },
     {
-      "type": "component",
-      "label": "Muesli",
-      "force": "Demand Gravity",
-      "subject": "Consumers perceive Kellogg's Cornflakes as a dated breakfast option compared to the perceived modernity and health benefits of Muesli and Granola.",
+      "type": "signal",
+      "label": "brand_awareness_high",
+      "force": "Reinforcement Stability",
+      "subject": "Kellogg's Corn Portfolio maintains a strong and positive brand perception for quality and trust among its target consumers, with shifts to Muesli and Granola driven by specific functional needs not currently met by cornflakes.",
       "description": "",
-      "id": "Muesli"
-    },
-    {
-      "type": "component",
-      "label": "Granola",
-      "force": "Demand Gravity",
-      "subject": "Consumers perceive Kellogg's Cornflakes as a dated breakfast option compared to the perceived modernity and health benefits of Muesli and Granola.",
-      "description": "",
-      "id": "Granola"
-    },
-    {
-      "type": "component",
-      "label": "modernity and health benefits (alternatives)",
-      "force": "Demand Gravity",
-      "subject": "Consumers perceive Kellogg's Cornflakes as a dated breakfast option compared to the perceived modernity and health benefits of Muesli and Granola.",
-      "description": "",
-      "id": "modernity and health benefits (alternatives)"
-    },
-    {
-      "type": "component",
-      "label": "brand_perception (dimension)",
-      "force": "Demand Gravity",
-      "subject": "Consumers perceive Kellogg's Cornflakes as a dated breakfast option compared to the perceived modernity and health benefits of Muesli and Granola.",
-      "description": "",
-      "id": "brand_perception (dimension)"
+      "id": "brand_awareness_high"
     },
     {
       "type": "subject",
-      "label": "Local low-priced competitors like Mohan Cornflakes are eroding Kellogg's market share by offering a perceived equivalent product at a significantly lower price point, leading to a 'value squeeze'.",
-      "force": "Value Elasticity",
-      "subject": "Local low-priced competitors like Mohan Cornflakes are eroding Kellogg's market share by offering a perceived equivalent product at a significantly lower price point, leading to a 'value squeeze'.",
+      "label": "Traditional Cornflakes, particularly Kellogg's, still hold a strong association with comforting, familiar, and established breakfast rituals within Indian cultural contexts, and the shift is purely based on perceived functional benefits.",
+      "force": "Reinforcement Stability",
+      "subject": "Traditional Cornflakes, particularly Kellogg's, still hold a strong association with comforting, familiar, and established breakfast rituals within Indian cultural contexts, and the shift is purely based on perceived functional benefits.",
       "description": "",
-      "id": "Local low-priced competitors like Mohan Cornflakes are eroding Kellogg's market share by offering a perceived equivalent product at a significantly lower price point, leading to a 'value squeeze'."
+      "id": "Traditional Cornflakes, particularly Kellogg's, still hold a strong association with comforting, familiar, and established breakfast rituals within Indian cultural contexts, and the shift is purely based on perceived functional benefits."
     },
     {
       "type": "component",
-      "label": "Mohan Cornflakes",
-      "force": "Competitive Energy",
-      "subject": "Kellogg's premium pricing for its Corn Portfolio is perceived as unjustified given the increased availability and acceptable quality of lower-priced local competitors like Mohan Cornflakes.",
+      "label": "cultural_identity",
+      "force": "Reinforcement Stability",
+      "subject": "Traditional Cornflakes, particularly Kellogg's, still hold a strong association with comforting, familiar, and established breakfast rituals within Indian cultural contexts, and the shift is purely based on perceived functional benefits.",
       "description": "",
-      "id": "Mohan Cornflakes"
+      "id": "cultural_identity"
+    },
+    {
+      "type": "signal",
+      "label": "comfort_food_association",
+      "force": "Reinforcement Stability",
+      "subject": "Traditional Cornflakes, particularly Kellogg's, still hold a strong association with comforting, familiar, and established breakfast rituals within Indian cultural contexts, and the shift is purely based on perceived functional benefits.",
+      "description": "",
+      "id": "comfort_food_association"
+    },
+    {
+      "type": "signal",
+      "label": "family_tradition_narratives",
+      "force": "Reinforcement Stability",
+      "subject": "Traditional Cornflakes, particularly Kellogg's, still hold a strong association with comforting, familiar, and established breakfast rituals within Indian cultural contexts, and the shift is purely based on perceived functional benefits.",
+      "description": "",
+      "id": "family_tradition_narratives"
+    },
+    {
+      "type": "signal",
+      "label": "functional_benefit_seeking",
+      "force": "Reinforcement Stability",
+      "subject": "Traditional Cornflakes, particularly Kellogg's, still hold a strong association with comforting, familiar, and established breakfast rituals within Indian cultural contexts, and the shift is purely based on perceived functional benefits.",
+      "description": "",
+      "id": "functional_benefit_seeking"
+    },
+    {
+      "type": "signal",
+      "label": "emotional_attachment_to_brand",
+      "force": "Reinforcement Stability",
+      "subject": "Traditional Cornflakes, particularly Kellogg's, still hold a strong association with comforting, familiar, and established breakfast rituals within Indian cultural contexts, and the shift is purely based on perceived functional benefits.",
+      "description": "",
+      "id": "emotional_attachment_to_brand"
+    },
+    {
+      "type": "subject",
+      "label": "Aggressive marketing, product innovation, and expanded availability by Muesli and Granola brands, coupled with pricing pressure from local players like Mohan Cornflakes, have significantly eroded Kellogg's Corn Portfolio market share.",
+      "force": "Competitive Energy Field",
+      "subject": "Aggressive marketing, product innovation, and expanded availability by Muesli and Granola brands, coupled with pricing pressure from local players like Mohan Cornflakes, have significantly eroded Kellogg's Corn Portfolio market share.",
+      "description": "",
+      "id": "Aggressive marketing, product innovation, and expanded availability by Muesli and Granola brands, coupled with pricing pressure from local players like Mohan Cornflakes, have significantly eroded Kellogg's Corn Portfolio market share."
+    },
+    {
+      "type": "component",
+      "label": "competitive_shift",
+      "force": "Competitive Energy Field",
+      "subject": "Aggressive marketing, product innovation, and expanded availability by Muesli and Granola brands, coupled with pricing pressure from local players like Mohan Cornflakes, have significantly eroded Kellogg's Corn Portfolio market share.",
+      "description": "",
+      "id": "competitive_shift"
+    },
+    {
+      "type": "signal",
+      "label": "competitor_marketing_spend",
+      "force": "Competitive Energy Field",
+      "subject": "Aggressive marketing, product innovation, and expanded availability by Muesli and Granola brands, coupled with pricing pressure from local players like Mohan Cornflakes, have significantly eroded Kellogg's Corn Portfolio market share.",
+      "description": "",
+      "id": "competitor_marketing_spend"
+    },
+    {
+      "type": "signal",
+      "label": "competitor_new_product_introductions",
+      "force": "Competitive Energy Field",
+      "subject": "Aggressive marketing, product innovation, and expanded availability by Muesli and Granola brands, coupled with pricing pressure from local players like Mohan Cornflakes, have significantly eroded Kellogg's Corn Portfolio market share.",
+      "description": "",
+      "id": "competitor_new_product_introductions"
+    },
+    {
+      "type": "signal",
+      "label": "market_share_erosion_data",
+      "force": "Competitive Energy Field",
+      "subject": "Aggressive marketing, product innovation, and expanded availability by Muesli and Granola brands, coupled with pricing pressure from local players like Mohan Cornflakes, have significantly eroded Kellogg's Corn Portfolio market share.",
+      "description": "",
+      "id": "market_share_erosion_data"
+    },
+    {
+      "type": "signal",
+      "label": "consumer_awareness_of_competitors",
+      "force": "Competitive Energy Field",
+      "subject": "Aggressive marketing, product innovation, and expanded availability by Muesli and Granola brands, coupled with pricing pressure from local players like Mohan Cornflakes, have significantly eroded Kellogg's Corn Portfolio market share.",
+      "description": "",
+      "id": "consumer_awareness_of_competitors"
+    },
+    {
+      "type": "subject",
+      "label": "Kellogg's Corn Portfolio is perceived as offering insufficient value to justify its price point compared to lower-priced local alternatives like Mohan Cornflakes, contributing to reduced repeat purchases.",
+      "force": "Value Elasticity Field",
+      "subject": "Kellogg's Corn Portfolio is perceived as offering insufficient value to justify its price point compared to lower-priced local alternatives like Mohan Cornflakes, contributing to reduced repeat purchases.",
+      "description": "",
+      "id": "Kellogg's Corn Portfolio is perceived as offering insufficient value to justify its price point compared to lower-priced local alternatives like Mohan Cornflakes, contributing to reduced repeat purchases."
+    },
+    {
+      "type": "component",
+      "label": "price",
+      "force": "Value Elasticity Field",
+      "subject": "Kellogg's Corn Portfolio maintains a premium perception justified by superior quality and brand heritage, with pricing not being the primary driver for shifts to Muesli/Granola or local brands, but rather functional benefits or aspirational appeal.",
+      "description": "",
+      "id": "price"
     },
     {
       "type": "signal",
       "label": "price_sensitivity",
-      "force": "Value Elasticity",
-      "subject": "Kellogg's premium pricing for its Corn Portfolio is perceived as unjustified given the increased availability and acceptable quality of lower-priced local competitors like Mohan Cornflakes.",
+      "force": "Value Elasticity Field",
+      "subject": "Kellogg's Corn Portfolio is perceived as offering insufficient value to justify its price point compared to lower-priced local alternatives like Mohan Cornflakes, contributing to reduced repeat purchases.",
       "description": "",
       "id": "price_sensitivity"
     },
     {
       "type": "signal",
-      "label": "competitor_pricing_analysis",
-      "force": "Competitive Energy",
-      "subject": "Local low-priced competitors like Mohan Cornflakes are eroding Kellogg's market share by offering a perceived equivalent product at a significantly lower price point, leading to a 'value squeeze'.",
+      "label": "value_for_money_perception",
+      "force": "Value Elasticity Field",
+      "subject": "Kellogg's Corn Portfolio is perceived as offering insufficient value to justify its price point compared to lower-priced local alternatives like Mohan Cornflakes, contributing to reduced repeat purchases.",
       "description": "",
-      "id": "competitor_pricing_analysis"
+      "id": "value_for_money_perception"
     },
     {
       "type": "signal",
       "label": "switching_narratives",
-      "force": "Value Elasticity",
-      "subject": "Kellogg's premium pricing for its Corn Portfolio is perceived as unjustified given the increased availability and acceptable quality of lower-priced local competitors like Mohan Cornflakes.",
+      "force": "Value Elasticity Field",
+      "subject": "Kellogg's Corn Portfolio is perceived as offering insufficient value to justify its price point compared to lower-priced local alternatives like Mohan Cornflakes, contributing to reduced repeat purchases.",
       "description": "",
       "id": "switching_narratives"
     },
     {
-      "type": "component",
-      "label": "Local low-priced competitors",
-      "force": "Competitive Energy",
-      "subject": "Local low-priced competitors like Mohan Cornflakes are eroding Kellogg's market share by offering a perceived equivalent product at a significantly lower price point, leading to a 'value squeeze'.",
+      "type": "signal",
+      "label": "competitor_price_comparison",
+      "force": "Value Elasticity Field",
+      "subject": "Kellogg's Corn Portfolio is perceived as offering insufficient value to justify its price point compared to lower-priced local alternatives like Mohan Cornflakes, contributing to reduced repeat purchases.",
       "description": "",
-      "id": "Local low-priced competitors"
-    },
-    {
-      "type": "component",
-      "label": "'value squeeze'",
-      "force": "Value Elasticity",
-      "subject": "Local low-priced competitors like Mohan Cornflakes are eroding Kellogg's market share by offering a perceived equivalent product at a significantly lower price point, leading to a 'value squeeze'.",
-      "description": "",
-      "id": "'value squeeze'"
-    },
-    {
-      "type": "component",
-      "label": "price (dimension)",
-      "force": "Value Elasticity",
-      "subject": "Kellogg's premium pricing for its Corn Portfolio is perceived as unjustified given the increased availability and acceptable quality of lower-priced local competitors like Mohan Cornflakes.",
-      "description": "",
-      "id": "price (dimension)"
+      "id": "competitor_price_comparison"
     },
     {
       "type": "subject",
-      "label": "The 'Multigrain' proposition on Kellogg's Cornflakes does not align with the specific health-seeking behaviors or perceived nutritional benefits prioritized by the target Indian consumer segment for breakfast.",
-      "force": "Demand Gravity",
-      "subject": "The 'Multigrain' proposition on Kellogg's Cornflakes does not align with the specific health-seeking behaviors or perceived nutritional benefits prioritized by the target Indian consumer segment for breakfast.",
+      "label": "Kellogg's Corn Portfolio maintains a premium perception justified by superior quality and brand heritage, with pricing not being the primary driver for shifts to Muesli/Granola or local brands, but rather functional benefits or aspirational appeal.",
+      "force": "Value Elasticity Field",
+      "subject": "Kellogg's Corn Portfolio maintains a premium perception justified by superior quality and brand heritage, with pricing not being the primary driver for shifts to Muesli/Granola or local brands, but rather functional benefits or aspirational appeal.",
       "description": "",
-      "id": "The 'Multigrain' proposition on Kellogg's Cornflakes does not align with the specific health-seeking behaviors or perceived nutritional benefits prioritized by the target Indian consumer segment for breakfast."
-    },
-    {
-      "type": "component",
-      "label": "'Multigrain' proposition on Kellogg's Cornflakes",
-      "force": "Demand Gravity",
-      "subject": "The 'Multigrain' proposition on Kellogg's Cornflakes does not align with the specific health-seeking behaviors or perceived nutritional benefits prioritized by the target Indian consumer segment for breakfast.",
-      "description": "",
-      "id": "'Multigrain' proposition on Kellogg's Cornflakes"
+      "id": "Kellogg's Corn Portfolio maintains a premium perception justified by superior quality and brand heritage, with pricing not being the primary driver for shifts to Muesli/Granola or local brands, but rather functional benefits or aspirational appeal."
     },
     {
       "type": "signal",
-      "label": "health_perception",
-      "force": "Demand Gravity",
-      "subject": "The 'Multigrain' proposition on Kellogg's Cornflakes does not align with the specific health-seeking behaviors or perceived nutritional benefits prioritized by the target Indian consumer segment for breakfast.",
+      "label": "brand_loyalty_high",
+      "force": "Value Elasticity Field",
+      "subject": "Kellogg's Corn Portfolio maintains a premium perception justified by superior quality and brand heritage, with pricing not being the primary driver for shifts to Muesli/Granola or local brands, but rather functional benefits or aspirational appeal.",
       "description": "",
-      "id": "health_perception"
+      "id": "brand_loyalty_high"
     },
     {
       "type": "signal",
-      "label": "ingredient_preference",
-      "force": "Demand Gravity",
-      "subject": "The 'Multigrain' proposition on Kellogg's Cornflakes does not align with the specific health-seeking behaviors or perceived nutritional benefits prioritized by the target Indian consumer segment for breakfast.",
+      "label": "premium_justification_narratives",
+      "force": "Value Elasticity Field",
+      "subject": "Kellogg's Corn Portfolio maintains a premium perception justified by superior quality and brand heritage, with pricing not being the primary driver for shifts to Muesli/Granola or local brands, but rather functional benefits or aspirational appeal.",
       "description": "",
-      "id": "ingredient_preference"
+      "id": "premium_justification_narratives"
     },
     {
       "type": "signal",
-      "label": "product_benefit_understanding",
-      "force": "Demand Gravity",
-      "subject": "The 'Multigrain' proposition on Kellogg's Cornflakes does not align with the specific health-seeking behaviors or perceived nutritional benefits prioritized by the target Indian consumer segment for breakfast.",
+      "label": "quality_perception_strong",
+      "force": "Value Elasticity Field",
+      "subject": "Kellogg's Corn Portfolio maintains a premium perception justified by superior quality and brand heritage, with pricing not being the primary driver for shifts to Muesli/Granola or local brands, but rather functional benefits or aspirational appeal.",
       "description": "",
-      "id": "product_benefit_understanding"
+      "id": "quality_perception_strong"
     },
     {
-      "type": "component",
-      "label": "health-seeking behaviors",
-      "force": "Demand Gravity",
-      "subject": "The 'Multigrain' proposition on Kellogg's Cornflakes does not align with the specific health-seeking behaviors or perceived nutritional benefits prioritized by the target Indian consumer segment for breakfast.",
+      "type": "signal",
+      "label": "brand_heritage_value",
+      "force": "Value Elasticity Field",
+      "subject": "Kellogg's Corn Portfolio maintains a premium perception justified by superior quality and brand heritage, with pricing not being the primary driver for shifts to Muesli/Granola or local brands, but rather functional benefits or aspirational appeal.",
       "description": "",
-      "id": "health-seeking behaviors"
-    },
-    {
-      "type": "component",
-      "label": "perceived nutritional benefits",
-      "force": "Demand Gravity",
-      "subject": "The 'Multigrain' proposition on Kellogg's Cornflakes does not align with the specific health-seeking behaviors or perceived nutritional benefits prioritized by the target Indian consumer segment for breakfast.",
-      "description": "",
-      "id": "perceived nutritional benefits"
-    },
-    {
-      "type": "component",
-      "label": "product (dimension)",
-      "force": "Choice Architecture",
-      "subject": "The taste profile of Kellogg's Corn Portfolio (including Multigrain) no longer aligns with the evolving flavor preferences of modern Indian consumers, leading to satisfactory trial but poor repeat purchases.",
-      "description": "",
-      "id": "product (dimension)"
+      "id": "brand_heritage_value"
     },
     {
       "type": "subject",
-      "label": "Kellogg's Cornflakes' taste profile or functional benefits do not meet the post-trial expectations of consumers, leading to low repeat purchase rates.",
-      "force": "Reinforcement Stability",
-      "subject": "Kellogg's Cornflakes' taste profile or functional benefits do not meet the post-trial expectations of consumers, leading to low repeat purchase rates.",
+      "label": "The taste profile and texture of Kellogg's Corn Portfolio, including the Multigrain variant, do not meet the evolving palate preferences of modern consumers, leading to a lack of repeat purchases and a shift towards Muesli and Granola.",
+      "force": "Choice Architecture Pressure",
+      "subject": "The taste profile and texture of Kellogg's Corn Portfolio, including the Multigrain variant, do not meet the evolving palate preferences of modern consumers, leading to a lack of repeat purchases and a shift towards Muesli and Granola.",
       "description": "",
-      "id": "Kellogg's Cornflakes' taste profile or functional benefits do not meet the post-trial expectations of consumers, leading to low repeat purchase rates."
+      "id": "The taste profile and texture of Kellogg's Corn Portfolio, including the Multigrain variant, do not meet the evolving palate preferences of modern consumers, leading to a lack of repeat purchases and a shift towards Muesli and Granola."
     },
     {
       "type": "component",
-      "label": "Kellogg's Cornflakes' taste profile",
-      "force": "Reinforcement Stability",
-      "subject": "Kellogg's Cornflakes' taste profile or functional benefits do not meet the post-trial expectations of consumers, leading to low repeat purchase rates.",
+      "label": "product",
+      "force": "Choice Architecture Pressure",
+      "subject": "The taste profile and texture of Kellogg's Corn Portfolio, including the Multigrain variant, do not meet the evolving palate preferences of modern consumers, leading to a lack of repeat purchases and a shift towards Muesli and Granola.",
       "description": "",
-      "id": "Kellogg's Cornflakes' taste profile"
+      "id": "product"
     },
     {
       "type": "signal",
-      "label": "repeat_purchase_rate",
-      "force": "Reinforcement Stability",
-      "subject": "Kellogg's Cornflakes' taste profile or functional benefits do not meet the post-trial expectations of consumers, leading to low repeat purchase rates.",
+      "label": "taste_preference_shift",
+      "force": "Choice Architecture Pressure",
+      "subject": "The taste profile and texture of Kellogg's Corn Portfolio, including the Multigrain variant, do not meet the evolving palate preferences of modern consumers, leading to a lack of repeat purchases and a shift towards Muesli and Granola.",
       "description": "",
-      "id": "repeat_purchase_rate"
+      "id": "taste_preference_shift"
     },
     {
       "type": "signal",
-      "label": "product_satisfaction",
-      "force": "Reinforcement Stability",
-      "subject": "Kellogg's Cornflakes' taste profile or functional benefits do not meet the post-trial expectations of consumers, leading to low repeat purchase rates.",
+      "label": "product_satisfaction_scores",
+      "force": "Choice Architecture Pressure",
+      "subject": "The taste profile and texture of Kellogg's Corn Portfolio, including the Multigrain variant, do not meet the evolving palate preferences of modern consumers, leading to a lack of repeat purchases and a shift towards Muesli and Granola.",
       "description": "",
-      "id": "product_satisfaction"
+      "id": "product_satisfaction_scores"
     },
     {
       "type": "signal",
-      "label": "usage_and_attitude_studies",
-      "force": "Reinforcement Stability",
-      "subject": "Kellogg's Cornflakes' taste profile or functional benefits do not meet the post-trial expectations of consumers, leading to low repeat purchase rates.",
+      "label": "repeat_purchase_rates_low",
+      "force": "Choice Architecture Pressure",
+      "subject": "The taste profile and texture of Kellogg's Corn Portfolio, including the Multigrain variant, do not meet the evolving palate preferences of modern consumers, leading to a lack of repeat purchases and a shift towards Muesli and Granola.",
       "description": "",
-      "id": "usage_and_attitude_studies"
-    },
-    {
-      "type": "component",
-      "label": "functional benefits",
-      "force": "Reinforcement Stability",
-      "subject": "Kellogg's Cornflakes' taste profile or functional benefits do not meet the post-trial expectations of consumers, leading to low repeat purchase rates.",
-      "description": "",
-      "id": "functional benefits"
-    },
-    {
-      "type": "component",
-      "label": "post-trial expectations",
-      "force": "Reinforcement Stability",
-      "subject": "Kellogg's Cornflakes' taste profile or functional benefits do not meet the post-trial expectations of consumers, leading to low repeat purchase rates.",
-      "description": "",
-      "id": "post-trial expectations"
-    },
-    {
-      "type": "component",
-      "label": "low repeat purchase rates",
-      "force": "Reinforcement Stability",
-      "subject": "Kellogg's Cornflakes' taste profile or functional benefits do not meet the post-trial expectations of consumers, leading to low repeat purchase rates.",
-      "description": "",
-      "id": "low repeat purchase rates"
-    },
-    {
-      "type": "subject",
-      "label": "Kellogg's premium pricing for its Corn Portfolio is perceived as unjustified given the increased availability and acceptable quality of lower-priced local competitors like Mohan Cornflakes.",
-      "force": "Value Elasticity",
-      "subject": "Kellogg's premium pricing for its Corn Portfolio is perceived as unjustified given the increased availability and acceptable quality of lower-priced local competitors like Mohan Cornflakes.",
-      "description": "",
-      "id": "Kellogg's premium pricing for its Corn Portfolio is perceived as unjustified given the increased availability and acceptable quality of lower-priced local competitors like Mohan Cornflakes."
-    },
-    {
-      "type": "component",
-      "label": "Kellogg's premium pricing",
-      "force": "Value Elasticity",
-      "subject": "Kellogg's premium pricing for its Corn Portfolio is perceived as unjustified given the increased availability and acceptable quality of lower-priced local competitors like Mohan Cornflakes.",
-      "description": "",
-      "id": "Kellogg's premium pricing"
+      "id": "repeat_purchase_rates_low"
     },
     {
       "type": "signal",
-      "label": "value_for_money",
-      "force": "Value Elasticity",
-      "subject": "Kellogg's premium pricing for its Corn Portfolio is perceived as unjustified given the increased availability and acceptable quality of lower-priced local competitors like Mohan Cornflakes.",
+      "label": "sensory_attributes_feedback",
+      "force": "Choice Architecture Pressure",
+      "subject": "The taste profile and texture of Kellogg's Corn Portfolio, including the Multigrain variant, do not meet the evolving palate preferences of modern consumers, leading to a lack of repeat purchases and a shift towards Muesli and Granola.",
       "description": "",
-      "id": "value_for_money"
-    },
-    {
-      "type": "component",
-      "label": "Corn Portfolio",
-      "force": "Value Elasticity",
-      "subject": "Kellogg's premium pricing for its Corn Portfolio is perceived as unjustified given the increased availability and acceptable quality of lower-priced local competitors like Mohan Cornflakes.",
-      "description": "",
-      "id": "Corn Portfolio"
-    },
-    {
-      "type": "component",
-      "label": "lower-priced local competitors",
-      "force": "Competitive Energy",
-      "subject": "Kellogg's premium pricing for its Corn Portfolio is perceived as unjustified given the increased availability and acceptable quality of lower-priced local competitors like Mohan Cornflakes.",
-      "description": "",
-      "id": "lower-priced local competitors"
-    },
-    {
-      "type": "subject",
-      "label": "The taste profile of Kellogg's Corn Portfolio (including Multigrain) no longer aligns with the evolving flavor preferences of modern Indian consumers, leading to satisfactory trial but poor repeat purchases.",
-      "force": "Choice Architecture",
-      "subject": "The taste profile of Kellogg's Corn Portfolio (including Multigrain) no longer aligns with the evolving flavor preferences of modern Indian consumers, leading to satisfactory trial but poor repeat purchases.",
-      "description": "",
-      "id": "The taste profile of Kellogg's Corn Portfolio (including Multigrain) no longer aligns with the evolving flavor preferences of modern Indian consumers, leading to satisfactory trial but poor repeat purchases."
-    },
-    {
-      "type": "component",
-      "label": "Kellogg's Corn Portfolio (including Multigrain) taste profile",
-      "force": "Choice Architecture",
-      "subject": "The taste profile of Kellogg's Corn Portfolio (including Multigrain) no longer aligns with the evolving flavor preferences of modern Indian consumers, leading to satisfactory trial but poor repeat purchases.",
-      "description": "",
-      "id": "Kellogg's Corn Portfolio (including Multigrain) taste profile"
-    },
-    {
-      "type": "signal",
-      "label": "taste_feedback_negative",
-      "force": "Choice Architecture",
-      "subject": "The taste profile of Kellogg's Corn Portfolio (including Multigrain) no longer aligns with the evolving flavor preferences of modern Indian consumers, leading to satisfactory trial but poor repeat purchases.",
-      "description": "",
-      "id": "taste_feedback_negative"
-    },
-    {
-      "type": "signal",
-      "label": "flavor_preference_shift",
-      "force": "Choice Architecture",
-      "subject": "The taste profile of Kellogg's Corn Portfolio (including Multigrain) no longer aligns with the evolving flavor preferences of modern Indian consumers, leading to satisfactory trial but poor repeat purchases.",
-      "description": "",
-      "id": "flavor_preference_shift"
-    },
-    {
-      "type": "signal",
-      "label": "repeat_purchase_barriers",
-      "force": "Reinforcement Stability",
-      "subject": "The taste profile of Kellogg's Corn Portfolio (including Multigrain) no longer aligns with the evolving flavor preferences of modern Indian consumers, leading to satisfactory trial but poor repeat purchases.",
-      "description": "",
-      "id": "repeat_purchase_barriers"
-    },
-    {
-      "type": "component",
-      "label": "evolving flavor preferences of modern Indian consumers",
-      "force": "Choice Architecture",
-      "subject": "The taste profile of Kellogg's Corn Portfolio (including Multigrain) no longer aligns with the evolving flavor preferences of modern Indian consumers, leading to satisfactory trial but poor repeat purchases.",
-      "description": "",
-      "id": "evolving flavor preferences of modern Indian consumers"
-    },
-    {
-      "type": "component",
-      "label": "satisfactory trial but poor repeat purchases",
-      "force": "Reinforcement Stability",
-      "subject": "The taste profile of Kellogg's Corn Portfolio (including Multigrain) no longer aligns with the evolving flavor preferences of modern Indian consumers, leading to satisfactory trial but poor repeat purchases.",
-      "description": "",
-      "id": "satisfactory trial but poor repeat purchases"
+      "id": "sensory_attributes_feedback"
     }
   ],
   "links": [
     {
-      "source": "Drivers behind the consistent Year-over-Year decline of Kellogg's Corn Portfolio in India",
+      "source": "Consistent Year-over-Year decline of Kellogg's Corn Portfolio in India and failure to convert robust distribution into sustained off-takes and repeat purchases within Modern Trade and E-commerce channels.",
       "target": "core_problem_cp_001"
     },
     {
-      "source": "Drivers behind the consistent Year-over-Year decline of Kellogg's Corn Portfolio in India",
+      "source": "Consistent Year-over-Year decline of Kellogg's Corn Portfolio in India and failure to convert robust distribution into sustained off-takes and repeat purchases within Modern Trade and E-commerce channels.",
       "target": "core_problem_cp_002"
     },
     {
-      "source": "Drivers behind the consistent Year-over-Year decline of Kellogg's Corn Portfolio in India",
-      "target": "core_problem_cp_003"
+      "source": "Consistent Year-over-Year decline of Kellogg's Corn Portfolio in India and failure to convert robust distribution into sustained off-takes and repeat purchases within Modern Trade and E-commerce channels.",
+      "target": "core_problem_cp_004"
     },
     {
-      "source": "Drivers behind the consistent Year-over-Year decline of Kellogg's Corn Portfolio in India",
-      "target": "core_problem_cp_004"
+      "source": "core_problem_cp_001",
+      "target": "hypothesis_anchor_h_009"
+    },
+    {
+      "source": "core_problem_cp_001",
+      "target": "hypothesis_anchor_h_011"
+    },
+    {
+      "source": "core_problem_cp_001",
+      "target": "hypothesis_anchor_h_014"
+    },
+    {
+      "source": "core_problem_cp_001",
+      "target": "hypothesis_anchor_h_018"
+    },
+    {
+      "source": "core_problem_cp_001",
+      "target": "hypothesis_anchor_h_020"
+    },
+    {
+      "source": "core_problem_cp_001",
+      "target": "hypothesis_anchor_h_022"
     },
     {
       "source": "core_problem_cp_001",
@@ -914,39 +844,79 @@
     },
     {
       "source": "core_problem_cp_001",
-      "target": "hypothesis_anchor_h_024"
-    },
-    {
-      "source": "core_problem_cp_001",
       "target": "hypothesis_anchor_h_025"
     },
     {
       "source": "core_problem_cp_001",
-      "target": "hypothesis_anchor_h_026"
+      "target": "hypothesis_anchor_h_027"
     },
     {
-      "source": "hypothesis_anchor_h_023",
-      "target": "Consumers perceive Kellogg's Cornflakes as a dated breakfast option compared to the perceived modernity and health benefits of Muesli and Granola."
+      "source": "core_problem_cp_001",
+      "target": "hypothesis_anchor_h_029"
     },
     {
-      "source": "hypothesis_anchor_h_023",
-      "target": "Local low-priced competitors like Mohan Cornflakes are eroding Kellogg's market share by offering a perceived equivalent product at a significantly lower price point, leading to a 'value squeeze'."
+      "source": "core_problem_cp_001",
+      "target": "hypothesis_anchor_h_031"
     },
     {
-      "source": "hypothesis_anchor_h_023",
-      "target": "The 'Multigrain' proposition on Kellogg's Cornflakes does not align with the specific health-seeking behaviors or perceived nutritional benefits prioritized by the target Indian consumer segment for breakfast."
+      "source": "core_problem_cp_001",
+      "target": "hypothesis_anchor_h_032"
     },
     {
-      "source": "hypothesis_anchor_h_023",
-      "target": "Kellogg's premium pricing for its Corn Portfolio is perceived as unjustified given the increased availability and acceptable quality of lower-priced local competitors like Mohan Cornflakes."
+      "source": "core_problem_cp_001",
+      "target": "hypothesis_anchor_h_033"
     },
     {
-      "source": "hypothesis_anchor_h_023",
-      "target": "The taste profile of Kellogg's Corn Portfolio (including Multigrain) no longer aligns with the evolving flavor preferences of modern Indian consumers, leading to satisfactory trial but poor repeat purchases."
+      "source": "core_problem_cp_001",
+      "target": "hypothesis_anchor_h_034"
     },
     {
-      "source": "hypothesis_anchor_h_026",
-      "target": "Kellogg's Cornflakes' taste profile or functional benefits do not meet the post-trial expectations of consumers, leading to low repeat purchase rates."
+      "source": "core_problem_cp_001",
+      "target": "hypothesis_anchor_h_035"
+    },
+    {
+      "source": "core_problem_cp_001",
+      "target": "hypothesis_anchor_h_036"
+    },
+    {
+      "source": "core_problem_cp_001",
+      "target": "hypothesis_anchor_h_037"
+    },
+    {
+      "source": "core_problem_cp_001",
+      "target": "hypothesis_anchor_h_038"
+    },
+    {
+      "source": "core_problem_cp_001",
+      "target": "hypothesis_anchor_h_039"
+    },
+    {
+      "source": "core_problem_cp_001",
+      "target": "hypothesis_anchor_h_040"
+    },
+    {
+      "source": "hypothesis_anchor_h_009",
+      "target": "Kellogg's Corn Portfolio maintains a strong and positive brand perception for quality and trust among its target consumers, with shifts to Muesli and Granola driven by specific functional needs not currently met by cornflakes."
+    },
+    {
+      "source": "hypothesis_anchor_h_009",
+      "target": "Traditional Cornflakes, particularly Kellogg's, still hold a strong association with comforting, familiar, and established breakfast rituals within Indian cultural contexts, and the shift is purely based on perceived functional benefits."
+    },
+    {
+      "source": "hypothesis_anchor_h_014",
+      "target": "Aggressive marketing, product innovation, and expanded availability by Muesli and Granola brands, coupled with pricing pressure from local players like Mohan Cornflakes, have significantly eroded Kellogg's Corn Portfolio market share."
+    },
+    {
+      "source": "hypothesis_anchor_h_018",
+      "target": "Kellogg's Corn Portfolio is perceived as offering insufficient value to justify its price point compared to lower-priced local alternatives like Mohan Cornflakes, contributing to reduced repeat purchases."
+    },
+    {
+      "source": "hypothesis_anchor_h_018",
+      "target": "Kellogg's Corn Portfolio maintains a premium perception justified by superior quality and brand heritage, with pricing not being the primary driver for shifts to Muesli/Granola or local brands, but rather functional benefits or aspirational appeal."
+    },
+    {
+      "source": "hypothesis_anchor_h_020",
+      "target": "The taste profile and texture of Kellogg's Corn Portfolio, including the Multigrain variant, do not meet the evolving palate preferences of modern consumers, leading to a lack of repeat purchases and a shift towards Muesli and Granola."
     },
     {
       "source": "core_problem_cp_002",
@@ -974,11 +944,47 @@
     },
     {
       "source": "core_problem_cp_002",
+      "target": "hypothesis_anchor_h_007"
+    },
+    {
+      "source": "core_problem_cp_002",
+      "target": "hypothesis_anchor_h_008"
+    },
+    {
+      "source": "core_problem_cp_002",
+      "target": "hypothesis_anchor_h_010"
+    },
+    {
+      "source": "core_problem_cp_002",
+      "target": "hypothesis_anchor_h_012"
+    },
+    {
+      "source": "core_problem_cp_002",
       "target": "hypothesis_anchor_h_013"
     },
     {
       "source": "core_problem_cp_002",
-      "target": "hypothesis_anchor_h_027"
+      "target": "hypothesis_anchor_h_015"
+    },
+    {
+      "source": "core_problem_cp_002",
+      "target": "hypothesis_anchor_h_016"
+    },
+    {
+      "source": "core_problem_cp_002",
+      "target": "hypothesis_anchor_h_019"
+    },
+    {
+      "source": "core_problem_cp_002",
+      "target": "hypothesis_anchor_h_021"
+    },
+    {
+      "source": "core_problem_cp_002",
+      "target": "hypothesis_anchor_h_024"
+    },
+    {
+      "source": "core_problem_cp_002",
+      "target": "hypothesis_anchor_h_026"
     },
     {
       "source": "core_problem_cp_002",
@@ -986,291 +992,131 @@
     },
     {
       "source": "core_problem_cp_002",
-      "target": "hypothesis_anchor_h_029"
-    },
-    {
-      "source": "core_problem_cp_002",
       "target": "hypothesis_anchor_h_030"
     },
     {
-      "source": "core_problem_cp_002",
-      "target": "hypothesis_anchor_h_031"
-    },
-    {
-      "source": "core_problem_cp_002",
-      "target": "hypothesis_anchor_h_032"
-    },
-    {
-      "source": "core_problem_cp_003",
-      "target": "hypothesis_anchor_h_016"
-    },
-    {
-      "source": "core_problem_cp_003",
+      "source": "core_problem_cp_004",
       "target": "hypothesis_anchor_h_017"
     },
     {
-      "source": "core_problem_cp_003",
-      "target": "hypothesis_anchor_h_018"
+      "source": "Kellogg's Corn Portfolio maintains a strong and positive brand perception for quality and trust among its target consumers, with shifts to Muesli and Granola driven by specific functional needs not currently met by cornflakes.",
+      "target": "brand_perception"
     },
     {
-      "source": "core_problem_cp_003",
-      "target": "hypothesis_anchor_h_019"
+      "source": "brand_perception",
+      "target": "brand_trust_scores_high"
     },
     {
-      "source": "core_problem_cp_003",
-      "target": "hypothesis_anchor_h_020"
+      "source": "brand_perception",
+      "target": "brand_quality_perception_high"
     },
     {
-      "source": "core_problem_cp_003",
-      "target": "hypothesis_anchor_h_021"
+      "source": "brand_perception",
+      "target": "functional_benefit_gap_perception"
     },
     {
-      "source": "core_problem_cp_003",
-      "target": "hypothesis_anchor_h_022"
+      "source": "brand_perception",
+      "target": "brand_awareness_high"
     },
     {
-      "source": "core_problem_cp_003",
-      "target": "hypothesis_anchor_h_039"
+      "source": "Traditional Cornflakes, particularly Kellogg's, still hold a strong association with comforting, familiar, and established breakfast rituals within Indian cultural contexts, and the shift is purely based on perceived functional benefits.",
+      "target": "cultural_identity"
     },
     {
-      "source": "core_problem_cp_003",
-      "target": "hypothesis_anchor_h_040"
+      "source": "cultural_identity",
+      "target": "comfort_food_association"
     },
     {
-      "source": "core_problem_cp_004",
-      "target": "hypothesis_anchor_h_007"
+      "source": "cultural_identity",
+      "target": "family_tradition_narratives"
     },
     {
-      "source": "core_problem_cp_004",
-      "target": "hypothesis_anchor_h_008"
+      "source": "cultural_identity",
+      "target": "functional_benefit_seeking"
     },
     {
-      "source": "core_problem_cp_004",
-      "target": "hypothesis_anchor_h_009"
+      "source": "cultural_identity",
+      "target": "emotional_attachment_to_brand"
     },
     {
-      "source": "core_problem_cp_004",
-      "target": "hypothesis_anchor_h_010"
+      "source": "Aggressive marketing, product innovation, and expanded availability by Muesli and Granola brands, coupled with pricing pressure from local players like Mohan Cornflakes, have significantly eroded Kellogg's Corn Portfolio market share.",
+      "target": "competitive_shift"
     },
     {
-      "source": "core_problem_cp_004",
-      "target": "hypothesis_anchor_h_011"
+      "source": "competitive_shift",
+      "target": "competitor_marketing_spend"
     },
     {
-      "source": "core_problem_cp_004",
-      "target": "hypothesis_anchor_h_012"
+      "source": "competitive_shift",
+      "target": "competitor_new_product_introductions"
     },
     {
-      "source": "core_problem_cp_004",
-      "target": "hypothesis_anchor_h_014"
+      "source": "competitive_shift",
+      "target": "market_share_erosion_data"
     },
     {
-      "source": "core_problem_cp_004",
-      "target": "hypothesis_anchor_h_015"
+      "source": "competitive_shift",
+      "target": "consumer_awareness_of_competitors"
     },
     {
-      "source": "core_problem_cp_004",
-      "target": "hypothesis_anchor_h_033"
+      "source": "Kellogg's Corn Portfolio is perceived as offering insufficient value to justify its price point compared to lower-priced local alternatives like Mohan Cornflakes, contributing to reduced repeat purchases.",
+      "target": "price"
     },
     {
-      "source": "core_problem_cp_004",
-      "target": "hypothesis_anchor_h_034"
-    },
-    {
-      "source": "core_problem_cp_004",
-      "target": "hypothesis_anchor_h_035"
-    },
-    {
-      "source": "core_problem_cp_004",
-      "target": "hypothesis_anchor_h_036"
-    },
-    {
-      "source": "core_problem_cp_004",
-      "target": "hypothesis_anchor_h_037"
-    },
-    {
-      "source": "core_problem_cp_004",
-      "target": "hypothesis_anchor_h_038"
-    },
-    {
-      "source": "Consumers perceive Kellogg's Cornflakes as a dated breakfast option compared to the perceived modernity and health benefits of Muesli and Granola.",
-      "target": "Kellogg's Cornflakes (dated perception)"
-    },
-    {
-      "source": "Consumers perceive Kellogg's Cornflakes as a dated breakfast option compared to the perceived modernity and health benefits of Muesli and Granola.",
-      "target": "Muesli"
-    },
-    {
-      "source": "Consumers perceive Kellogg's Cornflakes as a dated breakfast option compared to the perceived modernity and health benefits of Muesli and Granola.",
-      "target": "Granola"
-    },
-    {
-      "source": "Consumers perceive Kellogg's Cornflakes as a dated breakfast option compared to the perceived modernity and health benefits of Muesli and Granola.",
-      "target": "modernity and health benefits (alternatives)"
-    },
-    {
-      "source": "Consumers perceive Kellogg's Cornflakes as a dated breakfast option compared to the perceived modernity and health benefits of Muesli and Granola.",
-      "target": "brand_perception (dimension)"
-    },
-    {
-      "source": "Kellogg's Cornflakes (dated perception)",
-      "target": "brand_associations"
-    },
-    {
-      "source": "Kellogg's Cornflakes (dated perception)",
-      "target": "category_usage_trends"
-    },
-    {
-      "source": "Kellogg's Cornflakes (dated perception)",
-      "target": "consumer_sentiment_analysis"
-    },
-    {
-      "source": "Local low-priced competitors like Mohan Cornflakes are eroding Kellogg's market share by offering a perceived equivalent product at a significantly lower price point, leading to a 'value squeeze'.",
-      "target": "Mohan Cornflakes"
-    },
-    {
-      "source": "Local low-priced competitors like Mohan Cornflakes are eroding Kellogg's market share by offering a perceived equivalent product at a significantly lower price point, leading to a 'value squeeze'.",
-      "target": "Local low-priced competitors"
-    },
-    {
-      "source": "Local low-priced competitors like Mohan Cornflakes are eroding Kellogg's market share by offering a perceived equivalent product at a significantly lower price point, leading to a 'value squeeze'.",
-      "target": "'value squeeze'"
-    },
-    {
-      "source": "Local low-priced competitors like Mohan Cornflakes are eroding Kellogg's market share by offering a perceived equivalent product at a significantly lower price point, leading to a 'value squeeze'.",
-      "target": "price (dimension)"
-    },
-    {
-      "source": "Mohan Cornflakes",
+      "source": "price",
       "target": "price_sensitivity"
     },
     {
-      "source": "Mohan Cornflakes",
-      "target": "competitor_pricing_analysis"
+      "source": "price",
+      "target": "value_for_money_perception"
     },
     {
-      "source": "Mohan Cornflakes",
+      "source": "price",
       "target": "switching_narratives"
     },
     {
-      "source": "The 'Multigrain' proposition on Kellogg's Cornflakes does not align with the specific health-seeking behaviors or perceived nutritional benefits prioritized by the target Indian consumer segment for breakfast.",
-      "target": "'Multigrain' proposition on Kellogg's Cornflakes"
+      "source": "price",
+      "target": "competitor_price_comparison"
     },
     {
-      "source": "The 'Multigrain' proposition on Kellogg's Cornflakes does not align with the specific health-seeking behaviors or perceived nutritional benefits prioritized by the target Indian consumer segment for breakfast.",
-      "target": "health-seeking behaviors"
+      "source": "price",
+      "target": "brand_loyalty_high"
     },
     {
-      "source": "The 'Multigrain' proposition on Kellogg's Cornflakes does not align with the specific health-seeking behaviors or perceived nutritional benefits prioritized by the target Indian consumer segment for breakfast.",
-      "target": "perceived nutritional benefits"
+      "source": "price",
+      "target": "premium_justification_narratives"
     },
     {
-      "source": "The 'Multigrain' proposition on Kellogg's Cornflakes does not align with the specific health-seeking behaviors or perceived nutritional benefits prioritized by the target Indian consumer segment for breakfast.",
-      "target": "product (dimension)"
+      "source": "price",
+      "target": "quality_perception_strong"
     },
     {
-      "source": "'Multigrain' proposition on Kellogg's Cornflakes",
-      "target": "health_perception"
+      "source": "price",
+      "target": "brand_heritage_value"
     },
     {
-      "source": "'Multigrain' proposition on Kellogg's Cornflakes",
-      "target": "ingredient_preference"
+      "source": "Kellogg's Corn Portfolio maintains a premium perception justified by superior quality and brand heritage, with pricing not being the primary driver for shifts to Muesli/Granola or local brands, but rather functional benefits or aspirational appeal.",
+      "target": "price"
     },
     {
-      "source": "'Multigrain' proposition on Kellogg's Cornflakes",
-      "target": "product_benefit_understanding"
+      "source": "The taste profile and texture of Kellogg's Corn Portfolio, including the Multigrain variant, do not meet the evolving palate preferences of modern consumers, leading to a lack of repeat purchases and a shift towards Muesli and Granola.",
+      "target": "product"
     },
     {
-      "source": "Kellogg's Cornflakes' taste profile or functional benefits do not meet the post-trial expectations of consumers, leading to low repeat purchase rates.",
-      "target": "Kellogg's Cornflakes' taste profile"
+      "source": "product",
+      "target": "taste_preference_shift"
     },
     {
-      "source": "Kellogg's Cornflakes' taste profile or functional benefits do not meet the post-trial expectations of consumers, leading to low repeat purchase rates.",
-      "target": "functional benefits"
+      "source": "product",
+      "target": "product_satisfaction_scores"
     },
     {
-      "source": "Kellogg's Cornflakes' taste profile or functional benefits do not meet the post-trial expectations of consumers, leading to low repeat purchase rates.",
-      "target": "post-trial expectations"
+      "source": "product",
+      "target": "repeat_purchase_rates_low"
     },
     {
-      "source": "Kellogg's Cornflakes' taste profile or functional benefits do not meet the post-trial expectations of consumers, leading to low repeat purchase rates.",
-      "target": "low repeat purchase rates"
-    },
-    {
-      "source": "Kellogg's Cornflakes' taste profile or functional benefits do not meet the post-trial expectations of consumers, leading to low repeat purchase rates.",
-      "target": "product (dimension)"
-    },
-    {
-      "source": "Kellogg's Cornflakes' taste profile",
-      "target": "repeat_purchase_rate"
-    },
-    {
-      "source": "Kellogg's Cornflakes' taste profile",
-      "target": "product_satisfaction"
-    },
-    {
-      "source": "Kellogg's Cornflakes' taste profile",
-      "target": "usage_and_attitude_studies"
-    },
-    {
-      "source": "Kellogg's premium pricing for its Corn Portfolio is perceived as unjustified given the increased availability and acceptable quality of lower-priced local competitors like Mohan Cornflakes.",
-      "target": "Kellogg's premium pricing"
-    },
-    {
-      "source": "Kellogg's premium pricing for its Corn Portfolio is perceived as unjustified given the increased availability and acceptable quality of lower-priced local competitors like Mohan Cornflakes.",
-      "target": "Corn Portfolio"
-    },
-    {
-      "source": "Kellogg's premium pricing for its Corn Portfolio is perceived as unjustified given the increased availability and acceptable quality of lower-priced local competitors like Mohan Cornflakes.",
-      "target": "lower-priced local competitors"
-    },
-    {
-      "source": "Kellogg's premium pricing for its Corn Portfolio is perceived as unjustified given the increased availability and acceptable quality of lower-priced local competitors like Mohan Cornflakes.",
-      "target": "Mohan Cornflakes"
-    },
-    {
-      "source": "Kellogg's premium pricing for its Corn Portfolio is perceived as unjustified given the increased availability and acceptable quality of lower-priced local competitors like Mohan Cornflakes.",
-      "target": "price (dimension)"
-    },
-    {
-      "source": "Kellogg's premium pricing",
-      "target": "price_sensitivity"
-    },
-    {
-      "source": "Kellogg's premium pricing",
-      "target": "value_for_money"
-    },
-    {
-      "source": "Kellogg's premium pricing",
-      "target": "switching_narratives"
-    },
-    {
-      "source": "The taste profile of Kellogg's Corn Portfolio (including Multigrain) no longer aligns with the evolving flavor preferences of modern Indian consumers, leading to satisfactory trial but poor repeat purchases.",
-      "target": "Kellogg's Corn Portfolio (including Multigrain) taste profile"
-    },
-    {
-      "source": "The taste profile of Kellogg's Corn Portfolio (including Multigrain) no longer aligns with the evolving flavor preferences of modern Indian consumers, leading to satisfactory trial but poor repeat purchases.",
-      "target": "evolving flavor preferences of modern Indian consumers"
-    },
-    {
-      "source": "The taste profile of Kellogg's Corn Portfolio (including Multigrain) no longer aligns with the evolving flavor preferences of modern Indian consumers, leading to satisfactory trial but poor repeat purchases.",
-      "target": "satisfactory trial but poor repeat purchases"
-    },
-    {
-      "source": "The taste profile of Kellogg's Corn Portfolio (including Multigrain) no longer aligns with the evolving flavor preferences of modern Indian consumers, leading to satisfactory trial but poor repeat purchases.",
-      "target": "product (dimension)"
-    },
-    {
-      "source": "Kellogg's Corn Portfolio (including Multigrain) taste profile",
-      "target": "taste_feedback_negative"
-    },
-    {
-      "source": "Kellogg's Corn Portfolio (including Multigrain) taste profile",
-      "target": "flavor_preference_shift"
-    },
-    {
-      "source": "Kellogg's Corn Portfolio (including Multigrain) taste profile",
-      "target": "repeat_purchase_barriers"
+      "source": "product",
+      "target": "sensory_attributes_feedback"
     }
   ]
 }

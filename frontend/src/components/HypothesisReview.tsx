@@ -896,10 +896,10 @@ export default function HypothesisReview({
                       row.length === 2 ? 'grid-cols-1 md:grid-cols-2' : 'grid-cols-1'
                     }`}
                   >
-                    {row.map((h) =>
+                    {row.map((h, hIdx) =>
                       editingId === h.id ? (
                         <HypothesisEditor
-                          key={h.id}
+                          key={`${h.id}-${idx}-${hIdx}`}
                           hypothesis={h}
                           coreProblemId={cp.id}
                           coreProblems={persistedManifest.core_problems}
@@ -909,7 +909,7 @@ export default function HypothesisReview({
                         />
                       ) : (
                         <HypothesisCard
-                          key={h.id}
+                          key={`${h.id}-${idx}-${hIdx}`}
                           hypothesis={h}
                           selected={selectedCardId === h.id}
                           flagged={citedIds.has(h.id)}

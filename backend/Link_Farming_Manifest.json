@@ -1,251 +1,304 @@
 {
-  "study_id": "c5271ccd-620c-41aa-b2f5-9f40c9e7d8d7",
+  "study_id": "20ff78d6-8be2-4985-afef-19283fa18055",
   "study_type": "general",
   "global_parameters": {
-    "time_window": "N/A",
+    "time_window": "2023-01-01 to 2024-12-31",
     "geo_fencing": [
       "IN"
     ],
     "product_scope": [
       "Kellogg's Corn Portfolio",
+      "Kellogg's Multigrain Cornflakes",
+      "Cornflakes",
       "Muesli",
-      "Granola",
-      "Multigrain Cornflakes"
+      "Granola"
     ]
   },
   "entity_anchors": {
     "primary_brand": "Kellogg's",
     "tracked_competitors": [
-      "Mohan Cornflakes"
+      "Mohan Cornflakes",
+      "Muesli brands",
+      "Granola brands"
     ],
     "ghost_brand_discovery": {
-      "enabled": false,
-      "platforms": []
+      "enabled": true,
+      "platforms": [
+        "amazon.in",
+        "flipkart.com",
+        "blinkit.com"
+      ]
     }
   },
   "boolean_nets": [
     {
-      "query": "(Kellogg's Cornflakes OR Kellogg's Multigrain Cornflakes) AND (dated OR old fashioned OR traditional) AND (perception OR sentiment) AND India",
+      "query": "(\"Kellogg's Cornflakes\" OR \"Multigrain Cornflakes\") AND (quality OR trust OR \"functional needs\" OR \"functional benefit gap\") AND NOT (Muesli OR Granola)",
       "target_signals": [
-        "brand_associations",
-        "consumer_sentiment_analysis"
+        "brand_trust_scores_high",
+        "brand_quality_perception_high",
+        "functional_benefit_gap_perception",
+        "brand_awareness_high"
       ],
       "priority": "high"
     },
     {
-      "query": "(Muesli OR Granola) AND (modern OR healthy OR new age) AND (perception OR sentiment) AND India",
-      "target_signals": [
-        "category_usage_trends",
-        "consumer_sentiment_analysis"
-      ],
-      "priority": "high"
-    },
-    {
-      "query": "(Mohan Cornflakes OR similar local brands) AND (price OR cheap OR value OR affordable) AND (vs OR comparison) AND Kellogg's AND India",
-      "target_signals": [
-        "competitor_pricing_analysis",
-        "price_sensitivity"
-      ],
-      "priority": "high"
-    },
-    {
-      "query": "Kellogg's Multigrain Cornflakes AND (health OR nutrition OR benefit) AND (misunderstood OR not valued OR unclear) AND India",
-      "target_signals": [
-        "health_perception",
-        "product_benefit_understanding"
-      ],
-      "priority": "medium"
-    },
-    {
-      "query": "Kellogg's Cornflakes AND (repeat purchase OR repurchase OR satisfied OR dissatisfied) AND (taste OR flavor) AND India",
-      "target_signals": [
-        "product_satisfaction",
-        "repeat_purchase_rate"
-      ],
-      "priority": "high"
-    },
-    {
-      "query": "Kellogg's Cornflakes AND (premium pricing OR expensive) AND (justified OR unjustified) AND (vs OR comparison) AND (Mohan Cornflakes OR local competitors) AND India",
+      "query": "(\"Kellogg's Cornflakes\" OR \"Kellogg's Corn Portfolio\") AND (\"value for money\" OR price OR \"repeat purchases\" OR \"lower priced alternatives\") AND (\"Mohan Cornflakes\")",
       "target_signals": [
         "price_sensitivity",
-        "value_for_money",
+        "value_for_money_perception",
+        "switching_narratives",
+        "competitor_price_comparison"
+      ],
+      "priority": "high"
+    },
+    {
+      "query": "(\"Muesli\" OR \"Granola\" OR \"Mohan Cornflakes\") AND (marketing OR innovation OR pricing OR \"market share erosion\") AND (\"Kellogg's Corn Portfolio\" OR \"Cornflakes\")",
+      "target_signals": [
+        "competitor_marketing_spend",
+        "competitor_new_product_introductions",
+        "market_share_erosion_data",
+        "consumer_awareness_of_competitors"
+      ],
+      "priority": "high"
+    },
+    {
+      "query": "(\"Kellogg's Cornflakes\" OR \"Multigrain Cornflakes\") AND (health OR \"weight loss\" OR \"functional proposition\" OR \"dietary goals\") AND NOT (Muesli OR Granola)",
+      "target_signals": [
+        "health_claims_perception",
+        "feature_adoption",
         "switching_narratives"
       ],
       "priority": "high"
     },
     {
-      "query": "Kellogg's Cornflakes AND (taste OR flavor) AND (monotonous OR boring OR repetitive) AND India",
+      "query": "(\"Kellogg's Cornflakes\" OR \"Kellogg's Corn Portfolio\") AND (outdated OR traditional OR \"brand perception\" OR lifestyle OR \"taste preferences\")",
       "target_signals": [
-        "taste_perception_decline",
-        "product_satisfaction_decline"
+        "brand_relevance",
+        "aspirational_value",
+        "brand_image_perception"
+      ],
+      "priority": "high"
+    },
+    {
+      "query": "(\"Muesli\" OR \"Granola\") AND (\"identity expression\" OR \"modern health-consciousness\" OR aspirational OR lifestyle) AND NOT (\"Kellogg's Cornflakes\" OR \"Cornflakes\")",
+      "target_signals": [
+        "self_expression_motivations",
+        "aspirational_value",
+        "cohort_behavior"
+      ],
+      "priority": "high"
+    },
+    {
+      "query": "(\"Kellogg's Cornflakes\" OR \"traditional taste\") AND (bland OR appealing OR \"flavor profiles\" OR \"repeat purchases\") AND (Muesli OR Granola)",
+      "target_signals": [
+        "taste_preference",
+        "product_satisfaction_taste",
+        "switching_narratives"
       ],
       "priority": "medium"
     },
     {
-      "query": "Kellogg's Multigrain Cornflakes AND (health OR nutrition) AND (not perceived OR confusing OR unclear) AND India",
+      "query": "(\"Kellogg's Cornflakes\" OR \"Cornflakes\") AND (\"breakfast rituals\" OR \"cultural contexts\" OR \"comfort food\" OR \"family tradition\") AND (India)",
       "target_signals": [
-        "functional_benefit_perception",
-        "messaging_comprehension"
+        "comfort_food_association",
+        "family_tradition_narratives",
+        "functional_benefit_seeking",
+        "emotional_attachment_to_brand"
       ],
       "priority": "medium"
     }
   ],
   "platform_targets": {
     "youtube": {
-      "category_ids": [],
+      "category_ids": [
+        28,
+        26,
+        22
+      ],
       "min_views": 1000,
       "search_queries": [
         "Kellogg's Cornflakes review India",
         "Muesli vs Cornflakes India",
-        "Granola review India",
-        "Kellogg's Multigrain Cornflakes taste India",
-        "Indian breakfast alternatives"
+        "Granola benefits India",
+        "Mohan Cornflakes review",
+        "healthy breakfast India",
+        "weight loss breakfast ideas India",
+        "kids breakfast India"
       ]
     },
     "reddit": {
       "subreddits": [
-        "india",
-        "indianfood",
-        "consumerproductsindia",
-        "healthindia"
+        "r/india",
+        "r/IndianFood",
+        "r/desifitness",
+        "r/nutrition",
+        "r/healthindia",
+        "r/EatCheapAndHealthy"
       ],
       "search_queries": [
-        "Kellogg's Cornflakes",
-        "Mohan Cornflakes",
-        "Muesli India",
-        "Granola India",
-        "Multigrain Cornflakes"
+        "Kellogg's Cornflakes bad",
+        "Mohan Cornflakes price",
+        "Why Muesli over Cornflakes",
+        "Best breakfast cereal India",
+        "Healthy breakfast options Reddit India",
+        "Cornflakes value for money India"
       ]
     },
     "ecommerce": {
       "platforms": [
         "amazon.in",
-        "flipkart.com"
+        "flipkart.com",
+        "blinkit.com"
       ],
       "keywords": [
         "Kellogg's Cornflakes",
         "Mohan Cornflakes",
         "Muesli",
         "Granola",
-        "Multigrain Cornflakes"
+        "breakfast cereal",
+        "healthy breakfast",
+        "multigrain flakes",
+        "cereal reviews"
       ],
       "asins": []
     },
     "search_news": {
       "queries": [
-        "Kellogg's India market share decline",
-        "Indian breakfast market trends",
-        "Muesli Granola growth India",
-        "Mohan Cornflakes strategy"
+        "Indian breakfast cereal market trends",
+        "Kellogg's India sales decline",
+        "Muesli Granola market growth India",
+        "Mohan Cornflakes market share",
+        "health food trends India",
+        "FMCG breakfast market India"
       ],
-      "domains": []
+      "domains": [
+        "timesofindia.indiatimes.com",
+        "thehindubusinessline.com",
+        "livemint.com",
+        "economictimes.indiatimes.com",
+        "business-standard.com"
+      ]
     }
   },
   "signal_taxonomy": [
-    "brand_perception",
-    "price",
-    "product",
-    "brand_associations",
-    "category_usage_trends",
-    "consumer_sentiment_analysis",
+    "brand_trust_scores_high",
+    "brand_quality_perception_high",
+    "functional_benefit_gap_perception",
+    "brand_awareness_high",
+    "comfort_food_association",
+    "family_tradition_narratives",
+    "functional_benefit_seeking",
+    "emotional_attachment_to_brand",
+    "competitor_marketing_spend",
+    "competitor_new_product_introductions",
+    "market_share_erosion_data",
+    "consumer_awareness_of_competitors",
     "price_sensitivity",
-    "competitor_pricing_analysis",
+    "value_for_money_perception",
     "switching_narratives",
-    "health_perception",
-    "ingredient_preference",
-    "product_benefit_understanding",
-    "repeat_purchase_rate",
-    "product_satisfaction",
-    "usage_and_attitude_studies",
-    "value_for_money",
-    "taste_feedback_negative",
-    "flavor_preference_shift",
-    "repeat_purchase_barriers",
-    "functional_claim_confusion",
-    "health_benefit_perception",
-    "alternative_product_attributes",
-    "brand_dilution",
-    "perceived_commoditization",
-    "brand_trust_decline",
-    "cultural_identity",
-    "cultural_values_shift",
-    "aspirational_consumption",
-    "category_identity_change",
-    "competitive_shift",
-    "competitive_pricing_pressure",
-    "consumer_price_benchmarks",
-    "market_structure_change",
-    "demographic_shift",
-    "youth_consumer_preferences",
-    "product_customization_demand",
-    "novelty_seeking_behavior",
+    "competitor_price_comparison",
+    "taste_preference_shift",
+    "product_satisfaction_scores",
+    "repeat_purchase_rates_low",
+    "sensory_attributes_feedback",
+    "brand_relevance_scores_low",
+    "brand_modernity_perception",
+    "aspirational_brand_association_with_competitors",
+    "shifting_lifestyle_alignments",
+    "lifestyle_brand_association_competitors",
+    "social_media_trends_competitive",
+    "aspirational_value_shift",
+    "consumer_narratives_on_modernity",
+    "health_consciousness_trends",
+    "weight_loss_dietary_choices",
+    "parental_food_choices_for_kids",
+    "ingredient_preference_changes",
+    "health_perception_negative",
+    "nutritional_comparison",
+    "ingredient_focus",
+    "health_perception_positive",
+    "traditional_benefits_satisfaction",
+    "nutritional_comparison_favorable",
+    "brand_relevance_low",
+    "aspirational_gap",
+    "brand_sentiment_negative",
+    "brand_relevance_high",
+    "brand_aspirational_positive",
+    "brand_sentiment_positive",
+    "value_for_money_perception_negative",
+    "competitive_pricing_comparison",
     "price_acceptance",
-    "comparison_shopping",
-    "rational_tradeoffs",
-    "functional_benefit_gap",
-    "category_switching_drivers",
-    "category_price_ceiling",
-    "willingness_to_pay_for_health",
-    "brand_reputation",
-    "category_perception",
-    "willingness_to_pay_category_specific",
-    "traditional_product_affinity",
-    "convenience_seeking",
-    "lifestyle_alignment",
-    "segmentation_analysis",
-    "premium_segment_loyalty",
-    "competitive_overlap_low",
-    "price_sensitivity",
-    "value_for_money",
-    "competitive_pricing",
-    "taste_feedback",
-    "product_differentiation",
-    "messaging_comprehension",
-    "brand_association",
-    "brand_image",
-    "health_perception",
-    "breakfast_habits",
+    "value_for_money_perception_positive",
+    "competitive_pricing_favorable",
+    "dietary_trends",
     "lifestyle_changes",
-    "category_relevance_perception",
-    "competitor_activity",
-    "category_substitution",
-    "social_signaling",
-    "brand_fit_lifestyle",
-    "identity_expression",
-    "premium_justification",
-    "perceived_value",
+    "segment_specific_needs",
+    "dietary_consistency",
+    "traditional_breakfast_satisfaction",
+    "segment_needs_met",
+    "cultural_perception_shifts",
+    "social_influence",
+    "aspirational_consumption",
+    "cultural_relevance_cornflakes",
+    "traditional_food_preference",
+    "social_acceptance",
+    "price_competition",
+    "brand_differentiation_loss",
+    "competitor_strategy_impact",
+    "brand_loyalty_high",
+    "premium_justification_strong",
+    "quality_perception_superior",
+    "health_claims_perception",
+    "feature_adoption",
+    "brand_relevance",
+    "aspirational_value",
+    "brand_image_perception",
+    "self_expression_motivations",
+    "cohort_behavior",
+    "competitor_pricing",
+    "competitive_innovation",
     "taste_preference",
-    "post_trial_feedback",
-    "price_perception",
+    "product_satisfaction_taste",
     "brand_loyalty",
-    "taste_perception_decline",
-    "product_satisfaction_decline",
-    "innovation_adoption_barriers",
-    "health_claims_skepticism",
-    "food_rituals_evolution",
-    "demographic_trends",
-    "category_migration_drivers",
-    "competitive_price_points",
-    "category_substitution",
-    "ease_of_use",
-    "product_versatility_perception",
-    "routine_integration_barriers",
-    "situational_context",
-    "sustained_taste_satisfaction",
-    "positive_taste_feedback",
-    "flavor_preference_consistency",
+    "functional_preference",
+    "status_neutrality",
+    "personal_connection_brand",
+    "convenience_preference",
+    "health_perceptions",
+    "ingredient_scrutiny",
+    "nutritional_comparisons",
+    "usage_occasions_health",
+    "diet_alignment",
+    "brand_image",
+    "brand_aspirations",
+    "marketing_effectiveness",
+    "competitor_market_share",
+    "price_comparison_cross_category",
+    "brand_differentiation",
+    "generational_preferences",
+    "adoption_rates_competitors",
+    "usage_occasions",
+    "consumption_rituals",
+    "meal_time_routines",
+    "convenience_expectations",
+    "competitor_usage_occasions",
+    "price_perception",
+    "promotion_effectiveness_low",
+    "brand_trust",
+    "quality_perception",
     "functional_benefit_recognition",
-    "health_claims_trust",
-    "cultural_alignment",
-    "breakfast_traditions_adherence",
-    "routine_integration",
-    "preference_stability",
-    "traditional_food_consumption",
-    "demographic_segment_loyalty",
-    "competitive_differentiation",
-    "convenience_factors",
-    "seamless_integration",
-    "product_versatility_satisfaction"
+    "product_satisfaction_health",
+    "messaging_clarity_perception",
+    "positive_brand_association",
+    "merchandising_effectiveness",
+    "channel_experience",
+    "product_visibility",
+    "identity_expression_cornflakes",
+    "family_values_alignment",
+    "product_satisfaction_low",
+    "price_acceptance_high",
+    "positive_brand_cultural_sentiment",
+    "lack_of_cultural_stigma"
   ],
   "stop_rules": {
     "msu_threshold": 0.02,

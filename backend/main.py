@@ -1,5 +1,15 @@
+import sys
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+
+# Use uvloop for better async performance on Linux/macOS
+if sys.platform != "win32":
+    try:
+        import uvloop
+        uvloop.install()
+    except ImportError:
+        pass
 
 app = FastAPI(title="MRX Module-1 Orchestrator API")
 
@@ -16,6 +26,7 @@ from api import methodology
 from api import discovery
 from api import intelligence_map
 from api import hypotheses
+from api import llm_provider
 
 app.include_router(intake.router, prefix="/api")
 app.include_router(ecosystem.router, prefix="/api")
@@ -30,6 +41,7 @@ app.include_router(methodology.router, prefix="/api")
 app.include_router(discovery.router, prefix="/api")
 app.include_router(intelligence_map.router, prefix="/api")
 app.include_router(hypotheses.router, prefix="/api")
+app.include_router(llm_provider.router, prefix="/api")
 
 # Configure CORS for Next.js frontend
 app.add_middleware(

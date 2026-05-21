@@ -1,11 +1,12 @@
 "use client";
 
-import { useReducer } from 'react';
+import { useReducer, useState } from 'react';
 import axios from 'axios';
 import IntakeTerminal from '@/components/IntakeTerminal';
 import HypothesisReview from '@/components/HypothesisReview';
 import SynthesisDashboard from '@/components/SynthesisDashboard';
 import DiscoveryAudit from '@/components/DiscoveryAudit';
+import LLMProviderGate from '@/components/LLMProviderGate';
 import type { HypothesisManifest } from '@/types/hypothesis';
 import { phaseReducer, initialPhaseState } from './phaseReducer';
 
@@ -43,6 +44,7 @@ function buildPayloadFromLatestRun(intent: string): InteractionPayload {
 
 export default function Home() {
   const [state, dispatch] = useReducer(phaseReducer, initialPhaseState);
+  const [providerSelected, setProviderSelected] = useState(false);
   const { phase, interactionPayload, hypothesisManifest, manifestData } = state;
 
   // ── Module 1 → Module 1.5 (Hypothesis Review) ────────────────────────────
@@ -120,6 +122,10 @@ export default function Home() {
 
   return (
     <main className="h-screen w-screen bg-black overflow-hidden flex">
+      {!providerSelected ? (
+        <LLMProviderGate onProviderSelected={() => setProviderSelected(true)} />
+      ) : (
+        <>
       {phase === 'interaction' && (
         <IntakeTerminal
           onInteractionComplete={handleInteractionComplete}
@@ -153,6 +159,8 @@ export default function Home() {
           onBeginIngestion={() => alert('Starting full ingestion pipeline...')}
           onBack={() => dispatch({ type: 'GO_BACK_TO', phase: 'synthesis' })}
         />
+      )}
+        </>
       )}
     </main>
   );
